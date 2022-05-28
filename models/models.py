@@ -25,21 +25,26 @@ class User(Model):
     get_referal: fields.ReverseRelation["UserReferalBonus"]
     payments_account: fields.ReverseRelation["UserPaymentAccount"]
 
+    @property
+    def permission_balance(self):
+        return self.balance - self.frozen_balance
+
     class Meta:
         table = 'user'
 
 
 TYPE_FIELD = ['topup', 'withdraw']
-STATE_FIELD = ['created']
+STATE_FIELD = ['created', "done", "failed"]
+
 class UserBalanceChange(Model):
     """ данные пополнениях и списаниях баланса в Toncoin пользователя"""
     uuid: int = fields.UUIDField(pk=True)
     user: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField("models.User", related_name="history_balance")
     type: str = fields.CharField(max_length=255)
-    amount: float = fields.FloatField()
-    hash: str = fields.CharField(max_length=255)
-    wallet: str = fields.CharField(max_length=255)
-    code: str = fields.CharField(max_length=255)
+    amount: float = fields.FloatField(null=True)
+    hash: str = fields.CharField(max_length=255, null=True)
+    wallet: str = fields.CharField(max_length=255, null=True)
+    code: str = fields.CharField(max_length=255, null=True)
     state: str = fields.CharField(max_length=255)
     created_at: datetime = fields.DatetimeField(auto_now_add=True)
     
@@ -64,7 +69,7 @@ class Lang(Model):
     """таблица с переводами всех названий и сообщений бота"""
     uuid: int = fields.UUIDField(pk=True)
     target_table: str = fields.CharField(max_length=255, null=True)
-    target_id: int = fields.IntField(null=True)
+    target_id: int = fields.UUIDField(null=True)
     rus: str = fields.TextField()
     eng: str = fields.TextField()
     updated_at: datetime = fields.DatetimeField(auto_now=True)
@@ -77,7 +82,7 @@ class Lang(Model):
 class Currency(Model):
     """валюта платежа"""
     uuid: int = fields.UUIDField(pk=True)
-    name: str = fields.CharField(max_length=255)
+    name: str = fields.CharField(max_length=255, unique=True)
     exchange_rate: Decimal = fields.DecimalField(max_digits=1000, decimal_places=2)
     is_active: bool = fields.BooleanField()
     created_at: datetime = fields.DatetimeField(auto_now_add=True)

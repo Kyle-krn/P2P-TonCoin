@@ -1,7 +1,7 @@
 -- upgrade --
 CREATE TABLE IF NOT EXISTS "currency" (
     "uuid" UUID NOT NULL  PRIMARY KEY,
-    "name" VARCHAR(255) NOT NULL,
+    "name" VARCHAR(255) NOT NULL UNIQUE,
     "exchange_rate" DECIMAL(1000,2) NOT NULL,
     "is_active" BOOL NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL  DEFAULT CURRENT_TIMESTAMP
@@ -10,7 +10,7 @@ COMMENT ON TABLE "currency" IS 'валюта платежа';
 CREATE TABLE IF NOT EXISTS "lang" (
     "uuid" UUID NOT NULL  PRIMARY KEY,
     "target_table" VARCHAR(255),
-    "target_id" INT,
+    "target_id" UUID,
     "rus" TEXT NOT NULL,
     "eng" TEXT NOT NULL,
     "updated_at" TIMESTAMPTZ NOT NULL  DEFAULT CURRENT_TIMESTAMP,
@@ -26,13 +26,14 @@ CREATE TABLE IF NOT EXISTS "staff" (
 COMMENT ON TABLE "staff" IS 'данные о администраторах системы';
 CREATE TABLE IF NOT EXISTS "user" (
     "uuid" UUID NOT NULL  PRIMARY KEY,
-    "telegram_id" BIGINT NOT NULL,
+    "telegram_id" BIGINT NOT NULL UNIQUE,
     "tg_username" VARCHAR(255),
     "wallet" VARCHAR(255),
     "balance" DOUBLE PRECISION NOT NULL  DEFAULT 0,
     "frozen_balance" DOUBLE PRECISION NOT NULL  DEFAULT 0,
     "description" TEXT,
     "created_at" TIMESTAMPTZ NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "lang" VARCHAR(30),
     "referal_user_id" UUID REFERENCES "user" ("uuid") ON DELETE CASCADE
 );
 COMMENT ON TABLE "user" IS 'данные о пользователях';
@@ -89,10 +90,10 @@ COMMENT ON TABLE "payment_operation" IS 'операция перечислени
 CREATE TABLE IF NOT EXISTS "user_balance_change" (
     "uuid" UUID NOT NULL  PRIMARY KEY,
     "type" VARCHAR(255) NOT NULL,
-    "amount" DOUBLE PRECISION NOT NULL,
-    "hash" VARCHAR(255) NOT NULL,
-    "wallet" VARCHAR(255) NOT NULL,
-    "code" VARCHAR(255) NOT NULL,
+    "amount" DOUBLE PRECISION,
+    "hash" VARCHAR(255),
+    "wallet" VARCHAR(255),
+    "code" VARCHAR(255),
     "state" VARCHAR(255) NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL  DEFAULT CURRENT_TIMESTAMP,
     "user_id" UUID NOT NULL REFERENCES "user" ("uuid") ON DELETE CASCADE
