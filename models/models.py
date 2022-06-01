@@ -3,7 +3,6 @@ from decimal import Decimal
 from tortoise import Model, fields
 
 
-
 class User(Model):
     """данные о пользователях"""
     uuid: int = fields.UUIDField(pk=True)
@@ -35,7 +34,6 @@ class User(Model):
 
 TYPE_FIELD = ['topup', 'withdraw']
 STATE_FIELD = ['created', "done", "failed"]
-
 class UserBalanceChange(Model):
     """ данные пополнениях и списаниях баланса в Toncoin пользователя"""
     uuid: int = fields.UUIDField(pk=True)
@@ -50,6 +48,7 @@ class UserBalanceChange(Model):
     
     class Meta:
         table = "user_balance_change"
+
 
 STATE_FIELD = ["created" ,"done" ,"cancelled"]
 class UserReferalBonus(Model):
@@ -94,19 +93,24 @@ class Currency(Model):
 class UserPaymentAccountType(Model):
     """способ оплаты, на который можно отправлять фиат при покупке Toncoin"""
     uuid: int = fields.UUIDField(pk=True)
+    serial_int: int = fields.IntField(generated=True)
     name: str = fields.CharField(max_length=255)
     currency: fields.ForeignKeyRelation["Currency"] = fields.ForeignKeyField("models.Currency", related_name="user_payment_account_type")
     data = fields.JSONField()
     is_active: bool = fields.BooleanField()
     created_at: datetime = fields.DatetimeField(auto_now_add=True)
+    payments_account: fields.ReverseRelation['UserPaymentAccount']
 
     class Meta:
         table = "user_payment_account_type"
 
+    def __str__(self) -> str:
+        return self.name
 
 class UserPaymentAccount(Model):
     """данные о счете пользователя, на который можно отправлять фиат при покупке Toncoin"""
     uuid: int = fields.UUIDField(pk=True)
+    serial_int: int = fields.IntField(generated=True)
     user: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField("models.User", related_name="payments_account")
     type: fields.ForeignKeyRelation["UserPaymentAccountType"] = fields.ForeignKeyField("models.UserPaymentAccountType", related_name="payments_account")
     data = fields.JSONField()
@@ -114,6 +118,7 @@ class UserPaymentAccount(Model):
     updated_at: datetime = fields.DatetimeField(auto_now=True)
     created_at: datetime = fields.DatetimeField(auto_now_add=True)
 
+    order_user_payment_account: fields.ReverseRelation["OrderUserPaymentAccount"]
     class Meta:
         table = "user_payment_account"
 
@@ -137,21 +142,26 @@ class Order(Model):
     uuid: int = fields.UUIDField(pk=True)
     state: str = fields.CharField(max_length=255)
     seller: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField("models.User", related_name="sell_orders")
-    customer: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField("models.User", related_name="buy_orders")
+    customer: fields.ForeignKeyNullableRelation["User"] = fields.ForeignKeyField("models.User", related_name="buy_orders", null=True)
     currency: fields.ForeignKeyRelation["Currency"] = fields.ForeignKeyField("models.Currency", related_name="orders")
     amount: float = fields.FloatField()
     origin_amount: float = fields.FloatField()
     margin: int = fields.IntField()
-    final_price: Decimal = fields.DecimalField(max_digits=1000, decimal_places=2)
+    final_price: Decimal = fields.DecimalField(max_digits=1000, decimal_places=2, null=True)
     commission: float = fields.FloatField()
     min_buy_sum: float = fields.FloatField()
     parent: fields.ForeignKeyNullableRelation["Order"] = fields.ForeignKeyField(
         "models.Order", related_name="children_order", null=True, on_delete="SET NULL"
     )
-    children_order: fields.ReverseRelation["Order"]
     updated_at: datetime = fields.DatetimeField(auto_now=True)
     created_at: datetime = fields.DatetimeField(auto_now_add=True)
 
+    customer_pay_type: fields.ForeignKeyNullableRelation["UserPaymentAccountType"]  \
+                      = fields.ForeignKeyField("models.UserPaymentAccountType", related_name="customer_pay_type", null=True)
+
+    order_user_payment_account: fields.ReverseRelation["OrderUserPaymentAccount"]
+    children_order: fields.ReverseRelation["Order"]
+    
     class Meta:
         table = "order"
 

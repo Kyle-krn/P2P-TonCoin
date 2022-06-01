@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS "order" (
     "updated_at" TIMESTAMPTZ NOT NULL  DEFAULT CURRENT_TIMESTAMP,
     "created_at" TIMESTAMPTZ NOT NULL  DEFAULT CURRENT_TIMESTAMP,
     "currency_id" UUID NOT NULL REFERENCES "currency" ("uuid") ON DELETE CASCADE,
-    "customer_id" UUID NOT NULL REFERENCES "user" ("uuid") ON DELETE CASCADE,
+    "customer_id" UUID REFERENCES "user" ("uuid") ON DELETE CASCADE,
     "parent_id" UUID REFERENCES "order" ("uuid") ON DELETE SET NULL,
     "seller_id" UUID NOT NULL REFERENCES "user" ("uuid") ON DELETE CASCADE
 );
@@ -101,6 +101,7 @@ CREATE TABLE IF NOT EXISTS "user_balance_change" (
 COMMENT ON TABLE "user_balance_change" IS 'данные пополнениях и списаниях баланса в Toncoin пользователя';
 CREATE TABLE IF NOT EXISTS "user_payment_account_type" (
     "uuid" UUID NOT NULL  PRIMARY KEY,
+    "serial_int" INT NOT NULL,
     "name" VARCHAR(255) NOT NULL,
     "data" JSONB NOT NULL,
     "is_active" BOOL NOT NULL,
@@ -110,6 +111,7 @@ CREATE TABLE IF NOT EXISTS "user_payment_account_type" (
 COMMENT ON TABLE "user_payment_account_type" IS 'способ оплаты, на который можно отправлять фиат при покупке Toncoin';
 CREATE TABLE IF NOT EXISTS "user_payment_account" (
     "uuid" UUID NOT NULL  PRIMARY KEY,
+    "serial_int" INT NOT NULL,
     "data" JSONB NOT NULL,
     "is_active" BOOL NOT NULL,
     "updated_at" TIMESTAMPTZ NOT NULL  DEFAULT CURRENT_TIMESTAMP,
