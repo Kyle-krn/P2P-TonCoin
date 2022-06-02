@@ -2,7 +2,7 @@ from typing import Union
 
 import aiogram
 from keyboards.inline.keyboards import stop_state_keyboard
-from loader import dp
+from loader import dp, bot
 from aiogram import types
 from keyboards.inline import buy_keyboards
 from models import models
@@ -133,13 +133,14 @@ async def buy_amount_state(message: types.Message, state: FSMContext):
                                               final_price=buy_amount,
                                               origin_amount=order.origin_amount,
                                               margin=order.margin,
-                                              commission=order.commission,
+                                              commission=buy_ton_amount * 0.01,
                                               min_buy_sum=order.min_buy_sum,
                                               currency_id=order.currency_id,
                                               seller_id=order.seller_id,
                                               customer_pay_type=pay_type)
         old_amount = order.amount
         order.amount -= buy_ton_amount
+        order.commission = order.amount * 0.01
         await order.save()
         await models.OrderAmountChange.create(order=order,
                                               target_order=new_order, 
@@ -147,8 +148,11 @@ async def buy_amount_state(message: types.Message, state: FSMContext):
                                               new_amount=order.amount) 
         order = new_order
     else:
-        order.state = ""
-
+        order.state = "wait_buyer_send_funds"
+        order.customer = user
+        order.final_price = buy_amount
+        order.customer_pay_type = pay_type
+        await order.save()
     await state.finish()
     return await view_buy_order_handler(message, order)
 
@@ -166,7 +170,6 @@ async def view_buy_order_handler(message: Union[types.Message, types.CallbackQue
         pay_account = await parent_order.order_user_payment_account.filter(account__type__uuid=order.customer_pay_type_id)
     else:
         pay_account = await order.order_user_payment_account.filter(account__type__uuid=order.customer_pay_type_id)
-    
     user_data_text = ""
     for k,v in (await pay_account[0].account).data.items():
         user_data_text += f"{k}: {v}\n"
@@ -175,7 +178,8 @@ async def view_buy_order_handler(message: Union[types.Message, types.CallbackQue
            "вы перечисляете деньги продавцу\n"  \
            "мы отправляем вам TON на ваш кошелек в системе\n\n"  \
           f"Отправьте {float(order.final_price)}$ по следующим реквизитам:\n"  \
-          f"{user_data_text}"  \
+          f"{user_data_text}\n"  \
+          f"Вы получите {order.amount - order.commission} TON\n"  \
            "После оплаты нажмите кнопку Я отправил средства"
     keyboard = await buy_keyboards.send_money_order(order.uuid)
     await message.answer(text=text, reply_markup=keyboard)
@@ -188,13 +192,44 @@ async def cancel_buy_order_handler(call :types.CallbackQuery):
     if order.parent:
         order_parent = await order.parent
         order_parent.amount += order.amount
+        order_parent.commission = order_parent.amount * 0.01
         await models.OrderAmountChange.create(order=order, 
                                               target_order=order_parent, 
                                               old_amount=order.amount, 
                                               new_amount=0) 
         order.amount = 0
+        order.commission = 0
         order.state = "cancelled_by_customer"
         await order.save()
         await order_parent.save()
+    else:
+        order.state = "ready_for_sale"
+        order.customer = None
+        order.final_price = None
+        order.customer_pay_type = None
+        await order.save()
+
     text = "Заказ отменен."
     await call.message.edit_text(text=text)
+
+
+@dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'send_money_order')
+async def send_money_order_handler(call: types.CallbackQuery):
+    order = await models.Order.get(uuid=call.data.split(":")[1])
+    if order.parent:
+        parent_order = await order.parent
+        pay_account = await parent_order.order_user_payment_account.filter(account__type__uuid=order.customer_pay_type_id)
+    else:
+        pay_account = await order.order_user_payment_account.filter(account__type__uuid=order.customer_pay_type_id)
+
+    order.state = "buyer_sent_funds"
+    await order.save()
+    await models.PaymentOperation.create(order=order,
+                                         sender_id=order.customer_id,
+                                         recipient_id=order.seller_id,
+                                         recipient_data=(await pay_account[0].account).data,
+                                         state="created")
+    seller = await order.seller
+    text = f"По заказу №{order.uuid} покупатель отправил денежные средства в размере {float(order.final_price)}$.\n"  \
+            "Подтвердите получение оплаты, нажав кнопку Я получил средства, либо нажмите Средства не поступили, если деньги не поступили на ваш счет"
+    await bot.send_message(seller.telegram_id, text=text, reply_markup=await buy_keyboards.keyboard_for_seller(order.uuid))

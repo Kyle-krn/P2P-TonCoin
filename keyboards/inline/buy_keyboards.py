@@ -54,3 +54,9 @@ async def go_to_buy_order_keyboard(order_uuid: UUID):
     return keyboard
 
 
+async def keyboard_for_seller(order_uuid: UUID):
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(types.InlineKeyboardButton(text="Я получил средства", callback_data=f"seller_approved_funds:{order_uuid}"))
+    keyboard.add(types.InlineKeyboardButton(text="Средства не поступили", callback_data=f"go_to_order:{order_uuid}"))
+    return keyboard
+
