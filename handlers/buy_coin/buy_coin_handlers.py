@@ -233,4 +233,4 @@ async def send_money_order_handler(call: types.CallbackQuery):
     text = f"По заказу №{order.uuid} покупатель отправил денежные средства в размере {float(order.final_price)}$.\n"  \
             "Подтвердите получение оплаты, нажав кнопку Я получил средства, либо нажмите Средства не поступили, если деньги не поступили на ваш счет"
     await call.message.edit_text("Ожидайте ответа от продавца.")
-    await bot.send_message(seller.telegram_id, text=text, reply_markup=await buy_keyboards.keyboard_for_seller(order.uuid))
+    await bot.send_message(seller.telegram_id, text=text, reply_markup=await buy_keyboards.keyboard_for_seller(order_uuid=order.uuid))

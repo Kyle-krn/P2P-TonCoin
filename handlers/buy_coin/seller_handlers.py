@@ -11,7 +11,10 @@ async def seller_approved_funds_handler(call: types.CallbackQuery):
     customer = await order.customer
     customer.balance += (order.amount - order.commission)
     seller.frozen_balance -= order.amount
-    order.state = "seller_approved_funds"
+    order.state = "done"
+    payment_operation = await order.payment_operation.all().first()
+    payment_operation.state = "success"
+    await payment_operation.save()
     await order.save()
     await seller.save()
     await customer.save()

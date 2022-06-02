@@ -6,6 +6,7 @@ from keyboards.reply.keyboards import main_keyboard
 
 @dp.message_handler(commands=['start'])
 async def start(message: types.Message):
+    print(message.text)
     user = await models.User.get_or_none(telegram_id=message.chat.id)
     if not user:
         lang = message.from_user.locale

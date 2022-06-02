@@ -54,9 +54,10 @@ async def go_to_buy_order_keyboard(order_uuid: UUID):
     return keyboard
 
 
-async def keyboard_for_seller(order_uuid: UUID):
+async def keyboard_for_seller(order_uuid: UUID, no_funds_button: bool = True):
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(types.InlineKeyboardButton(text="Я получил средства", callback_data=f"seller_approved_funds:{order_uuid}"))
-    keyboard.add(types.InlineKeyboardButton(text="Средства не поступили", callback_data=f"problem_seller_no_funds:{order_uuid}"))
+    if no_funds_button:
+        keyboard.add(types.InlineKeyboardButton(text="Средства не поступили", callback_data=f"problem_seller_no_funds:{order_uuid}"))
     return keyboard
 
