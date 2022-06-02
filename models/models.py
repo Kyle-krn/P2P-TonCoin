@@ -1,11 +1,12 @@
 from datetime import datetime
 from decimal import Decimal
+from uuid import UUID
 from tortoise import Model, fields
 
 
 class User(Model):
     """данные о пользователях"""
-    uuid: int = fields.UUIDField(pk=True)
+    uuid: UUID = fields.UUIDField(pk=True)
     telegram_id: int = fields.BigIntField(unique=True)
     tg_username: str = fields.CharField(max_length=255, null=True)
     wallet: str = fields.CharField(max_length=255, null=True)
@@ -36,7 +37,7 @@ TYPE_FIELD = ['topup', 'withdraw']
 STATE_FIELD = ['created', "done", "failed"]
 class UserBalanceChange(Model):
     """ данные пополнениях и списаниях баланса в Toncoin пользователя"""
-    uuid: int = fields.UUIDField(pk=True)
+    uuid: UUID = fields.UUIDField(pk=True)
     user: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField("models.User", related_name="history_balance")
     type: str = fields.CharField(max_length=255)
     amount: float = fields.FloatField(null=True)
@@ -53,7 +54,7 @@ class UserBalanceChange(Model):
 STATE_FIELD = ["created" ,"done" ,"cancelled"]
 class UserReferalBonus(Model):
     """данные о вознаграждениях пользователям за регистрацию по их приглашениям"""
-    uuid: int = fields.UUIDField(pk=True)
+    uuid: UUID = fields.UUIDField(pk=True)
     user: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField("models.User", related_name="send_referal")
     invited_user: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField("models.User", related_name="get_referal")
     state: str = fields.CharField(max_length=255)
@@ -66,7 +67,7 @@ class UserReferalBonus(Model):
 
 class Lang(Model):
     """таблица с переводами всех названий и сообщений бота"""
-    uuid: int = fields.UUIDField(pk=True)
+    uuid: UUID = fields.UUIDField(pk=True)
     target_table: str = fields.CharField(max_length=255, null=True)
     target_id: int = fields.UUIDField(null=True)
     rus: str = fields.TextField()
@@ -80,7 +81,7 @@ class Lang(Model):
 
 class Currency(Model):
     """валюта платежа"""
-    uuid: int = fields.UUIDField(pk=True)
+    uuid: UUID = fields.UUIDField(pk=True)
     name: str = fields.CharField(max_length=255, unique=True)
     exchange_rate: Decimal = fields.DecimalField(max_digits=1000, decimal_places=2)
     is_active: bool = fields.BooleanField()
@@ -92,7 +93,7 @@ class Currency(Model):
 
 class UserPaymentAccountType(Model):
     """способ оплаты, на который можно отправлять фиат при покупке Toncoin"""
-    uuid: int = fields.UUIDField(pk=True)
+    uuid: UUID = fields.UUIDField(pk=True)
     serial_int: int = fields.IntField(generated=True)
     name: str = fields.CharField(max_length=255)
     currency: fields.ForeignKeyRelation["Currency"] = fields.ForeignKeyField("models.Currency", related_name="user_payment_account_type")
@@ -109,7 +110,7 @@ class UserPaymentAccountType(Model):
 
 class UserPaymentAccount(Model):
     """данные о счете пользователя, на который можно отправлять фиат при покупке Toncoin"""
-    uuid: int = fields.UUIDField(pk=True)
+    uuid: UUID = fields.UUIDField(pk=True)
     serial_int: int = fields.IntField(generated=True)
     user: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField("models.User", related_name="payments_account")
     type: fields.ForeignKeyRelation["UserPaymentAccountType"] = fields.ForeignKeyField("models.UserPaymentAccountType", related_name="payments_account")
@@ -125,7 +126,7 @@ class UserPaymentAccount(Model):
 
 class Staff(Model):
     """данные о администраторах системы"""
-    uuid: int = fields.UUIDField(pk=True)
+    uuid: UUID = fields.UUIDField(pk=True)
     login: str = fields.CharField(max_length=255)
     password: str = fields.TextField()
     created_at: datetime = fields.DatetimeField(auto_now_add=True)
@@ -139,7 +140,7 @@ STATE_FIELD = ['created', 'ready_for_sale', 'wait_buyer_send_funds',
                'need_admin_resolution', 'request_cancelled_by_seller', 'cancelled_by_seller']
 class Order(Model):
     """заказ на покупку-продажу Toncoin"""
-    uuid: int = fields.UUIDField(pk=True)
+    uuid: UUID = fields.UUIDField(pk=True)
     state: str = fields.CharField(max_length=255)
     seller: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField("models.User", related_name="sell_orders")
     customer: fields.ForeignKeyNullableRelation["User"] = fields.ForeignKeyField("models.User", related_name="buy_orders", null=True)
@@ -161,6 +162,7 @@ class Order(Model):
 
     order_user_payment_account: fields.ReverseRelation["OrderUserPaymentAccount"]
     children_order: fields.ReverseRelation["Order"]
+    payment_operation: fields.ReverseRelation["PaymentOperation"]
     
     class Meta:
         table = "order"
@@ -168,7 +170,7 @@ class Order(Model):
 
 class OrderUserPaymentAccount(Model):
     """модель изменения статуса заказ Order"""
-    uuid: int = fields.UUIDField(pk=True)
+    uuid: UUID = fields.UUIDField(pk=True)
     order: fields.ForeignKeyRelation['Order'] = fields.ForeignKeyField("models.Order", related_name="order_user_payment_account")
     account: fields.ForeignKeyRelation['UserPaymentAccount'] = fields.ForeignKeyField("models.UserPaymentAccount", related_name="order_user_payment_account")
     is_active: bool = fields.BooleanField()
@@ -180,7 +182,7 @@ class OrderUserPaymentAccount(Model):
 
 class OrderStateChange(Model):
     """модель изменения статуса заказ Order"""
-    uuid: int = fields.UUIDField(pk=True)
+    uuid: UUID = fields.UUIDField(pk=True)
     order: fields.ForeignKeyRelation['Order'] = fields.ForeignKeyField("models.Order", related_name="order_state_change")
     old_state: str = fields.CharField(max_length=255)
     new_state: str = fields.CharField(max_length=255)
@@ -194,7 +196,7 @@ class OrderStateChange(Model):
 
 class OrderAmountChange(Model):
     """модель изменения продаваемого количества Toncoin в заказе Order"""
-    uuid: int = fields.UUIDField(pk=True)
+    uuid: UUID = fields.UUIDField(pk=True)
     order: fields.ForeignKeyRelation['Order'] = fields.ForeignKeyField("models.Order", related_name="order_amount_change")
     target_order: fields.ForeignKeyRelation['Order'] = fields.ForeignKeyField("models.Order", related_name="target_order_amount_change")
     old_amount: float = fields.FloatField()
@@ -209,7 +211,7 @@ class OrderAmountChange(Model):
 
 class PaymentOperation(Model):
     """операция перечисления средств от покупателя продавцу"""
-    uuid: int = fields.UUIDField(pk=True)
+    uuid: UUID = fields.UUIDField(pk=True)
     order: fields.ForeignKeyRelation['Order'] = fields.ForeignKeyField("models.Order", related_name="payment_operation")
     sender: fields.ForeignKeyRelation['User'] = fields.ForeignKeyField("models.User", related_name="payment_operation_sender")
     recipient: fields.ForeignKeyRelation['User'] = fields.ForeignKeyField("models.User", related_name="payment_operation_recipient")
@@ -222,3 +224,11 @@ class PaymentOperation(Model):
     class Meta:
         table = "payment_operation"
 
+
+class ProblemOrderProof(Model):
+    uuid: UUID = fields.UUIDField(pk=True)
+    order: fields.ForeignKeyRelation['Order'] = fields.ForeignKeyField("models.Order", related_name="proof_problem_order")
+    file_path: str = fields.CharField(max_length=255)
+
+    class Meta:
+        table = "order_proof"
