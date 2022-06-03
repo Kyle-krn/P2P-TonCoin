@@ -125,16 +125,16 @@ async def  min_buy_sum_state(message: types.Message, state: FSMContext):
 
 @dp.callback_query_handler(lambda call: call.data == "sell_coin_back_choice_pay_acc", state=SellTonState)
 async def choice_pay_acc_sell_ton_hanlder(message: Union[types.Message, types.CallbackQuery], state: FSMContext):
-    # call = None
     if isinstance(message, types.CallbackQuery):
         message = message.message
         await message.edit_text("Назад")
     user_data = await state.get_data()
     set_user_data = {}
-    leave_keys = ['amount', 'fee', 'curreny_name', 'max_price', 'min_buy_sum']
+    leave_keys = ['amount', 'fee', 'curreny_name', 'max_price', 'min_buy_sum', 'order_uuid']
     for k,v in user_data.items():
         if k in leave_keys:
             set_user_data[k] = v
+            
     await state.set_data(set_user_data)
     user = await models.User.get(telegram_id=message.chat.id)
     user_payment_accounts = await models.UserPaymentAccount.filter(Q(user=user) & Q(is_active=True) & Q(type__currency__name=user_data['curreny_name']))
@@ -142,6 +142,21 @@ async def choice_pay_acc_sell_ton_hanlder(message: Union[types.Message, types.Ca
         text = "Создайте хотя бы один аккаунт в выбранной валюте, куда пользователи смогут отправлять вам средства за заказ."
     else:
         text = "Выберите способы оплаты, которые доступны для этого заказа, или создайте новый"
+    
+    currency = await models.Currency.get(name=user_data['curreny_name'])
+    if not "order_uuid" in set_user_data:
+        order = await models.Order.create(state="created", 
+                                        seller=user, 
+                                        amount=user_data['amount'],
+                                        origin_amount=user_data['amount'],
+                                        margin=user_data['fee'], 
+                                        commission=user_data['amount'] * 0.01,
+                                        currency=currency,
+                                        min_buy_sum=user_data['min_buy_sum'])
+        user.balance -= user_data['amount']
+        user.frozen_balance += user_data['amount']
+        await user.save()
+        await state.update_data(order_uuid=order.uuid)
     keyboard = await sell_keyboards.add_pay_account_keyboard(user_payment_accounts)
     return await message.answer(text=text, reply_markup=keyboard)
 
@@ -171,21 +186,25 @@ async def sell_coin_choice_pay_acc_handler(call: types.CallbackQuery, state: FSM
         if lang_type:
             name = lang_type.rus
         await call.message.edit_text(name)
-    currency = await models.Currency.get(name=user_data['curreny_name'])
-    order = await models.Order.create(state="ready_for_sale", 
-                                      seller=user, 
-                                      amount=user_data['amount'],
-                                      origin_amount=user_data['amount'],
-                                      margin=user_data['fee'], 
-                                      commission=user_data['amount'] * 0.01,
-                                      currency=currency,
-                                      min_buy_sum=user_data['min_buy_sum'])
+    order = await models.Order.get(uuid=user_data['order_uuid'])
+    order.state = 'ready_for_sale'
+    await order.save()
+    # currency = await models.Currency.get(name=user_data['curreny_name'])
+    # order = await models.Order.create(state="ready_for_sale", 
+    #                                   seller=user, 
+    #                                   amount=user_data['amount'],
+    #                                   origin_amount=user_data['amount'],
+    #                                   margin=user_data['fee'], 
+    #                                   commission=user_data['amount'] * 0.01,
+    #                                   currency=currency,
+    #                                   min_buy_sum=user_data['min_buy_sum'])
+    
+    
     for account in pay_accounts:
         await models.OrderUserPaymentAccount.create(order=order,
                                                     account=account,
                                                     is_active=True)
-    user.balance -= user_data['amount']
-    user.frozen_balance += user_data['amount']
+    
     await user.save()
     await state.finish()
     text =f"Ваш заказ № {order.uuid} успешно опубликован.\n"  \

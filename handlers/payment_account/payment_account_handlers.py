@@ -145,7 +145,7 @@ async def add_data_state(message: types.Message, state: FSMContext):
                 pay_account = await models.UserPaymentAccount.create(user=user, type=payment_type, data=user_data, is_active=True)
             return await view_pay_account(message, pay_account_serial_int=pay_account.serial_int)
         elif current_state.split(':')[0] == "SellTonState":
-            del_keys = ['amount', 'fee', 'curreny_name', 'max_price', 'min_buy_sum', 'payment_type']
+            del_keys = ['amount', 'fee', 'curreny_name', 'max_price', 'min_buy_sum', 'payment_type', 'order_uuid']
             for key in del_keys:
                 user_data.pop(key, None)
             pay_account = await models.UserPaymentAccount.create(user=user, type=payment_type, data=user_data, is_active=True)
