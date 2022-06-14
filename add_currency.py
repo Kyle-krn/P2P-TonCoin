@@ -75,8 +75,23 @@ async def test_children_order():
     order_user_payment_account = await parent.order_user_payment_account.filter(account__type__uuid="20bca4c0-c4c6-4e1b-b06e-2db18e10fedc")
     print((await order_user_payment_account[0].account).data)
 
+
+async def insert_lang():
+    await Tortoise.init(config.TORTOISE_ORM)
+    text = "Продавец сообщил, что не получил оплату от вас."  \
+           "Пришлите, пожалуйста, подтверждение оплаты (чек)"  \
+           "в формате pdf / xls / xcls / jpg / pdf / gif в ответ на это сообщение."  \
+           "Если вы не пришлете подтверждение в течение 24 часов, то заказ будет автоматически отменен"
+    await models.Lang.create(rus=text, eng=text)
+
+
+def test():
+    text = "Это текст"
+    print(text.format(test="hui"))
+
 if __name__ == '__main__':
-    run_async(test_children_order())
+    # test()
+    run_async(insert_lang())
     # run_async(lang_currency("EUR", "Евро", "Euro"))
     # run_async(add_currency("RUB"))
     # run_async(get_serial_int())

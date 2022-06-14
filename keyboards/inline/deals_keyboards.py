@@ -14,3 +14,10 @@ async def cancel_order_keyboard(order_uuid):
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(types.InlineKeyboardButton(text="Отменить", callback_data=f"cancel_order:{order_uuid}"))
     return keyboard
+
+
+async def created_order_keyboard(order_uuid):
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(types.InlineKeyboardButton(text="Отменить", callback_data=f"cancel_order:{order_uuid}"))
+    keyboard.add(types.InlineKeyboardButton(text="Внести средства", callback_data=f"add_pay_acc_in_created:{order_uuid}"))
+    return keyboard

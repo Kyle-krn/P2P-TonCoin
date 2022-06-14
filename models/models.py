@@ -72,6 +72,7 @@ class Lang(Model):
     target_id: int = fields.UUIDField(null=True)
     rus: str = fields.TextField()
     eng: str = fields.TextField()
+    description: str = fields.CharField(max_length=255, null=True)
     updated_at: datetime = fields.DatetimeField(auto_now=True)
     created_at: datetime = fields.DatetimeField(auto_now_add=True)
 
