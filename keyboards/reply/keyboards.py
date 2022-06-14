@@ -10,7 +10,6 @@ async def main_keyboard():
     buy_button = types.KeyboardButton(text="Купить Ton")
     bank_account_button = types.KeyboardButton(text="Мои счета")
     deals_button = types.KeyboardButton(text="Мои активные заказы")
-    ref_button = types.KeyboardButton(text="Реферальная система")
     keyboard.add(wallet_button, sell_button)
     keyboard.add(bank_account_button, buy_button)
     keyboard.add(deals_button, ref_button)
