@@ -6,6 +6,7 @@ from datetime import datetime
 
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'seller_approved_funds')
 async def seller_approved_funds_handler(call: types.CallbackQuery):
+    '''Продавец подтверждает перевод средств'''
     order = await models.Order.get(uuid=call.data.split(':')[1])
     if order.state not in ['buyer_sent_funds', 'problem_seller_no_funds', 'need_admin_resolution']:
         return await call.message.edit_text("Не подходит state")
@@ -35,6 +36,7 @@ async def seller_approved_funds_handler(call: types.CallbackQuery):
 
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'problem_seller_no_funds')
 async def problem_seller_no_funds_handler(call: types.CallbackQuery):
+    '''Продавец сообщает о том что средства не поступили'''
     date = call.message.date
     user = await models.User.get(telegram_id=call.message.chat.id)
     if (datetime.now() - date).total_seconds() < (4 * 60):
