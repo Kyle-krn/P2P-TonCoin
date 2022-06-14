@@ -33,10 +33,13 @@ async def payment_account_message_handler(message: Union[types.Message, types.Ca
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'view_pay_acc')
 async def view_pay_account(message: Union[types.CallbackQuery, types.Message], pay_account_serial_int: int = None):
     '''Просмотр платежного аккаунта'''
-    user = await models.User.get(telegram_id=message.chat.id)
+    
     if pay_account_serial_int is None:
         pay_account_serial_int = message.data.split(':')[1]
-        # message = message.message
+        chat_id = message.message.chat.id
+    else:
+        chat_id = message.chat.id
+    user = await models.User.get(telegram_id=chat_id)
     pay_account = await models.UserPaymentAccount.get(serial_int=pay_account_serial_int)
     payment_type = await pay_account.type
     type_name = payment_type.name
@@ -120,7 +123,7 @@ async def set_state_data_pay_type_handler(call: types.CallbackQuery, state: FSMC
     else:
         await SellTonState.pay_acc_data.set()
         await state.update_data(payment_type=payment_type.serial_int)
-    text = await models.Lang.get(uuid="0f295be8-3300-44f8-905f-0c4f466f2e06")
+    text = await models.Lang.get(uuid="459649d8-9383-4f34-80ca-efe5e97996e4")
     text = text.rus if user.lang == "ru" else text.eng
     text = text.format(payment_type_data_value=payment_type_data_list[0])
     # text = f"Введите {payment_type_data_list[0]}:"
@@ -131,6 +134,7 @@ async def set_state_data_pay_type_handler(call: types.CallbackQuery, state: FSMC
 @dp.message_handler(state=SellTonState.pay_acc_data)
 async def add_data_state(message: types.Message, state: FSMContext):
     user_data = await state.get_data()
+    user = await models.User.get(telegram_id=message.chat.id)
     if 'payment_type' not in user_data:
         return
     payment_type = await models.UserPaymentAccountType.get(serial_int=user_data['payment_type'])
@@ -150,10 +154,13 @@ async def add_data_state(message: types.Message, state: FSMContext):
             break
 
     if next_data:
-        text = f"Введите {next_data}:"
+        text = await models.Lang.get(uuid="459649d8-9383-4f34-80ca-efe5e97996e4")
+        text = text.rus if user.lang == "ru" else text.eng
+        text = text.format(payment_type_data_value=next_data)
+        # text = f"Введите {next_data}:"
         return await message.answer(text=text, reply_markup=await stop_state_keyboard())
     else:
-        user = await models.User.get(telegram_id=message.chat.id)
+        
         if current_state.split(':')[0] == "PaymentAccountState":
             await state.finish()
             del user_data['payment_type']

@@ -1,3 +1,4 @@
+from locale import currency
 from loader import dp, bot
 from aiogram import types
 from models import models
@@ -29,6 +30,12 @@ async def view_order_handler(call: types.CallbackQuery):
         keyboard = await buy_keyboards.keyboard_for_seller(order_uuid=order.uuid, no_funds_button=False)
 
     user_currency = await order.currency
+
+    cur_name = user_currency.name
+    lang_cur = await models.Lang.get_or_none(target_table="currency", target_id=user_currency.uuid)
+    if lang_cur:
+        cur_name = lang_cur.rus
+
     ton_cur = await models.Currency.get(name='TON')
     price_one_coin = (float(user_currency.exchange_rate) * float(ton_cur.exchange_rate)) * (1+(order.margin/100))
     allowed_sum_coin = order.amount-order.commission
@@ -36,7 +43,8 @@ async def view_order_handler(call: types.CallbackQuery):
     orders_payments_type = [await i.account for i in await order.order_user_payment_account.all()]
     text = await models.Lang.get(uuid="37c86a60-28c0-4f18-8748-925817efdd2e")
     text = text.rus if user.lang == 'ru' else text.eng
-    text = text.format(price_one_coin=price_one_coin, 
+    text = text.format(price_one_coin="%.5f" % price_one_coin,
+                       currency=cur_name,
                        allowed_sum_coin=allowed_sum_coin,
                        min_buy_sum= '%.2f' % min_buy_sum,
                        full_price='%.2f' % (price_one_coin * allowed_sum_coin),
@@ -72,6 +80,7 @@ async def cancel_order_handler(call: types.CallbackQuery):
 
 @dp.callback_query_handler(lambda call: call.data.split(":")[0] == "add_pay_acc_in_created")
 async def add_pay_acc_in_created_handler(call: types.CallbackQuery):
+    await call.message.edit_text("Внести средства")
     user = await models.User.get(telegram_id=call.message.chat.id)
     order = await models.Order.get(uuid=call.data.split(':')[1])
     currency = await order.currency

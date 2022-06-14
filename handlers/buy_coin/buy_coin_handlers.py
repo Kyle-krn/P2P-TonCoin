@@ -1,5 +1,4 @@
 from typing import Union
-
 import aiogram
 from keyboards.inline.keyboards import stop_state_keyboard
 from loader import dp, bot
@@ -7,12 +6,9 @@ from aiogram import types
 from keyboards.inline import buy_keyboards
 from models import models
 from tortoise.queryset import Q
-from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher import FSMContext
+from .state import BuyState
 
-
-class BuyState(StatesGroup):
-    buy_amount = State()
 
 
 @dp.message_handler(regexp="^(Купить Ton)$")
@@ -25,7 +21,10 @@ async def buy_coin_hanlder(message: Union[types.Message, types.CallbackQuery]):
     query = Q(customer=user) & Q(Q(state="wait_buyer_send_funds") | Q(state="buyer_sent_funds") | Q(state="problem_seller_no_funds") | Q(state="need_admin_resolution"))
     buy_order_user = await models.Order.filter(query)
     if len(buy_order_user) > 0:
-        return await message.answer(text="Вы имеете не завершенную сделку.", reply_markup=await buy_keyboards.go_to_buy_order_keyboard(buy_order_user.uuid))
+        keyboard = None
+        if buy_order_user[0].state == "wait_buyer_send_funds":
+            keyboard = await buy_keyboards.go_to_buy_order_keyboard(buy_order_user[0].uuid)
+        return await message.answer(text="Вы имеете не завершенную сделку.", reply_markup=keyboard)
     text = await models.Lang.get(uuid="1c70e2dc-0289-49d3-8802-664df5e21a67")
     text = text.rus if user.lang == 'ru' else text.eng
     # text = "Выберите валюту, в которой вы хотите купить Toncoin:"
@@ -63,6 +62,12 @@ async def choice_pay_acc_buy_coin_handler(call: types.CallbackQuery):
     await call.message.edit_text(text=f"Вы выбрали: {name}")
 
     user_currency = await payment_type.currency
+
+    cur_name = user_currency.name
+    lang_cur = await models.Lang.get_or_none(target_table="currency", target_id=user_currency.uuid)
+    if lang_cur:
+        cur_name = lang_cur.rus
+
     query = Q(state="ready_for_sale") & Q(order_user_payment_account__account__type__uuid = payment_type_uuid)
     orders_list = await models.Order.filter(query).order_by('margin', 'created_at')
     ton_cur = await models.Currency.get(name='TON')
@@ -73,7 +78,8 @@ async def choice_pay_acc_buy_coin_handler(call: types.CallbackQuery):
         orders_payments_type = [await i.account for i in await order.order_user_payment_account.all()]
         text = await models.Lang.get(uuid="37c86a60-28c0-4f18-8748-925817efdd2e")
         text = text.rus if user.lang == 'ru' else text.eng
-        text = text.format(price_one_coin=price_one_coin, 
+        text = text.format(price_one_coin=price_one_coin,
+                           currency=cur_name,
                            allowed_sum_coin=allowed_sum_coin,
                            min_buy_sum= '%.2f' % min_buy_sum,
                            full_price='%.2f' % (price_one_coin * allowed_sum_coin),
@@ -95,14 +101,21 @@ async def buy_order_hanlder(call: types.CallbackQuery):
     order_uuid = call.data.split(':')[2]
     order = await models.Order.get(uuid=order_uuid)
     if order.state != "ready_for_sale":
-        return await call.message.answer(text="Данный заказ к сожалентю сейчас не доступен.")
+        return await call.message.answer(text="Данный заказ к сожалению сейчас не доступен.")
     ton_cur = await models.Currency.get(name='TON')
     user_currency = await order.currency
+
+    cur_name = user_currency.name
+    lang_cur = await models.Lang.get_or_none(target_table="currency", target_id=user_currency.uuid)
+    if lang_cur:
+        cur_name = lang_cur.rus
+
     min_buy_sum = order.min_buy_sum if order.min_buy_sum < (order.amount - order.commission) * float(ton_cur.exchange_rate)* float(user_currency.exchange_rate) else  \
                   (order.amount - order.commission) * float(ton_cur.exchange_rate) * float(user_currency.exchange_rate)
     text = await models.Lang.get(uuid="02cda696-5848-4392-9257-a5bba6966871")
     text = text.rus if user.lang == 'ru' else text.eng
-    text = text.format(min_buy_sum=min_buy_sum)
+    text = text.format(min_buy_sum=min_buy_sum, 
+                       currency=cur_name)
     # text = f"Введите количество Toncoin, которое вы хотите купить"  \
     #        f"(сумма покупки должна быть не меньше {min_buy_sum})"
     await BuyState.buy_amount.set()
@@ -124,6 +137,7 @@ async def buy_order_hanlder(call: types.CallbackQuery):
 async def buy_amount_state(message: types.Message, state: FSMContext):
     user_data = await state.get_data()
     user = await models.User.get(telegram_id=message.chat.id)
+    order = await models.Order.get(uuid=user_data['order_uuid'])
     try:
         await user_data['message'].edit_reply_markup(None)
     except aiogram.utils.exceptions.MessageNotModified:
@@ -131,22 +145,41 @@ async def buy_amount_state(message: types.Message, state: FSMContext):
 
     try:
         buy_amount = float(message.text)
-        if (user_data['min_buy_sum'] < buy_amount < user_data['max_buy_sum']) is False:
+        if (user_data['min_buy_sum'] <= buy_amount < user_data['max_buy_sum']) is False:
             raise ValueError
     except (ValueError, TypeError):
+
+        user_currency = await order.currency
+
+        cur_name = user_currency.name
+        lang_cur = await models.Lang.get_or_none(target_table="currency", target_id=user_currency.uuid)
+        if lang_cur:
+            cur_name = lang_cur.rus
+
         text = await models.Lang.get(uuid="02cda696-5848-4392-9257-a5bba6966871")
         text = text.rus if user.lang == 'ru' else text.eng
-        text = text.format(min_buy_sum=user_data['min_buy_sum'])
+        text = text.format(min_buy_sum=user_data['min_buy_sum'],
+                           currency=cur_name)
         # text = f"Введите количество Toncoin, которое вы хотите купить"  \
         #    f"(сумма покупки должна быть не меньше {user_data['min_buy_sum']})"
         msg = await message.answer(text)
         return await state.update_data(message=msg)
         
     buy_ton_amount = buy_amount / user_data['price_one_coin']
-    order = await models.Order.get(uuid=user_data['order_uuid'])
+    
     if order.state != "ready_for_sale":
         await state.finish()
-        return await message.answer(text="Данный заказ к сожалентю сейчас не доступен.")
+        return await message.answer(text="Данный заказ к сожалению сейчас не доступен.")
+    
+    # Если у юзера есть незавершенная сделка и он выбирает еще одну сделку
+    query = Q(customer=user) & Q(Q(state="wait_buyer_send_funds") | Q(state="buyer_sent_funds") | Q(state="problem_seller_no_funds") | Q(state="need_admin_resolution"))
+    buy_order_user = await models.Order.filter(query)
+    if len(buy_order_user) > 0:
+        keyboard = None
+        if buy_order_user[0].state == "wait_buyer_send_funds":
+            keyboard = await buy_keyboards.go_to_buy_order_keyboard(buy_order_user[0].uuid)
+        return await message.answer(text="Вы имеете не завершенную сделку.", reply_markup=keyboard)
+
     if buy_amount > (user_data['price_one_coin'] * (order.amount-order.commission)):
         # text = f"Кол-во Ton в заказе изменилось, максимальное кол-во денег - {user_data['price_one_coin'] * (order.amount-order.commission)}"
         text = await models.Lang.get(uuid="b900eb61-04df-40c1-831a-c81d7c613e5f")
@@ -204,9 +237,17 @@ async def view_buy_order_handler(message: Union[types.Message, types.CallbackQue
     user_data_text = ""
     for k,v in (await pay_account[0].account).data.items():
         user_data_text += f"{k}: {v}\n"
+    
+    currency = await order.currency
+    cur_name = currency.name
+    lang_cur = await models.Lang.get_or_none(target_table="currency", target_id=currency.uuid)
+    if lang_cur:
+        cur_name = lang_cur.rus
+
     text = await models.Lang.get(uuid="dd5e00d5-c3bd-4d11-b58f-e1e0fde2aba1")
     text = text.rus if user.lang == 'ru' else text.eng
     text = text.format(final_price=float(order.final_price),
+                       currency=cur_name,
                        user_data_text=user_data_text,
                        amount=order.amount - order.commission)
     # text = "У вас 15 минут для завершение заказа.\n"  \
@@ -269,9 +310,18 @@ async def send_money_order_handler(call: types.CallbackQuery):
                                          recipient_data=(await pay_account[0].account).data,
                                          state="created")
     seller = await order.seller
+
+    currency = await order.currency
+    cur_name = currency.name
+    lang_cur = await models.Lang.get_or_none(target_table="currency", target_id=currency.uuid)
+    if lang_cur:
+        cur_name = lang_cur.rus
+
     text_for_seller = await models.Lang.get(uuid="e78a2fa4-6351-4fa3-b211-379969019eb4")
     text_for_seller = text_for_seller.rus if seller.lang == 'ru' else text_for_seller.eng
-    text_for_seller = text_for_seller.format(uuid=order.uuid, final_price=float(order.final_price))
+    text_for_seller = text_for_seller.format(uuid=order.uuid, 
+                                             currency=cur_name,
+                                             final_price=float(order.final_price))
     # text = f"По заказу №{order.uuid} покупатель отправил денежные средства в размере {float(order.final_price)}$.\n"  \
     #         "Подтвердите получение оплаты, нажав кнопку Я получил средства, либо нажмите Средства не поступили, если деньги не поступили на ваш счет"
     await call.message.edit_text("Ожидайте ответа от продавца.")

@@ -28,6 +28,7 @@ async def seller_approved_funds_handler(call: types.CallbackQuery):
     customer_text = customer_text.format(uuid=order.uuid, balance=customer.balance)
     # customer_text = f"Продавец подтвердил получение ваших денежных средств по заказу № {order.uuid} TON отправлены на ваш кошелек"  \
     #                 f"Ваш баланс: {customer.balance} TON"
+    await call.message.delete()
     await bot.send_message(seller.telegram_id, text=seller_text)
     await bot.send_message(customer.telegram_id, text=customer_text)
 

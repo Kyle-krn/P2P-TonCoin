@@ -105,7 +105,7 @@ async def choice_currency_state(call: types.CallbackQuery, state: FSMContext):
     await state.update_data(curreny_name=call.data.split(':')[1], max_price=max_price)
     text = await models.Lang.get(uuid="731ff5ff-e590-4e89-b30a-29745fa72d16")
     text = text.rus if user.lang == "ru" else text.eng
-    text = text.format(max_price=max_price)
+    text = text.format(max_price=max_price, currency = cur_name)
     # text = "Введите минимальную сумму, на которую покупатель может купить TON из всего объема TON, продаваемых в заказе\n"  \
     #       f"Введите число от до {max_price}"
     message = await call.message.answer(text=text, reply_markup=await stop_state_keyboard())
