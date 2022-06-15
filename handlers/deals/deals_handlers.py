@@ -1,16 +1,17 @@
-from locale import currency
-from loader import dp, bot
+from loader import dp
 from aiogram import types
 from models import models
 from tortoise.queryset import Q
 from keyboards.inline import buy_keyboards, deals_keyboards
 from handlers.sell_coin.sell_coin_handlers import SellTonState, choice_pay_acc_sell_ton_hanlder
+from utils.lang import lang_currency
+
 
 @dp.message_handler(regexp="^(Мои активные заказы)$")
 async def my_deals_handler(message: types.Message):
     user = await models.User.get(telegram_id=message.chat.id)
     orders = await models.Order.filter(Q(seller=user)).exclude(Q(state="done") | Q(state="cancelled_by_seller") | Q(state="cancelled_by_customer")).order_by("-created_at")
-    text = await models.Lang.get(uuid="8a3b4a74-d28a-4ac6-97f0-a783ee4e409a")
+    text = await models.Lang.get(uuid="f11ebe57-866f-4bd3-8550-690fa288dd9f")
     text = text.rus if user.lang == "ru" else text.eng
     # text = "Выберите заказ:"
     await message.answer(text=text, reply_markup=await deals_keyboards.show_deals_keyboard(orders=orders))
@@ -18,6 +19,7 @@ async def my_deals_handler(message: types.Message):
 
 @dp.callback_query_handler(lambda call: call.data.split(":")[0] == "view_order")
 async def view_order_handler(call: types.CallbackQuery):
+    '''Информация о заказе'''
     order = await models.Order.get(uuid=call.data.split(':')[1])
     user = await models.User.get(telegram_id=call.message.chat.id)
     if order.state == 'created':
@@ -31,17 +33,20 @@ async def view_order_handler(call: types.CallbackQuery):
 
     user_currency = await order.currency
 
-    cur_name = user_currency.name
-    lang_cur = await models.Lang.get_or_none(target_table="currency", target_id=user_currency.uuid)
-    if lang_cur:
-        cur_name = lang_cur.rus
-
+    cur_name = await lang_currency(user_currency)
+    
     ton_cur = await models.Currency.get(name='TON')
     price_one_coin = (float(user_currency.exchange_rate) * float(ton_cur.exchange_rate)) * (1+(order.margin/100))
     allowed_sum_coin = order.amount-order.commission
     min_buy_sum = order.min_buy_sum if order.min_buy_sum < (order.amount - order.commission) * float(ton_cur.exchange_rate)* float(user_currency.exchange_rate) else (order.amount - order.commission) * float(ton_cur.exchange_rate) * float(user_currency.exchange_rate)
-    orders_payments_type = [await i.account for i in await order.order_user_payment_account.all()]
-    text = await models.Lang.get(uuid="37c86a60-28c0-4f18-8748-925817efdd2e")
+    
+    if order.parent:
+        parent_order = await order.parent
+        orders_payments_type = [await i.account for i in await parent_order.order_user_payment_account.all()]
+    else:
+        orders_payments_type = [await i.account for i in await order.order_user_payment_account.all()]
+    
+    text = await models.Lang.get(uuid="fbddd2d5-a3cd-4a70-95a3-e0128da7c9b7")
     text = text.rus if user.lang == 'ru' else text.eng
     text = text.format(price_one_coin="%.5f" % price_one_coin,
                        currency=cur_name,
@@ -57,20 +62,22 @@ async def view_order_handler(call: types.CallbackQuery):
     await call.message.answer(text=text, reply_markup=keyboard)
 
 
-    # cancel_order
-
 @dp.callback_query_handler(lambda call: call.data.split(":")[0] == "cancel_order")
 async def cancel_order_handler(call: types.CallbackQuery):
+    '''Отмена заказа'''
     user = await models.User.get(telegram_id=call.message.chat.id)
     order = await models.Order.get(uuid=call.data.split(':')[1])
+    if order.state not in ("created", "ready_for_sale"):
+        return await call.message.edit_text("Нельзя отменить заказ.")
     order.state = "cancelled_by_seller"
     user.balance += order.amount
     user.frozen_balance -= order.amount
     await order.save()
     await user.save()
-    text = await models.Lang.get(uuid="1c9ca33d-5d90-46c9-b506-fc7fd25a82fa")
+    text = await models.Lang.get(uuid="56a300c4-ee27-4619-8112-c98c10bfdaec")
     text = text.rus if user.lang == 'ru' else text.eng
-    text = text.format(order_uuid=order.uuid, order_amount=order.amount)
+    text = text.format(order_uuid=order.serial_int + 5432, 
+                       order_amount=order.amount)
     # text = f"Ваш заказ № {order.uuid} отменен!\n"  \
     #        f"Мы вернули вам {order.amount} TON ваш кошелек\n"  \
     #         "Будем ждать вас снова!\n"
@@ -80,9 +87,12 @@ async def cancel_order_handler(call: types.CallbackQuery):
 
 @dp.callback_query_handler(lambda call: call.data.split(":")[0] == "add_pay_acc_in_created")
 async def add_pay_acc_in_created_handler(call: types.CallbackQuery):
+    '''Добавить платежки в заказ со state=created'''
     await call.message.edit_text("Внести средства")
     user = await models.User.get(telegram_id=call.message.chat.id)
     order = await models.Order.get(uuid=call.data.split(':')[1])
+    if order.state != "created":
+        return await call.message.edit_text("Нельзя добавить платежные аккаунты в этот заказ.")
     currency = await order.currency
     await SellTonState.pay_acc_data.set()
     state = dp.get_current().current_state()

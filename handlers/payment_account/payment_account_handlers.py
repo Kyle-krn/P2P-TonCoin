@@ -22,7 +22,7 @@ async def payment_account_message_handler(message: Union[types.Message, types.Ca
         message = message.message
         await message.edit_text("Назад")
     user = await models.User.get(telegram_id=message.chat.id)
-    text = await models.Lang.get(uuid="b21eb93e-3336-4880-83f8-287742da6a7e")
+    text = await models.Lang.get(uuid="38cf9afe-083a-4e90-a29c-a743cc6895fa")
     text = text.rus if user.lang == "ru" else text.eng
     # text = "Выберите ваш способ оплаты для изменения или добавьте новый"
     message_kwargs = {"text": text, 
@@ -57,9 +57,11 @@ async def view_pay_account(message: Union[types.CallbackQuery, types.Message], p
     for k,v in pay_account.data.items():
         user_data_text += f"{k}: {v}\n"
         
-    text = await models.Lang.get(uuid="33f0c65f-01c2-476e-9c01-f6757e11f647")
+    text = await models.Lang.get(uuid="50407743-511d-4f95-bad9-36dc5e69e433")
     text = text.rus if user.lang == "ru" else text.eng
-    text = text.format(cur_name=cur_name, type_name=type_name, user_data_text=user_data_text)
+    text = text.format(cur_name=cur_name, 
+                       type_name=type_name, 
+                       user_data_text=user_data_text)
     # text =f"Валюта: {cur_name}\n"  \
     #       f"Тип оплаты: {type_name}\n"  \
     #       f"{user_data_text}"
@@ -76,7 +78,7 @@ async def view_pay_account(message: Union[types.CallbackQuery, types.Message], p
 async def add_payment_account_handler(call: types.CallbackQuery):
     await call.message.edit_text("Добавить способ оплаты")
     user = await models.User.get(telegram_id=call.message.chat.id)
-    text = await models.Lang.get(uuid="2b69a4f5-5e32-49c3-9bf0-999f70445b9c")
+    text = await models.Lang.get(uuid="f2bdd4ea-71c6-4d8c-9e2b-1875ebbe7403")
     text = text.rus if user.lang == "ru" else text.eng
     # text = "Выберите валюту способа оплаты:"
     return await call.message.answer(text=text, reply_markup=await currency_keyboards.currency_keyboard(callback="add_cur_pay_acc"))
@@ -92,7 +94,7 @@ async def choice_currency_payment_account_hanlder(call: types.CallbackQuery):
         cur_name = lang_cur.rus
     await call.message.edit_text(f"Вы выбрали {cur_name}")
     user = await models.User.get(telegram_id=call.message.chat.id)
-    text = await models.Lang.get(uuid="0f295be8-3300-44f8-905f-0c4f466f2e06")
+    text = await models.Lang.get(uuid="f2bdd4ea-71c6-4d8c-9e2b-1875ebbe7403")
     text = text.rus if user.lang == "ru" else text.eng
     
     
@@ -123,7 +125,7 @@ async def set_state_data_pay_type_handler(call: types.CallbackQuery, state: FSMC
     else:
         await SellTonState.pay_acc_data.set()
         await state.update_data(payment_type=payment_type.serial_int)
-    text = await models.Lang.get(uuid="459649d8-9383-4f34-80ca-efe5e97996e4")
+    text = await models.Lang.get(uuid="afddfc07-de6b-4c77-83e7-8d7774b57d85")
     text = text.rus if user.lang == "ru" else text.eng
     text = text.format(payment_type_data_value=payment_type_data_list[0])
     # text = f"Введите {payment_type_data_list[0]}:"
@@ -154,7 +156,7 @@ async def add_data_state(message: types.Message, state: FSMContext):
             break
 
     if next_data:
-        text = await models.Lang.get(uuid="459649d8-9383-4f34-80ca-efe5e97996e4")
+        text = await models.Lang.get(uuid="afddfc07-de6b-4c77-83e7-8d7774b57d85")
         text = text.rus if user.lang == "ru" else text.eng
         text = text.format(payment_type_data_value=next_data)
         # text = f"Введите {next_data}:"

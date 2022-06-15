@@ -142,6 +142,7 @@ STATE_FIELD = ['created', 'ready_for_sale', 'wait_buyer_send_funds',
 class Order(Model):
     """заказ на покупку-продажу Toncoin"""
     uuid: UUID = fields.UUIDField(pk=True)
+    serial_int: int = fields.IntField(generated=True)
     state: str = fields.CharField(max_length=255)
     seller: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField("models.User", related_name="sell_orders")
     customer: fields.ForeignKeyNullableRelation["User"] = fields.ForeignKeyField("models.User", related_name="buy_orders", null=True)

@@ -6,6 +6,7 @@ from models import models
 from keyboards.inline import currency_keyboards, payment_account_keyboards
 from aiogram.dispatcher import FSMContext
 from tortoise.queryset import Q
+from utils.lang import lang_currency, lang_payment_type
 from utils.validate_ton_address import get_currency_ton
 from keyboards.inline import sell_keyboards
 from .state import SellTonState
@@ -17,12 +18,12 @@ async def sell_ton_handler(message: types.Message):
     user = await models.User.get(telegram_id=message.chat.id)
     if user.balance < 0.1:
         # text = "Пополните баланс для создания заказа на продажу TonCoin"
-        text = await models.Lang.get(uuid="250f90c7-9ac9-446c-86cc-4f614cfa29c2")
+        text = await models.Lang.get(uuid="aa66b9f2-8bf6-4d1b-9e8c-207ef6787935")
         text = text.rus if user.lang == "ru" else text.eng
         return await message.answer(text=text)
     await SellTonState.amount.set()
     state = dp.get_current().current_state()
-    text = await models.Lang.get(uuid="d87f5ce0-efb7-4c0f-8b14-366e28bab02c")
+    text = await models.Lang.get(uuid="c060e220-26d5-4138-ac3d-edda436a659a")
     text = text.rus if user.lang == "ru" else text.eng
     text = text.format(balance=user.balance)
     # text = f"Введите количество TON, которое вы хотите продать (число от 0.1 до {user.balance})"
@@ -32,6 +33,7 @@ async def sell_ton_handler(message: types.Message):
 
 @dp.message_handler(state=SellTonState.amount, content_types=['text'])
 async def sell_ton_state(message: types.Message, state: FSMContext):
+    """Продавец вводит кол-во Ton на продажу"""
     user_data = await state.get_data()
     try:
         await user_data['message'].edit_reply_markup(None)
@@ -44,13 +46,13 @@ async def sell_ton_state(message: types.Message, state: FSMContext):
         if amount > user.balance:
             raise ValueError
     except (ValueError, TypeError):
-        text = await models.Lang.get(uuid="b77c75b9-3e90-4cae-a517-a5126e80b2b9")
+        text = await models.Lang.get(uuid="82daaee6-9971-449e-99af-0513ccccf5cc")
         text = text.rus if user.lang == "ru" else text.eng
         text = text.format(balance=user.balance)
         # text = f"Неверный формат ввода. Введите число от 0.1 до {user.balance}"
         message = await message.answer(text, reply_markup=await stop_state_keyboard())
         return await state.update_data(message=message)
-    text = await models.Lang.get(uuid="c7d7dee3-e87d-4b0b-8162-bf09bae5f812")
+    text = await models.Lang.get(uuid="f32f4c20-acae-4017-9be8-daaf71db151c")
     text = text.rus if user.lang == "ru" else text.eng
     # text = "Введите наценку, с которой вы хотите продать TON в процентах от 1 до 100\n"  \
     #        "Стоимость TON в момент продажи рассчитывается онлайн на основе курса CoinMarketCap"
@@ -62,6 +64,7 @@ async def sell_ton_state(message: types.Message, state: FSMContext):
 
 @dp.message_handler(state=SellTonState.fee, content_types=['text'])
 async def fee_state(message: types.Message, state:FSMContext):
+    '''Продавец вводит наценку'''
     user = await models.User.get(telegram_id=message.chat.id)
     user_data = await state.get_data()
     try:
@@ -74,14 +77,14 @@ async def fee_state(message: types.Message, state:FSMContext):
         if (1 <= fee <= 100) is False:
             raise ValueError 
     except (ValueError, TypeError):
-        text = await models.Lang.get(uuid="d5defad9-2238-4e66-89fe-64e0dc6e8587")
+        text = await models.Lang.get(uuid="1879a3dd-825f-4a50-97e3-9e62d183dc8c")
         text = text.rus if user.lang == "ru" else text.eng
         # text = "Неверный формат ввода. Введите число от 1 до 100"
         message = await message.answer(text)
         return await state.update_data(message=message)
     await state.update_data(fee=fee)
     await SellTonState.next()
-    text = await models.Lang.get(uuid="61046584-4b46-4f57-85c0-dd128a8d6167")
+    text = await models.Lang.get(uuid="10efd114-3a48-4bd4-986b-ac8f5ff207b9")
     text = text.rus if user.lang == "ru" else text.eng
     # text = "Выберите валюту, в которой вы хотите продать TonCoin:"
     reply_markup = await currency_keyboards.currency_keyboard(callback="sell_coin_currency")
@@ -91,28 +94,29 @@ async def fee_state(message: types.Message, state:FSMContext):
 
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'sell_coin_currency', state=SellTonState.currency)
 async def choice_currency_state(call: types.CallbackQuery, state: FSMContext):
+    '''Продавец выбирает валюту'''
     await SellTonState.next()
     user = await models.User.get(telegram_id=call.message.chat.id)
-    ton_currency = await get_currency_ton()
+    # ton_currency = await get_currency_ton()
+    ton_cur = await models.Currency.get(name='TON')
     user_data = await state.get_data()
     currency = await models.Currency.get(name=call.data.split(':')[1])
-    cur_name = currency.name
-    lang_cur = await models.Lang.get_or_none(target_table="currency", target_id=currency.uuid)
-    if lang_cur:
-        cur_name = lang_cur.rus
+    cur_name = await lang_currency(currency)
     await user_data['message'].edit_text(text=f"Вы выбрали: {cur_name}")
-    max_price = float("%.2f" % (float(user_data['amount']) * float(ton_currency) * float(currency.exchange_rate)))
+    max_price = float("%.2f" % (float(user_data['amount']) * float(ton_cur.exchange_rate) * float(currency.exchange_rate)))
     await state.update_data(curreny_name=call.data.split(':')[1], max_price=max_price)
-    text = await models.Lang.get(uuid="731ff5ff-e590-4e89-b30a-29745fa72d16")
+    text = await models.Lang.get(uuid="04e0b432-a089-473b-9215-562db2af04d1")
     text = text.rus if user.lang == "ru" else text.eng
     text = text.format(max_price=max_price, currency = cur_name)
     # text = "Введите минимальную сумму, на которую покупатель может купить TON из всего объема TON, продаваемых в заказе\n"  \
     #       f"Введите число от до {max_price}"
     message = await call.message.answer(text=text, reply_markup=await stop_state_keyboard())
-    await state.update_data(message=message)
+    await state.update_data(message=message, cur_name=cur_name)
+
 
 @dp.message_handler(state=SellTonState.min_buy_sum)
 async def  min_buy_sum_state(message: types.Message, state: FSMContext):
+    '''Продавец ввел мин. сумму для покупки в валюте'''
     user_data = await state.get_data()
     user = await models.User.get(telegram_id=message.chat.id)
     try:
@@ -126,9 +130,9 @@ async def  min_buy_sum_state(message: types.Message, state: FSMContext):
         if (0 < min_buy_sum < user_data['max_price']) is False:
             raise ValueError
     except (ValueError, TypeError):
-        text = await models.Lang.get(uuid="731ff5ff-e590-4e89-b30a-29745fa72d16")
+        text = await models.Lang.get(uuid="04e0b432-a089-473b-9215-562db2af04d1")
         text = text.rus if user.lang == "ru" else text.eng
-        text = text.format(max_price=user_data['max_price'])
+        text = text.format(max_price=user_data['max_price'], currency=user_data['cur_name'])
         # text = "Введите минимальную сумму, на которую покупатель может купить TON из всего объема TON, продаваемых в заказе\n"  \
         #   f"Введите число от до {user_data['max_price']}"
         message = await message.answer(text=text, reply_markup=await stop_state_keyboard())
@@ -139,6 +143,7 @@ async def  min_buy_sum_state(message: types.Message, state: FSMContext):
 
 @dp.callback_query_handler(lambda call: call.data == "sell_coin_back_choice_pay_acc", state=SellTonState)
 async def choice_pay_acc_sell_ton_hanlder(message: Union[types.Message, types.CallbackQuery], state: FSMContext):
+    '''Продавец выбирает платежный аккаунт или создает новый'''
     if isinstance(message, types.CallbackQuery):
         message = message.message
         await message.edit_text("Назад")
@@ -148,15 +153,15 @@ async def choice_pay_acc_sell_ton_hanlder(message: Union[types.Message, types.Ca
     for k,v in user_data.items():
         if k in leave_keys:
             set_user_data[k] = v
-            
     await state.set_data(set_user_data)
     user = await models.User.get(telegram_id=message.chat.id)
     user_payment_accounts = await models.UserPaymentAccount.filter(Q(user=user) & Q(is_active=True) & Q(type__currency__name=user_data['curreny_name']))
     if len(user_payment_accounts) == 0:
-        text = await models.Lang.get(uuid="77de5db3-a43c-4ccb-a48d-ee7af106f541")
+        text = await models.Lang.get(uuid="8168939f-31f4-416a-b9e9-896e296f6b34")
         # text = "Создайте хотя бы один аккаунт в выбранной валюте, куда пользователи смогут отправлять вам средства за заказ."
     else:
         text = await models.Lang.get(uuid="5814554e-975c-42b4-b147-63fa2527c4d8")
+        # text = "Выберите способы оплаты, которые доступны для этого заказа, или создайте новый"
     text = text.rus if user.lang == "ru" else text.eng
     
     currency = await models.Currency.get(name=user_data['curreny_name'])
@@ -179,10 +184,11 @@ async def choice_pay_acc_sell_ton_hanlder(message: Union[types.Message, types.Ca
 
 @dp.callback_query_handler(lambda call: call.data == "sell_coin_add_pay_acc", state=SellTonState)
 async def add_pay_account_handler(call: types.CallbackQuery, state: FSMContext):
+    '''Кнопка добавить способ оплаты'''
     user = await models.User.get(telegram_id=call.message.chat.id)
     user_data = await state.get_data()
     currency = await models.Currency.get(name=user_data['curreny_name'])
-    text = await models.Lang.get(uuid="0f295be8-3300-44f8-905f-0c4f466f2e06")
+    text = await models.Lang.get(uuid="0e904051-3033-45a2-9dd5-18199519359d")
     text = text.rus if user.lang == "ru" else text.eng
     # text = "Выберите тип способа оплаты:"
     await call.message.edit_text("Добавить способ оплаты")
@@ -205,10 +211,8 @@ async def sell_coin_choice_pay_acc_handler(call: types.CallbackQuery, state: FSM
     else:
         pay_accounts = [await models.UserPaymentAccount.get(serial_int=pay_account_id)]
         pay_type = await pay_accounts[0].type
-        name = pay_type.name
-        lang_type = await models.Lang.get_or_none(target_table="user_payment_account_type", target_id=pay_type.uuid)
-        if lang_type:
-            name = lang_type.rus
+        
+        name = await lang_payment_type(pay_type)
         await call.message.edit_text(name)
     for account in pay_accounts:
         await models.OrderUserPaymentAccount.create(order=order,
@@ -217,9 +221,10 @@ async def sell_coin_choice_pay_acc_handler(call: types.CallbackQuery, state: FSM
     
     await user.save()
     await state.finish()
-    text = await models.Lang.get(uuid="facc1d47-5da3-4659-9a30-fa32963f6bb2")
+    text = await models.Lang.get(uuid="697085d7-ebfd-4756-9425-7f0b160b41af")
     text = text.rus if user.lang == "ru" else text.eng
-    text = text.format(order_uuid=order.uuid, order_amount=order.amount - order.commission)
+    text = text.format(order_uuid=order.serial_int + 5432, 
+                       order_amount=order.amount - order.commission)
     # text =f"Ваш заказ № {order.uuid} успешно опубликован.\n"  \
     #        "Комиссия за продажу равна 1% в TonCoin\n"  \
     #       f"Таким образом финальное количество продаваемых TonCoin равно {order.amount - order.commission}\n"  \

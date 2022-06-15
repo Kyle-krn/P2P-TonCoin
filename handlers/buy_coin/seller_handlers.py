@@ -21,12 +21,12 @@ async def seller_approved_funds_handler(call: types.CallbackQuery):
     await order.save()
     await seller.save()
     await customer.save()
-    seller_text = await models.Lang.get(uuid="5c6ef30b-0802-4ea9-a647-39ca776fa845")
+    seller_text = await models.Lang.get(uuid="36243794-383e-4c93-a1c6-fe9a0dafe54a")
     seller_text = seller_text.rus if seller.lang == 'ru' else seller_text.eng
     # seller_text = "Ваш заказ завершен! Спасибо, что пользуетесь нашим ботом"
     customer_text = await models.Lang.get(uuid="02d0faf7-fc2f-420c-bac4-d7642546b903")
     customer_text = customer_text.rus if customer.lang == 'ru' else customer_text.eng
-    customer_text = customer_text.format(uuid=order.uuid, balance=customer.balance)
+    customer_text = customer_text.format(uuid=order.serial_int + 5432, balance=customer.balance)
     # customer_text = f"Продавец подтвердил получение ваших денежных средств по заказу № {order.uuid} TON отправлены на ваш кошелек"  \
     #                 f"Ваш баланс: {customer.balance} TON"
     await call.message.delete()
@@ -40,13 +40,15 @@ async def problem_seller_no_funds_handler(call: types.CallbackQuery):
     date = call.message.date
     user = await models.User.get(telegram_id=call.message.chat.id)
     if (datetime.now() - date).total_seconds() < (4 * 60):
-        text = await models.Lang.get(uuid="9bb9512f-c110-4044-a2c2-4b69025b4d53")
+        text = await models.Lang.get(uuid="fa34de05-0e16-421a-b563-b939bd0d89af")
         text = text.rus if user.lang == 'ru' else text.eng
         # text = "Деньги могут приходить с задержкой, подождите 5 минут после отправки покупателем."
         return await call.message.answer(text)
     order = await models.Order.get(uuid=call.data.split(':')[1])
+    if order.state not in ("buyer_sent_funds", "wait_buyer_send_funds"):
+        return await call.message.edit_text("Не подходит state")
     await call.message.edit_text("Средства не поступили")
-    text = await models.Lang.get(uuid="41b82275-1cf9-45c0-bc03-54c265c5c960")
+    text = await models.Lang.get(uuid="9b7fbd7c-ba72-4de8-bb4c-c41c0628cd0b")
     text = text.rus if user.lang == 'ru' else text.eng
     # text = "Сейчас мы проверим оплату от покупателя, запросим у него чек и отправим его вам."
     await call.message.answer(text)
@@ -56,7 +58,7 @@ async def problem_seller_no_funds_handler(call: types.CallbackQuery):
     await order.save()
     await payment_operation.save()
     customer = await order.customer
-    text = await models.Lang.get(uuid="ce92fb9e-53e2-4f72-93ab-cf337af076f8")
+    text = await models.Lang.get(uuid="922417b3-1220-47c1-83ab-df140eda8f19")
     text = text.rus if customer.lang == 'ru' else text.eng
     # text = "Продавец сообщил, что не получил оплату от вас."  \
     #        "Пришлите, пожалуйста, подтверждение оплаты (чек)"  \
@@ -64,6 +66,3 @@ async def problem_seller_no_funds_handler(call: types.CallbackQuery):
     #        "Если вы не пришлете подтверждение в течение 24 часов, то заказ будет автоматически отменен"
     await bot.send_message(chat_id=customer.telegram_id, 
                            text=text)
-
-
-

@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS "lang" (
     "target_id" UUID,
     "rus" TEXT NOT NULL,
     "eng" TEXT NOT NULL,
+    "description" VARCHAR(255),
     "updated_at" TIMESTAMPTZ NOT NULL  DEFAULT CURRENT_TIMESTAMP,
     "created_at" TIMESTAMPTZ NOT NULL  DEFAULT CURRENT_TIMESTAMP
 );
@@ -37,19 +38,41 @@ CREATE TABLE IF NOT EXISTS "user" (
     "referal_user_id" UUID REFERENCES "user" ("uuid") ON DELETE CASCADE
 );
 COMMENT ON TABLE "user" IS 'данные о пользователях';
+CREATE TABLE IF NOT EXISTS "user_balance_change" (
+    "uuid" UUID NOT NULL  PRIMARY KEY,
+    "type" VARCHAR(255) NOT NULL,
+    "amount" DOUBLE PRECISION,
+    "hash" VARCHAR(255),
+    "wallet" VARCHAR(255),
+    "code" VARCHAR(255),
+    "state" VARCHAR(255) NOT NULL,
+    "created_at" TIMESTAMPTZ NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "user_id" UUID NOT NULL REFERENCES "user" ("uuid") ON DELETE CASCADE
+);
+COMMENT ON TABLE "user_balance_change" IS 'данные пополнениях и списаниях баланса в Toncoin пользователя';
+CREATE TABLE IF NOT EXISTS "user_payment_account_type" (
+    "uuid" UUID NOT NULL  PRIMARY KEY,
+    "name" VARCHAR(255) NOT NULL,
+    "data" JSONB NOT NULL,
+    "is_active" BOOL NOT NULL,
+    "created_at" TIMESTAMPTZ NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "currency_id" UUID NOT NULL REFERENCES "currency" ("uuid") ON DELETE CASCADE
+);
+COMMENT ON TABLE "user_payment_account_type" IS 'способ оплаты, на который можно отправлять фиат при покупке Toncoin';
 CREATE TABLE IF NOT EXISTS "order" (
     "uuid" UUID NOT NULL  PRIMARY KEY,
     "state" VARCHAR(255) NOT NULL,
     "amount" DOUBLE PRECISION NOT NULL,
     "origin_amount" DOUBLE PRECISION NOT NULL,
     "margin" INT NOT NULL,
-    "final_price" DECIMAL(1000,2) NOT NULL,
+    "final_price" DECIMAL(1000,2),
     "commission" DOUBLE PRECISION NOT NULL,
     "min_buy_sum" DOUBLE PRECISION NOT NULL,
     "updated_at" TIMESTAMPTZ NOT NULL  DEFAULT CURRENT_TIMESTAMP,
     "created_at" TIMESTAMPTZ NOT NULL  DEFAULT CURRENT_TIMESTAMP,
     "currency_id" UUID NOT NULL REFERENCES "currency" ("uuid") ON DELETE CASCADE,
     "customer_id" UUID REFERENCES "user" ("uuid") ON DELETE CASCADE,
+    "customer_pay_type_id" UUID REFERENCES "user_payment_account_type" ("uuid") ON DELETE CASCADE,
     "parent_id" UUID REFERENCES "order" ("uuid") ON DELETE SET NULL,
     "seller_id" UUID NOT NULL REFERENCES "user" ("uuid") ON DELETE CASCADE
 );
@@ -87,31 +110,13 @@ CREATE TABLE IF NOT EXISTS "payment_operation" (
     "sender_id" UUID NOT NULL REFERENCES "user" ("uuid") ON DELETE CASCADE
 );
 COMMENT ON TABLE "payment_operation" IS 'операция перечисления средств от покупателя продавцу';
-CREATE TABLE IF NOT EXISTS "user_balance_change" (
+CREATE TABLE IF NOT EXISTS "order_proof" (
     "uuid" UUID NOT NULL  PRIMARY KEY,
-    "type" VARCHAR(255) NOT NULL,
-    "amount" DOUBLE PRECISION,
-    "hash" VARCHAR(255),
-    "wallet" VARCHAR(255),
-    "code" VARCHAR(255),
-    "state" VARCHAR(255) NOT NULL,
-    "created_at" TIMESTAMPTZ NOT NULL  DEFAULT CURRENT_TIMESTAMP,
-    "user_id" UUID NOT NULL REFERENCES "user" ("uuid") ON DELETE CASCADE
+    "file_path" VARCHAR(255) NOT NULL,
+    "order_id" UUID NOT NULL REFERENCES "order" ("uuid") ON DELETE CASCADE
 );
-COMMENT ON TABLE "user_balance_change" IS 'данные пополнениях и списаниях баланса в Toncoin пользователя';
-CREATE TABLE IF NOT EXISTS "user_payment_account_type" (
-    "uuid" UUID NOT NULL  PRIMARY KEY,
-    "serial_int" INT NOT NULL,
-    "name" VARCHAR(255) NOT NULL,
-    "data" JSONB NOT NULL,
-    "is_active" BOOL NOT NULL,
-    "created_at" TIMESTAMPTZ NOT NULL  DEFAULT CURRENT_TIMESTAMP,
-    "currency_id" UUID NOT NULL REFERENCES "currency" ("uuid") ON DELETE CASCADE
-);
-COMMENT ON TABLE "user_payment_account_type" IS 'способ оплаты, на который можно отправлять фиат при покупке Toncoin';
 CREATE TABLE IF NOT EXISTS "user_payment_account" (
     "uuid" UUID NOT NULL  PRIMARY KEY,
-    "serial_int" INT NOT NULL,
     "data" JSONB NOT NULL,
     "is_active" BOOL NOT NULL,
     "updated_at" TIMESTAMPTZ NOT NULL  DEFAULT CURRENT_TIMESTAMP,

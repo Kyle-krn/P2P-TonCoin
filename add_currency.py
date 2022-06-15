@@ -78,15 +78,15 @@ async def test_children_order():
 
 async def insert_lang():
     await Tortoise.init(config.TORTOISE_ORM)
-    text = "Продавец сообщил, что не получил оплату от вас."  \
-           "Пришлите, пожалуйста, подтверждение оплаты (чек)"  \
-           "в формате pdf / xls / xcls / jpg / pdf / gif в ответ на это сообщение."  \
-           "Если вы не пришлете подтверждение в течение 24 часов, то заказ будет автоматически отменен"
+    text = "Ваш заказ № {uuid} отменен!\n"  \
+           "Мы вернули вам {amount} TON ваш кошелек\n"  \
+            "Будем ждать вас снова!\n"
+    
     await models.Lang.create(rus=text, eng=text)
 
 
 def test():
-    text = "Это текст"
+    text = "Выберите заказ:"
     print(text.format(test="hui"))
 
 if __name__ == '__main__':
