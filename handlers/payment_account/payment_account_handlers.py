@@ -125,7 +125,7 @@ async def set_state_data_pay_type_handler(call: types.CallbackQuery, state: FSMC
     else:
         await SellTonState.pay_acc_data.set()
         await state.update_data(payment_type=payment_type.serial_int)
-    text = await models.Lang.get(uuid="afddfc07-de6b-4c77-83e7-8d7774b57d85")
+    text = await models.Lang.get(uuid="8a33cc94-7dff-468a-bdaa-2bfef60406b2")
     text = text.rus if user.lang == "ru" else text.eng
     text = text.format(payment_type_data_value=payment_type_data_list[0])
     # text = f"Введите {payment_type_data_list[0]}:"
@@ -156,7 +156,7 @@ async def add_data_state(message: types.Message, state: FSMContext):
             break
 
     if next_data:
-        text = await models.Lang.get(uuid="afddfc07-de6b-4c77-83e7-8d7774b57d85")
+        text = await models.Lang.get(uuid="8a33cc94-7dff-468a-bdaa-2bfef60406b2")
         text = text.rus if user.lang == "ru" else text.eng
         text = text.format(payment_type_data_value=next_data)
         # text = f"Введите {next_data}:"

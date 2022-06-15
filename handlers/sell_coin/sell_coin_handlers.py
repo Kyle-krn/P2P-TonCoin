@@ -127,7 +127,7 @@ async def  min_buy_sum_state(message: types.Message, state: FSMContext):
     try:
         min_buy_sum = float(min_buy_sum)
         min_buy_sum = float("%.2f" % min_buy_sum)
-        if (0 < min_buy_sum < user_data['max_price']) is False:
+        if (0.01 < min_buy_sum < user_data['max_price']) is False:
             raise ValueError
     except (ValueError, TypeError):
         text = await models.Lang.get(uuid="04e0b432-a089-473b-9215-562db2af04d1")
@@ -160,7 +160,7 @@ async def choice_pay_acc_sell_ton_hanlder(message: Union[types.Message, types.Ca
         text = await models.Lang.get(uuid="8168939f-31f4-416a-b9e9-896e296f6b34")
         # text = "Создайте хотя бы один аккаунт в выбранной валюте, куда пользователи смогут отправлять вам средства за заказ."
     else:
-        text = await models.Lang.get(uuid="5814554e-975c-42b4-b147-63fa2527c4d8")
+        text = await models.Lang.get(uuid="e3098392-83e7-4a0e-a8c1-6a44741d7894")
         # text = "Выберите способы оплаты, которые доступны для этого заказа, или создайте новый"
     text = text.rus if user.lang == "ru" else text.eng
     

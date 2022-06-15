@@ -1,3 +1,4 @@
+from typing import Union
 from loader import dp
 from aiogram import types
 from models import models
@@ -8,13 +9,41 @@ from utils.lang import lang_currency
 
 
 @dp.message_handler(regexp="^(Мои активные заказы)$")
-async def my_deals_handler(message: types.Message):
+@dp.callback_query_handler(lambda call: call.data.split(":")[0] == "order_pagination")
+async def my_deals_handler(message: Union[types.Message, types.CallbackQuery]):
+    if isinstance(message, types.Message):
+        page = 1
+    else:
+        page = int(message.data.split(':')[1])
+        await message.message.delete()
+        message = message.message
+
     user = await models.User.get(telegram_id=message.chat.id)
-    orders = await models.Order.filter(Q(seller=user)).exclude(Q(state="done") | Q(state="cancelled_by_seller") | Q(state="cancelled_by_customer")).order_by("-created_at")
+    
+    
+    
+    query_filter = Q(seller=user)
+    query_exclude = Q(state="done") | Q(state="cancelled_by_seller") | Q(state="cancelled_by_customer")
+    orders = models.Order.filter(query_filter).exclude(query_exclude)
+    
+    
+    
+    limit = 5
+    offset = (page - 1) * limit
+    count_users = await orders.count()
+    last_page = count_users/limit
+    if count_users % limit == 0:
+        last_page = int(last_page)
+    elif count_users % limit != 0:
+        last_page = int(last_page + 1)
+
+    orders = await orders.offset(offset).limit(limit).order_by("-created_at")
+
+    
     text = await models.Lang.get(uuid="f11ebe57-866f-4bd3-8550-690fa288dd9f")
     text = text.rus if user.lang == "ru" else text.eng
     # text = "Выберите заказ:"
-    await message.answer(text=text, reply_markup=await deals_keyboards.show_deals_keyboard(orders=orders))
+    await message.answer(text=text, reply_markup=await deals_keyboards.show_deals_keyboard(orders=orders, page=page, last_page=last_page))
 
 
 @dp.callback_query_handler(lambda call: call.data.split(":")[0] == "view_order")
