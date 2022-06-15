@@ -5,7 +5,7 @@ from models import models
 async def show_deals_keyboard(orders: List[models.Order], page: int, last_page: int):
     keyboard = types.InlineKeyboardMarkup()
     for order in orders:
-        text = f"№{order.serial_int + 5432}|{order.amount} TON|{order.created_at.strftime('%d.%m.%y')}|"
+        text = f"№{order.serial_int + 5432}|{order.amount} TON|"
         if order.state == "created":
             text += "Создано"
         elif order.state == "ready_for_sale":

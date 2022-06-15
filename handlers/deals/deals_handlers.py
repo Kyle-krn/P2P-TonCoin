@@ -17,17 +17,10 @@ async def my_deals_handler(message: Union[types.Message, types.CallbackQuery]):
         page = int(message.data.split(':')[1])
         await message.message.delete()
         message = message.message
-
     user = await models.User.get(telegram_id=message.chat.id)
-    
-    
-    
     query_filter = Q(seller=user)
     query_exclude = Q(state="done") | Q(state="cancelled_by_seller") | Q(state="cancelled_by_customer")
     orders = models.Order.filter(query_filter).exclude(query_exclude)
-    
-    
-    
     limit = 5
     offset = (page - 1) * limit
     count_users = await orders.count()

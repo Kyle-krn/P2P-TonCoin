@@ -15,6 +15,10 @@ HOST = env.str('HOST')
 PORT = env.str('PORT')
 DATABASE = env.str('DATABASE')
 
+WEBHOOK_PATH = f"/bot"
+WEBHOOK_HOST = env.str('WEBHOOK_HOST')
+WEBHOOK_URL = WEBHOOK_HOST + WEBHOOK_PATH
+
 
 POSTGRES_URI = f"postgres://{USER}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}"
 

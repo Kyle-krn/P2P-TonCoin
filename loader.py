@@ -3,6 +3,8 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from tortoise import Tortoise
 import os
 from data import config
+from fastapi import FastAPI
+from fastapi.templating import Jinja2Templates
 
 bot = Bot(token=config.BOT_TOKEN, parse_mode=types.ParseMode.HTML)
 storage = MemoryStorage()
@@ -10,5 +12,8 @@ dp = Dispatcher(bot, storage=storage)
 
 db = Tortoise()
 
+app = FastAPI()
+
+templates = Jinja2Templates(directory="templates")
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))

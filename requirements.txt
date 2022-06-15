@@ -2,3 +2,6 @@ aiogram<3.0
 environs~=8.0.0
 tortoise-orm
 aerich
+uvicorn
+fastapi
+jinja2
