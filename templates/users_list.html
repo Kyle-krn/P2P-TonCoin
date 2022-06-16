@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+{% block body %}
+
+
+
+<div class="accordion" id="accordionExample">
+    <div class="accordion-item">
+    <h2 class="accordion-header" id="headingOne">
+        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+        Search
+        </button>
+    </h2>
+    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+        <div class="accordion-body">
+            <form method="get">
+            <!-- Row first -->
+            <div class="row justify-content-start">
+                <!-- form Username -->
+                <div class="col-md-4 mb-3">
+                  <label for="zip">Username:</label>
+                  <input name="username" type="text" class="form-control" placeholder="Username:" 
+                         value={% if username != None %}{{username}}{% else %}""{% endif %}>
+                </div>
+                <!-- endform Username -->
+                
+                <!-- form Balance -->
+                <div class="col-md-4 mb-3">
+                  <label for="zip">Balance:</label>
+                  <div class="input-group mb-3">
+                    <input type="number" name="min_balance" class="form-control" placeholder="Min balance"  aria-label="Min balance" step="any"
+                           value={{min_balance}} required>
+                    <span class="input-group-text">to</span>
+                    <input type="number" name="max_balance" class="form-control" placeholder="Max balance" aria-label="Max balance" step="any"
+                           value={{max_balance}} required>
+                  </div>
+                </div>
+                <!-- endform Balance -->
+                
+                <!-- from Frozen Balance -->
+                <div class="col-md-4 mb-3">
+                  <label for="zip">Frozen balance:</label>
+                  <div class="input-group mb-3">
+                    <input type="text" name="min_frozen_balance" class="form-control" placeholder="Min balance"  aria-label="Min balance"
+                           value={{min_frozen_balance}} required>
+                    <span class="input-group-text">to</span>
+                    <input type="text" name="max_frozen_balance" class="form-control" placeholder="Max balance" aria-label="Max balance"
+                           value={{max_frozen_balance}} required>
+                  </div>
+                </div>
+                </div>
+                <!-- endform Frozen Balance -->
+
+
+                <!-- EndRow first -->
+                <!-- Form Referal -->
+                <div class="row justify-content-start">
+                <div class="col-md-4 mb-3">
+                  <label for="zip">Referal parent:</label>
+                  <div class="input-group mb-3">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="referal" id="inlineRadio1" value="False" 
+                                {% if referal == False %} checked {% endif %}>
+                        <label class="form-check-label" for="inlineRadio1">Yes</label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="referal" id="inlineRadio2" value="True"
+                                {% if referal == True %} checked {% endif %}>
+                        <label class="form-check-label" for="inlineRadio2">No</label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="referal" id="inlineRadio3" value="None"
+                                {% if referal == None %} checked {% endif %}>
+                        <label class="form-check-label" for="inlineRadio3">All</label>
+                      </div>
+                  </div>
+                </div>
+                <!-- endform Referal -->
+                
+                <!-- form Lang -->
+                <div class="col-md-4 mb-3">
+                  <label for="zip">Lang:</label>
+                  <div class="input-group mb-3">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" name="lang" type="radio" name="lang" id="inlineRadio1" value="en"
+                            {% if lang == "en" %} checked {% endif %}>
+                        <label class="form-check-label" for="inlineRadio1">En</label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" name="lang" type="radio" name="lang" id="inlineRadio2" value="ru"
+                            {% if lang == "ru" %} checked {% endif %}>
+                        <label class="form-check-label" for="inlineRadio2">Ru</label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" name="lang" type="radio" name="lang" id="inlineRadio3" value=""
+                            {% if lang == None %} checked {% endif %}>
+                        <label class="form-check-label" for="inlineRadio3">All</label>
+                      </div>
+                  </div>
+                </div>
+                <!-- endform Lang -->
+
+                <!-- form created at -->
+                <div class="col-md-4 mb-3">
+                    <label for="basic-url" class="form-label">Created at</label>
+                    <div class="input-group mb-3">
+                    <span class="input-group-text" id="basic-addon3">From</span>
+                    <input type="datetime-local" name="min_created_at" class="form-control" id="basic-url" aria-describedby="basic-addon3" 
+                           value={{min_created_at}}>
+                    </div>
+                    <div class="input-group mb-3">
+                    <span class="input-group-text" id="basic-addon3">To</span>
+                    <input type="datetime-local" name="max_created_at" class="form-control" id="basic-url" aria-describedby="basic-addon3"
+                            value={{max_created_at}}>
+                </div>
+                </div>
+                <!-- endform created at -->
+              </div>
+              <!-- endrow -->
+        
+            <div class="text-center">
+                <button type="submit" class="btn btn-success">Search</button>
+                <a class="btn btn-info" href="/users" role="button">Deafult</a>
+
+            </div>
+    </form>
+        </div>
+    </div>
+    </div>
+</div>
+
+
+  
+<table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Username 
+            <select aria-label="">
+                <option selected>S</option>
+                <option value="1">⬆️</option>
+                <option value="2">⬇️</option>
+        </select>
+        </th>
+        <th scope="col">Balance 
+            <select aria-label="">
+                <option selected>S</option>
+                <option value="1">⬆️</option>
+                <option value="2">⬇️</option>
+            </select>
+        </th>
+        <th scope="col">Frozen balance
+            <select aria-label="">
+                <option selected>S</option>
+                <option value="1">⬆️</option>
+                <option value="2">⬇️</option>
+            </select>
+        </th>
+        <th scope="col">Referal parent</th>
+        <th scope="col">Lang</th>
+        <th scope="col">Created at
+            <select aria-label="">
+                <option selected>S</option>
+                <option value="1">⬆️</option>
+                <option value="2">⬇️</option>
+            </select>
+        </th>
+        <th scope="col">Detail</th>
+      </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+            <tr>
+                <th scope="row">{{loop.index}}</th>
+                <td>{{user.tg_username}}</td>
+                <td>{{user.balance}}</td>
+                <td>{{user.frozen_balance}}</td>
+                {% if user.referal_user_id == None %}
+                    <td>❌</td>
+                {% else %}
+                    <td><a class="btn btn-primary btn-sm" href="/user/{{user.referal_user_id}}" role="button">Parent</a></td>
+                {% endif %}
+                <td>{{user.lang}}</td>
+                <td>{{ user.created_at | format_date }}</td>
+                <td><a class="btn btn-primary btn-sm" href="/user/{{user.uuid}}" role="button">Detail</a></td>
+            </tr>
+        {% endfor %}
+    </tbody>
+  </table>
+
+
+ 
+
+{% endblock %}

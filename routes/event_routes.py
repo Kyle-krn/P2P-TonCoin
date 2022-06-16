@@ -33,6 +33,6 @@ async def bot_webhook(update: dict):
 @event_router.on_event("shutdown")
 async def on_shutdown():
     await bot.delete_webhook(drop_pending_updates=True)
-    await dp.storage.close()
-    await dp.storage.wait_closed()
-    await bot.session.close()
+    # await dp.storage.close()
+    # await dp.storage.wait_closed()
+    # await bot.session.close()
