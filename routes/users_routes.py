@@ -138,20 +138,26 @@ async def update_user(request: Request,
                       frozen_balance: float = Form(...),
                       referal_parent: Union[UUID, Any] = Form(None)):
     user = await models.User.get(uuid=user_uuid)
+    params = request.query_params
+    if params != "":
+        params = "?" + str(params)
+    
     if referal_parent is not None:
         if isinstance(referal_parent, UUID) is False or (await models.User.get_or_none(uuid=referal_parent)) is None:
             flash(request, "Error Parent UUID")
         else:
             user.referal_user_id = referal_parent
     elif user.referal_user is not None and referal_parent is None:
-        bonus = await models.UserReferalBonus.get(user=await user.referal_user, invited_user=user)
-        bonus.state = "Invited user deleted"
-        await bonus.save()
+        bonus = await models.UserReferalBonus.get_or_none(user=await user.referal_user, invited_user=user)
+        if bonus:
+            bonus.state = "Invited user deleted"
+            await bonus.save()
         user.referal_user = None
     await user.update_from_dict({"wallet": wallet, "balance": balance, "frozen_balance": frozen_balance})
     await user.save()
+    flash(request, "Success", category="success")
     return RedirectResponse(
-        f'/user/{user_uuid}', 
+        f'/user/{user_uuid}' + params, 
         status_code=status.HTTP_302_FOUND)        
 
     

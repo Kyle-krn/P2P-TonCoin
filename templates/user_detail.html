@@ -3,7 +3,7 @@
 {% block body %}
 
 {% for message in get_flashed_messages(request) %}
-  <div class="alert alert-danger" role="alert">
+  <div class="alert alert-{{message.category}}" role="alert">
     {{ message.message }}
   </div>
  {% endfor %}
@@ -21,7 +21,7 @@
         <td class="text-center"><b>UUID:</b></td>
         <td class="text-center">{{user.uuid}}</td>
       </tr>
-      <form action="/update_user/{{user.uuid}}" method="post">
+      <form action="/update_user/{{user.uuid}}{{params}}" method="post">
       <tr>
         <td class="text-center"><b>Username:</b></td>
         <td class="text-center">{{user.tg_username}}
@@ -98,6 +98,7 @@
     </thead>
     <tbody>
     {% for history_balance in user.history_balance %}
+    <form action="/update-history-balance/{{history_balance.uuid}}" method="post">
     <tr class="text-center">
     <th scope="row">{{loop.index}}</th>
     <td>{{history_balance.type}}</td>
@@ -107,6 +108,7 @@
     <td>{% if history_balance.code == None %}---{% else %}{{history_balance.code}}{% endif %}</td>
     <td>{{history_balance.type}}</td>
     <td>{{ history_balance.created_at | format_date }}</td>
+    </form>
     </tr>  
     {% else %} 
     <tr>
