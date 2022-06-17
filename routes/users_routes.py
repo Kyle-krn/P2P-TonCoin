@@ -1,5 +1,6 @@
 from typing import List, Optional, Union
 from datetime import datetime, timedelta
+from urllib import parse
 from uuid import UUID
 from anyio import Any
 from tortoise.queryset import Q
@@ -26,7 +27,7 @@ async def users_list(request: Request,
                      min_created_at: datetime = None,
                      max_created_at: datetime = None,
                      order_by: str = None
-                     ):
+                    ):
     if isinstance(referal, str):
         referal = None
     if lang == "":
@@ -82,10 +83,7 @@ async def users_list(request: Request,
             if item[0] == "+":
                 indx = order_by.index(item)
                 order_by = order_by[:indx] + [item[1:]] + order_by[indx+1:]
-        # print(order_by)
         users = await models.User.filter(query).order_by(*order_by)
-        # users = await models.User.filter(query).order_by("+created_at")
-
     context = {"request": request, 
                "users": users,
                "username": username,
@@ -98,7 +96,7 @@ async def users_list(request: Request,
                "min_created_at": min_created_at.isoformat(),
                "max_created_at": max_created_at.isoformat(),
                "order_by": order_by,
-               "params": f"?{request.query_params}" if request.query_params != "" else ""
+               "params": f"?{request.query_params}" if request.query_params != "" else "",
                }
     return templates.TemplateResponse("users_list.html", context)
 
@@ -121,13 +119,22 @@ async def sort_user(request: Request,column: str):
     return "/users?" + urlencode(params)
 
 
+
 @user_router.get("/user/{uuid}", response_class=HTMLResponse)
 async def user_detail(request: Request, 
                       uuid: UUID):
     user = await models.User.get(uuid=uuid).prefetch_related("send_referal__invited_user" ,"history_balance", "payments_account__type")
+    
+    history_balance = await user.history_balance.all()
+    # print(history_balance)
+    params = request.query_params
+    if params != "":
+        params = "?" + str(params)
     context = {"request": request,
-               "user": user}
+               "user": user,
+               "params": params}
     return templates.TemplateResponse("user_detail.html", context)
+
 
 
 @user_router.post("/update_user/{user_uuid}")
@@ -141,7 +148,6 @@ async def update_user(request: Request,
     params = request.query_params
     if params != "":
         params = "?" + str(params)
-    
     if referal_parent is not None:
         if isinstance(referal_parent, UUID) is False or (await models.User.get_or_none(uuid=referal_parent)) is None:
             flash(request, "Error Parent UUID")

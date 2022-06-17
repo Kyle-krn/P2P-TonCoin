@@ -84,6 +84,7 @@
 <!-- CHANGE BALANCE -->
 <br>
 <h3 class="text-center">Change Balance:</h3>
+<div class="table-responsive">
 <table class="table table-striped">
     <thead>
       <tr class="text-center">  
@@ -95,20 +96,68 @@
         <th scope="col">Code</th>
         <th scope="col">State</th>
         <th scope="col">Created at</th>
+        <!-- <th scope="col">Update</th> -->
     </thead>
     <tbody>
+    <form action="/update_history_balance{{params}}" method="post">
+    <input type="hidden" value="{{user.uuid}}" name="user_uuid_hidden">
     {% for history_balance in user.history_balance %}
-    <form action="/update-history-balance/{{history_balance.uuid}}" method="post">
+    <input type="hidden" value="{{history_balance.uuid}}" name="uuid_history_balance">
     <tr class="text-center">
     <th scope="row">{{loop.index}}</th>
-    <td>{{history_balance.type}}</td>
-    <td>{% if history_balance.amount == None %}---{% else %}{{history_balance.amount}}{% endif %}</td>
-    <td>{% if history_balance.hash == None %}---{% else %}{{history_balance.hash}}{% endif %}</td>
-    <td>{% if history_balance.wallet == None %}---{% else %}{{history_balance.wallet}}{% endif %}</td>
-    <td>{% if history_balance.code == None %}---{% else %}{{history_balance.code}}{% endif %}</td>
-    <td>{{history_balance.type}}</td>
+    <!-- TYPE -->
+    <td>
+        <select name="type" class="form-select" aria-label="Default select example">
+        {% if history_balance.type == "topup" %}
+        <option selected value="topup">Top up</option>
+        <option value="withdraw">Withdraw</option>
+        {% else %}
+        <option selected value="withdraw">Withdraw</option>
+        <option value="topup">Top up</option>
+        {% endif %}
+      </select>
+    </td>
+    <!-- END TYPE -->
+    
+    <!-- AMOUNT -->
+    <td>
+        <input name="amount" type="number" class="form-control text-center" placeholder="Amount" 
+        value="{{history_balance.amount}}" aria-label="Amount" step="any">
+    </td>
+    <!-- END AMOUNT  -->
+
+    <!-- HASH -->
+    <td>
+        <textarea name="hash" type="text" class="form-control text-center" placeholder="Hash" 
+        aria-label="Hash">{% if history_balance.hash !=None %}{{history_balance.hash}}{%endif%}</textarea>
+    </td>
+    <!-- END HASH -->
+
+    <!-- WALLET -->
+    <td>
+        <textarea name="wallet" type="text" class="form-control text-center" placeholder="Wallet" 
+        aria-label="Wallet">{% if history_balance.wallet != None %}{{history_balance.wallet}}{%endif%}</textarea>
+    </td>
+    <!-- END WALLET -->
+
+    <!-- CODE -->
+    <td>
+        <textarea name="code" type="text" class="form-control text-center" placeholder="Code" 
+        aria-label="Code">{% if history_balance.code == None %}{% else %}{{history_balance.code}}{% endif %}</textarea>
+    </td>
+
+    <!-- STATE -->
+    <td>
+        <select name="state" class="form-select" aria-label="Default select example">
+            <option value="created" {% if history_balance.state == "created" %}selected{% endif %}>Created</option>
+            <option value="cancelled" {% if history_balance.state == "cancelled" %}selected{% endif %}>Cancelled</option>
+            <option value="done" {% if history_balance.state == "done" %}selected{% endif %}>Done</option>
+            
+        </select>
+    </td>
+    <!-- END STATE -->
     <td>{{ history_balance.created_at | format_date }}</td>
-    </form>
+    
     </tr>  
     {% else %} 
     <tr>
@@ -122,8 +171,19 @@
         <td class="text-center">---</td>
     </tr>
     {% endfor %}
+    <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td><td class="text-center"><button type="submit" class="btn btn-success btn-sm">Update</button></td></td> 
+        </form>
+    </tr>
     </tbody>
 </table>
+</div>
 <!-- END CHANGE BALANCE -->
 <br>
 <h3 class="text-center">Referal Bonus:</h3>
