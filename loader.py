@@ -22,6 +22,14 @@ def format_date(date: datetime):
     return date.strftime("%d %b %Y %X")
 
 
+def parse_payment_data(data: dict):
+    """Custom filter"""
+    text = ""
+    for k,v in data.items():
+        text += f"{k} - {v} <br>"
+    return text
+
 templates.env.filters["format_date"] = format_date
+templates.env.filters["parse_payment_data"] = parse_payment_data
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))

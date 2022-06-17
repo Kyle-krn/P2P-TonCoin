@@ -119,8 +119,9 @@ class UserPaymentAccount(Model):
     is_active: bool = fields.BooleanField()
     updated_at: datetime = fields.DatetimeField(auto_now=True)
     created_at: datetime = fields.DatetimeField(auto_now_add=True)
-
+    
     order_user_payment_account: fields.ReverseRelation["OrderUserPaymentAccount"]
+    
     class Meta:
         table = "user_payment_account"
 

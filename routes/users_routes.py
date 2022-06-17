@@ -1,5 +1,6 @@
 from typing import List, Optional, Union
 from datetime import datetime, timedelta
+from uuid import UUID
 from tortoise.queryset import Q
 from fastapi import APIRouter
 from fastapi import Depends, Form, HTTPException, Request
@@ -8,6 +9,7 @@ from models import models
 from loader import templates
 from urllib.parse import urlencode
 import ast
+import starlette.status as status
 
 user_router = APIRouter()
 
@@ -101,12 +103,8 @@ async def users_list(request: Request,
 
 
 @user_router.get("/sort_user/{column}", response_class=RedirectResponse)
-async def redirect_fastapi(request: Request,column: str):
+async def sort_user(request: Request,column: str):
     params = request.query_params._dict
-    print(params)
-
-
-
     if "order_by" not in params:
         if column[0] != "~":
             params['order_by'] = [column]
@@ -119,5 +117,20 @@ async def redirect_fastapi(request: Request,column: str):
         elif column[0] != "~":
             params["order_by"] = [i for i in params["order_by"] if column_name != i[1:]]
             params["order_by"].append(column)
-    
     return "/users?" + urlencode(params)
+
+
+@user_router.get("/user/{uuid}", response_class=HTMLResponse)
+async def user_detail(request: Request, 
+                      uuid: UUID):
+    user = await models.User.get(uuid=uuid).prefetch_related("send_referal__invited_user" ,"history_balance", "payments_account__type")
+    context = {"request": request,
+               "user": user}
+    return templates.TemplateResponse("user_detail.html", context)
+
+
+@user_router.post("/update_user/{uuid}")
+async def update_user(user_uuid: UUID):
+    return RedirectResponse(
+        f'/user/{user_uuid}', 
+        status_code=status.HTTP_302_FOUND)
