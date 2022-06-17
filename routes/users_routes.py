@@ -1,12 +1,13 @@
 from typing import List, Optional, Union
 from datetime import datetime, timedelta
 from uuid import UUID
+from anyio import Any
 from tortoise.queryset import Q
 from fastapi import APIRouter
 from fastapi import Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from models import models
-from loader import templates
+from loader import templates, flash
 from urllib.parse import urlencode
 import ast
 import starlette.status as status
@@ -129,8 +130,31 @@ async def user_detail(request: Request,
     return templates.TemplateResponse("user_detail.html", context)
 
 
-@user_router.post("/update_user/{uuid}")
-async def update_user(user_uuid: UUID):
+@user_router.post("/update_user/{user_uuid}")
+async def update_user(request: Request,
+                      user_uuid: UUID,
+                      wallet: str = Form(None),
+                      balance: float = Form(...),
+                      frozen_balance: float = Form(...),
+                      referal_parent: Union[UUID, Any] = Form(None)):
+    user = await models.User.get(uuid=user_uuid)
+    if referal_parent is not None:
+        if isinstance(referal_parent, UUID) is False or (await models.User.get_or_none(uuid=referal_parent)) is None:
+            flash(request, "Error Parent UUID")
+        else:
+            user.referal_user_id = referal_parent
+    elif user.referal_user is not None and referal_parent is None:
+        bonus = await models.UserReferalBonus.get(user=await user.referal_user, invited_user=user)
+        bonus.state = "Invited user deleted"
+        await bonus.save()
+        user.referal_user = None
+    await user.update_from_dict({"wallet": wallet, "balance": balance, "frozen_balance": frozen_balance})
+    await user.save()
     return RedirectResponse(
         f'/user/{user_uuid}', 
-        status_code=status.HTTP_302_FOUND)
+        status_code=status.HTTP_302_FOUND)        
+
+    
+    
+    
+

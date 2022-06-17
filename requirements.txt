@@ -6,3 +6,4 @@ uvicorn
 fastapi
 jinja2
 python-multipart
+itsdangerous
