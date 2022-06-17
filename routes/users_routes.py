@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import List, Optional, Union
 from datetime import datetime, timedelta
 from tortoise.queryset import Q
 from fastapi import APIRouter
@@ -6,6 +6,8 @@ from fastapi import Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from models import models
 from loader import templates
+from urllib.parse import urlencode
+import ast
 
 user_router = APIRouter()
 
@@ -20,22 +22,17 @@ async def users_list(request: Request,
                      lang: str = None,
                      min_created_at: datetime = None,
                      max_created_at: datetime = None,
+                     order_by: str = None
                      ):
-    
-
     if isinstance(referal, str):
         referal = None
-
-    print(min_created_at)
-    print(max_created_at)
-    
-    # if isinstance(min_created_at, str):
-    #     min_created_at = None 
-    # if isinstance(max_created_at, str):
-    #     max_created_at = None 
     if lang == "":
         lang = None 
 
+    if order_by:
+        order_by = ast.literal_eval(order_by)
+    else:
+        order_by = []
     query = Q()
     if username:
         query = query & Q(tg_username__icontains=username)
@@ -75,8 +72,17 @@ async def users_list(request: Request,
         max_created_at = (datetime.utcnow() + timedelta(days=1))
         max_created_at = max_created_at.replace(microsecond=0)
 
-    
-    users = await models.User.filter(query).order_by("-created_at")
+    if  len(order_by) == 0:
+        users = await models.User.filter(query).order_by("-created_at")
+    else:
+        for item in order_by:
+            if item[0] == "+":
+                indx = order_by.index(item)
+                order_by = order_by[:indx] + [item[1:]] + order_by[indx+1:]
+        # print(order_by)
+        users = await models.User.filter(query).order_by(*order_by)
+        # users = await models.User.filter(query).order_by("+created_at")
+
     context = {"request": request, 
                "users": users,
                "username": username,
@@ -88,5 +94,30 @@ async def users_list(request: Request,
                "lang": lang,
                "min_created_at": min_created_at.isoformat(),
                "max_created_at": max_created_at.isoformat(),
+               "order_by": order_by,
+               "params": f"?{request.query_params}" if request.query_params != "" else ""
                }
     return templates.TemplateResponse("users_list.html", context)
+
+
+@user_router.get("/sort_user/{column}", response_class=RedirectResponse)
+async def redirect_fastapi(request: Request,column: str):
+    params = request.query_params._dict
+    print(params)
+
+
+
+    if "order_by" not in params:
+        if column[0] != "~":
+            params['order_by'] = [column]
+    else:
+        params['order_by'] = ast.literal_eval(params['order_by'])
+        column_name = column[1:] 
+        
+        if column[0] == "~" and len([i for i in params["order_by"] if column_name == i[1:]]) > 0:
+            params["order_by"] = [i for i in params["order_by"] if column_name != i[1:]]
+        elif column[0] != "~":
+            params["order_by"] = [i for i in params["order_by"] if column_name != i[1:]]
+            params["order_by"].append(column)
+    
+    return "/users?" + urlencode(params)

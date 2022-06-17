@@ -120,7 +120,7 @@
         
             <div class="text-center">
                 <button type="submit" class="btn btn-success">Search</button>
-                <a class="btn btn-info" href="/users" role="button">Deafult</a>
+                <a class="btn btn-secondary" href="/users" role="button">Deafult</a>
 
             </div>
     </form>
@@ -135,36 +135,102 @@
     <thead>
       <tr>
         <th scope="col">#</th>
+        <!-- Sort username -->
         <th scope="col">Username 
-            <select aria-label="">
-                <option selected>S</option>
-                <option value="1">⬆️</option>
-                <option value="2">⬇️</option>
-        </select>
+          <div class="btn-group">
+          <div class="dropdown">
+            <button class="btn btn-{% if 'tg_username' not in order_by and '-tg_username' not in order_by %}secondary 
+                                    {% else %}success
+                                    {% endif %}
+                           btn-sm dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+              {% if "tg_username" in order_by %}⬆️
+              {% elif "-tg_username" in order_by %}⬇️
+              {% else %} S
+              {% endif %}
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+              <li><a class="dropdown-item" href="/sort_user/~tg_username{{params}}">S</a></li>
+              <li><a class="dropdown-item" href="/sort_user/+tg_username{{params}}">⬆️</a></li>
+              <li><a class="dropdown-item" href="/sort_user/-tg_username{{params}}">⬇️</a></li>
+            </ul>
+          </div>
+        </div>
         </th>
+        <!-- endsort username -->
+
+        <!-- sort balance -->
         <th scope="col">Balance 
-            <select aria-label="">
-                <option selected>S</option>
-                <option value="1">⬆️</option>
-                <option value="2">⬇️</option>
-            </select>
+          <div class="btn-group">
+            <div class="dropdown">
+              <button class="btn btn-{% if 'balance' not in order_by and '-balance' not in order_by %}secondary 
+                                      {% else %}success
+                                      {% endif %}
+                             btn-sm dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                {% if "balance" in order_by %}⬆️
+                {% elif "-balance" in order_by %}⬇️
+                {% else %} S
+                {% endif %}
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                <li><a class="dropdown-item" href="/sort_user/~balance{{params}}">S</a></li>
+                <li><a class="dropdown-item" href="/sort_user/+balance{{params}}">⬆️</a></li>
+                <li><a class="dropdown-item" href="/sort_user/-balance{{params}}">⬇️</a></li>
+              </ul>
+            </div>
+          </div>
         </th>
-        <th scope="col">Frozen balance
-            <select aria-label="">
-                <option selected>S</option>
-                <option value="1">⬆️</option>
-                <option value="2">⬇️</option>
-            </select>
+        <!-- endsort balance -->
+        
+    
+        <!-- sort frozenbalance -->
+        <th scope="col">Frozen Balance 
+          <div class="btn-group">
+            <div class="dropdown">
+              <button class="btn btn-{% if 'frozen_balance' not in order_by and '-frozen_balance' not in order_by %}secondary 
+                                      {% else %}success
+                                      {% endif %}
+                             btn-sm dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                {% if "frozen_balance" in order_by %}⬆️
+                {% elif "-frozen_balance" in order_by %}⬇️
+                {% else %} S
+                {% endif %}
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                <li><a class="dropdown-item" href="/sort_user/~frozen_balance{{params}}">S</a></li>
+                <li><a class="dropdown-item" href="/sort_user/+frozen_balance{{params}}">⬆️</a></li>
+                <li><a class="dropdown-item" href="/sort_user/-frozen_balance{{params}}">⬇️</a></li>
+              </ul>
+            </div>
+          </div>
         </th>
+        <!-- endsort balance -->
+        
+        
         <th scope="col">Referal parent</th>
         <th scope="col">Lang</th>
-        <th scope="col">Created at
-            <select aria-label="">
-                <option selected>S</option>
-                <option value="1">⬆️</option>
-                <option value="2">⬇️</option>
-            </select>
+
+        <!-- sort frozenbalance -->
+        <th scope="col">Created at 
+          <div class="btn-group">
+            <div class="dropdown">
+              <button class="btn btn-{% if 'created_at' not in order_by and '-created_at' not in order_by %}secondary 
+                                      {% else %}success
+                                      {% endif %}
+                             btn-sm dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                {% if "created_at" in order_by %}⬆️
+                {% elif "-created_at" in order_by %}⬇️
+                {% else %} S
+                {% endif %}
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                <li><a class="dropdown-item" href="/sort_user/~created_at{{params}}">S</a></li>
+                <li><a class="dropdown-item" href="/sort_user/+created_at{{params}}">⬆️</a></li>
+                <li><a class="dropdown-item" href="/sort_user/-created_at{{params}}">⬇️</a></li>
+              </ul>
+            </div>
+          </div>
         </th>
+        <!-- endsort balance -->
         <th scope="col">Detail</th>
       </tr>
     </thead>
