@@ -8,15 +8,18 @@ from fastapi import APIRouter
 from fastapi import Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from models import models
-from loader import templates, flash
+from loader import templates, flash, manager
 from urllib.parse import urlencode
 import ast
 import starlette.status as status
+from utils.exceptions import NotAuthenticatedException
 
 user_router = APIRouter()
 
+
 @user_router.get("/users", response_class=HTMLResponse)
 async def users_list(request: Request,
+                     user: models.Staff = Depends(manager),
                      username: str = None,
                      min_balance: float = None,
                      max_balance: float = None,
@@ -84,6 +87,7 @@ async def users_list(request: Request,
                 indx = order_by.index(item)
                 order_by = order_by[:indx] + [item[1:]] + order_by[indx+1:]
         users = await models.User.filter(query).order_by(*order_by)
+    
     context = {"request": request, 
                "users": users,
                "username": username,
@@ -119,22 +123,35 @@ async def sort_user(request: Request,column: str):
     return "/users?" + urlencode(params)
 
 
-
 @user_router.get("/user/{uuid}", response_class=HTMLResponse)
 async def user_detail(request: Request, 
                       uuid: UUID):
     user = await models.User.get(uuid=uuid).prefetch_related("send_referal__invited_user" ,"history_balance", "payments_account__type")
     
-    history_balance = await user.history_balance.all()
-    # print(history_balance)
+    history_balance = user.history_balance
+    
+    
+    history_balance_search = {
+        "state": None,
+        # "min_amount": 0,
+        "max_amount_show": (await user.history_balance.filter(amount__isnull=False).order_by('-amount').first().values("amount"))["amount"],
+        "min_amount": None,
+        "max_amount": None,
+        "hash": None,
+        "wallet": None,
+        "code": None,
+        "state": None
+    }
+
+
     params = request.query_params
     if params != "":
         params = "?" + str(params)
     context = {"request": request,
                "user": user,
-               "params": params}
+               "params": params,
+               "history_balance_search": history_balance_search}
     return templates.TemplateResponse("user_detail.html", context)
-
 
 
 @user_router.post("/update_user/{user_uuid}")
@@ -163,8 +180,9 @@ async def update_user(request: Request,
     await user.save()
     flash(request, "Success", category="success")
     return RedirectResponse(
-        f'/user/{user_uuid}' + params, 
-        status_code=status.HTTP_302_FOUND)        
+                            f'/user/{user_uuid}' + params, 
+                            status_code=status.HTTP_302_FOUND
+                            )        
 
     
     

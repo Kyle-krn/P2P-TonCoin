@@ -32,7 +32,6 @@ async def update_history_balance(request: Request,
                                           "code": code, 
                                           "state": state})
         await history_balance.save()
-
     flash(request, "Success", category="success")
     params = request.query_params
     if params != "":
@@ -40,3 +39,20 @@ async def update_history_balance(request: Request,
     return RedirectResponse(
         f'/user/{user_uuid_hidden}' + params, 
         status_code=status.HTTP_302_FOUND)  
+
+
+
+@history_balance_router.post("/filter_history_balance")
+async def filter_history_balance(request: Request,
+                                 user_uuid_hidden: UUID = Form(None),
+                                 history_balance_type: str = Form(None),
+                                 history_balance_min_amount: float = Form(None),
+                                 history_balance_max_amount: float = Form(None),
+                                 history_balance_hash: str = Form(None),
+                                 history_balance_wallet: str = Form(None),
+                                 history_balance_state: str = Form(None)
+                                ):
+    print(request.session)
+    return RedirectResponse(
+        f'/user/{user_uuid_hidden}' ,
+        status_code=status.HTTP_302_FOUND)

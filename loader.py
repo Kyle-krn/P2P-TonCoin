@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from tortoise import Tortoise
@@ -6,14 +6,14 @@ import os
 from data import config
 from fastapi import FastAPI
 from fastapi.templating import Jinja2Templates
-
-from fastapi import FastAPI, Request, Form
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI, Request
 from starlette.templating import Jinja2Templates
 from starlette.middleware import Middleware
 from starlette.middleware.sessions import SessionMiddleware
 import typing
+from fastapi_login import LoginManager #Loginmanager Class
+from utils.exceptions import NotAuthenticatedException
+
 
 bot = Bot(token=config.BOT_TOKEN, parse_mode=types.ParseMode.HTML)
 storage = MemoryStorage()
@@ -27,6 +27,15 @@ middleware = [
 ]
 app = FastAPI(middleware=middleware)
 
+
+SECRET = "secret-key"
+
+manager = LoginManager(SECRET,
+                       token_url="/auth/login",
+                       use_cookie=True, 
+                       default_expiry=timedelta(hours=12),
+                       custom_exception=NotAuthenticatedException)
+manager.cookie_name = "access_token"
 
 templates = Jinja2Templates(directory="templates")
 

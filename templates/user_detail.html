@@ -81,7 +81,105 @@
 </table>
 <!-- END USER INFO -->
 
+
 <!-- CHANGE BALANCE -->
+
+<!-- FILTER -->
+<div class="accordion" id="accordionExample">
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingOne">
+        <button class="accordion-button text-center" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+          Change balance filter
+        </button>
+      </h2>
+      <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+        <div class="accordion-body">
+          <form action="/filter_history_balance" method="post">
+            <input type="hidden" name="user_uuid_hidden" value="{{user.uuid}}">
+            <!-- Row first -->
+            <div class="row justify-content-start">
+                <div class="col-md-4 mb-3">
+                    <!-- SELECT TYPE -->
+                    <label for="state">Type:</label>
+                    <select name="history_balance_type" class="form-select" aria-label="Default select example">
+                        <option value="" {% if history_balance_search.state == None %} selected {% endif %}>Type</option>
+                        <option value="topup" {% if history_balance_search.state == 'topup'%} selected {% endif %}>Top Up</option>
+                        <option value="withdraw" {% if history_balance_search.state == 'withdraw'%} selected {% endif %}>Withdraw</option>
+                    </select>
+                    <!-- END SELECT TYPE -->
+                  </div>
+                <div class="col-md-4 mb-3">
+                  <!-- INPUT AMOUNT -->
+                  <label for="zip">Amount:</label>
+                  <div class="input-group mb-3">
+                    <input type="number" name="history_balance_min_amount" class="form-control" placeholder="0"  aria-label="Min balance" step="any"
+                           value=
+                           {% if history_balance_search.max_amount %}
+                           {{history_balance_search.min_amount}}
+                           {% endif %}
+                           >
+                    <span class="input-group-text">to</span>
+                    <input type="number" name="history_balance_max_amount" class="form-control" placeholder="{{history_balance_search.max_amount_show}}" aria-label="Max balance" step="any"
+                           value=
+                           {% if history_balance_search.max_amount %}
+                           {{ history_balance_search.max_amount }}
+                           {% endif %}
+                           >
+                    <!-- END INPUT AMOUNT -->
+                  </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                  <!-- INPUT HASH -->
+                  <label for="zip">Hash:</label>
+                  <div class="input-group mb-3">
+                    <textarea name="history_balance_hash" class="form-control" name="" id="" cols="15" rows="1">{% if history_balance_search.hash != None %}{{history_balance_search.hash}}{% endif %}</textarea>
+                    <!-- END INPUT HASH -->
+                  </div>
+                </div> 
+                
+                
+                <div class="row justify-content-start">
+                <div class="col-md-4 mb-3">
+                  <!-- INPUT WALLET -->
+                  <label for="zip">Wallet:</label>
+                  <div class="input-group mb-3">
+                    <textarea name="history_balance_wallet" class="form-control" id="" cols="15" rows="1">{% if history_balance_search.wallet != None %}{{history_balance_search.wallet}}{% endif %}</textarea>
+                    <!-- END INPUT WALLET -->
+                  </div>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                  <!-- INPUT CODE -->
+                  <label for="zip">Code:</label>
+                  <div class="input-group mb-3">
+                    <textarea class="form-control" name="history_balance_code" id="" cols="15" rows="1">{% if history_balance_search.code != None %}{{history_balance_search.code}}{% endif %}</textarea>
+                    <!-- END INPUT CODE -->
+                  </div>
+                </div>
+              
+                <div class="col-md-4 mb-3">
+                  <!-- SELECT TYPE -->
+                  <label for="state">State:</label>
+                  <select name="history_balance_state" class="form-select" aria-label="Default select example">
+                      <option {% if history_balance_search.state == None %} selected {% endif %}>State</option>
+                      <option value="" {% if history_balance_search.state == 'created'%} selected {% endif %}>Created</option>
+                      <option value="done" {% if history_balance_search.state == 'done'%} selected {% endif %}>Done</option>
+                      <option value="cancelled" {% if history_balance_search.state == 'cancelled'%} selected {% endif %}>Cancelled</option>
+                  </select>
+                  <!-- END SELECT TYPE -->
+                </div>
+                
+              <div class="text-center">
+                  <button type="submit" class="btn btn-success">Search</button>
+                  <a class="btn btn-secondary" href="/users" role="button">Deafult</a>
+              </div>
+              </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+<!-- END FILTER -->
 <br>
 <h3 class="text-center">Change Balance:</h3>
 <div class="table-responsive">

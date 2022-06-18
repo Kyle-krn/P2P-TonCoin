@@ -132,6 +132,7 @@ class Staff(Model):
     login: str = fields.CharField(max_length=255)
     password: str = fields.TextField()
     created_at: datetime = fields.DatetimeField(auto_now_add=True)
+    superuser: bool = fields.BooleanField(default=False)
 
     class Meta:
         table = "staff"
