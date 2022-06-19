@@ -79,7 +79,7 @@ async def users_list(request: Request,
         max_created_at = (datetime.utcnow() + timedelta(days=1))
         max_created_at = max_created_at.replace(microsecond=0)
 
-    if  len(order_by) == 0:
+    if len(order_by) == 0:
         users = await models.User.filter(query).order_by("-created_at")
     else:
         for item in order_by:
@@ -87,7 +87,7 @@ async def users_list(request: Request,
                 indx = order_by.index(item)
                 order_by = order_by[:indx] + [item[1:]] + order_by[indx+1:]
         users = await models.User.filter(query).order_by(*order_by)
-    
+    print(order_by)
     context = {"request": request, 
                "users": users,
                "username": username,
@@ -106,7 +106,9 @@ async def users_list(request: Request,
 
 
 @user_router.get("/sort_user/{column}", response_class=RedirectResponse)
-async def sort_user(request: Request,column: str):
+async def sort_user(request: Request,
+                    column: str,
+                    user: models.Staff = Depends(manager)):
     params = request.query_params._dict
     if "order_by" not in params:
         if column[0] != "~":
@@ -125,32 +127,12 @@ async def sort_user(request: Request,column: str):
 
 @user_router.get("/user/{uuid}", response_class=HTMLResponse)
 async def user_detail(request: Request, 
-                      uuid: UUID):
+                      uuid: UUID,
+                      user: models.Staff = Depends(manager)):
     user = await models.User.get(uuid=uuid).prefetch_related("send_referal__invited_user" ,"history_balance", "payments_account__type")
     
-    history_balance = user.history_balance
-    
-    
-    history_balance_search = {
-        "state": None,
-        # "min_amount": 0,
-        "max_amount_show": (await user.history_balance.filter(amount__isnull=False).order_by('-amount').first().values("amount"))["amount"],
-        "min_amount": None,
-        "max_amount": None,
-        "hash": None,
-        "wallet": None,
-        "code": None,
-        "state": None
-    }
-
-
-    params = request.query_params
-    if params != "":
-        params = "?" + str(params)
     context = {"request": request,
-               "user": user,
-               "params": params,
-               "history_balance_search": history_balance_search}
+               "user": user}
     return templates.TemplateResponse("user_detail.html", context)
 
 
@@ -160,7 +142,8 @@ async def update_user(request: Request,
                       wallet: str = Form(None),
                       balance: float = Form(...),
                       frozen_balance: float = Form(...),
-                      referal_parent: Union[UUID, Any] = Form(None)):
+                      referal_parent: Union[UUID, Any] = Form(None),
+                      user: models.Staff = Depends(manager),):
     user = await models.User.get(uuid=user_uuid)
     params = request.query_params
     if params != "":

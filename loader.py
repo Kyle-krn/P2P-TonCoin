@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from urllib.parse import urlencode
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from tortoise import Tortoise
@@ -39,6 +40,12 @@ manager.cookie_name = "access_token"
 
 templates = Jinja2Templates(directory="templates")
 
+def get_urlencode(params: dict):
+    str_params = urlencode(params)
+    if len(str_params) > 0:
+       str_params = "?" + str_params
+    return str_params
+
 def format_date(date: datetime):
     """Custom filter"""
     return date.strftime("%d %b %Y %X")
@@ -52,6 +59,7 @@ def parse_payment_data(data: dict):
     return text
 
 
+
 def flash(request: Request, message: typing.Any, category: str = "primary") -> None:
    if "_messages" not in request.session:
        request.session["_messages"] = []
@@ -60,6 +68,8 @@ def flash(request: Request, message: typing.Any, category: str = "primary") -> N
 def get_flashed_messages(request: Request):
    return request.session.pop("_messages") if "_messages" in request.session else []
 
+
+templates.env.filters['get_urlencode'] = get_urlencode
 templates.env.filters["format_date"] = format_date
 templates.env.filters["parse_payment_data"] = parse_payment_data
 templates.env.globals['get_flashed_messages'] = get_flashed_messages

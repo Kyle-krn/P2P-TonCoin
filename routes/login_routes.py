@@ -44,7 +44,8 @@ async def post_register(request: Request,
                             )  
 
 @login_router.post("/auth/login")
-async def login(request: Request, data: OAuth2PasswordRequestForm = Depends()):
+async def login(request: Request, 
+                data: OAuth2PasswordRequestForm = Depends()):
     username = data.username
     password = data.password
     hashed_pass = hashlib.sha256(password.encode('utf-8')).hexdigest()
