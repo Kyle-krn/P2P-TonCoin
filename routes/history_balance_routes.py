@@ -60,7 +60,7 @@ async def user_detail(request: Request,
                       min_created_at: str = None,
                       max_created_at: str = None,
                       order_by: str = None):
-    user = await models.User.get(uuid=uuid)
+    user = await models.User.get(uuid=uuid).prefetch_related("referal_user")
     history_balance = user.history_balance
     history_balance_show = await user.history_balance.filter(amount__isnull=False).order_by('-amount').first().values("amount")
     search = {
@@ -144,12 +144,6 @@ async def user_detail(request: Request,
     
     history_balance = await history_balance.offset(offset).limit(limit)
     params = request.query_params._dict
-    # print(params)
-    # params = request.query_params
-    # print(params)
-    # if params == "":
-    #     params = "?" + str(params)
-    # print(params, len(params))
     context = {"request": request,
                "user": user,
                "params": params,
@@ -160,7 +154,6 @@ async def user_detail(request: Request,
                "history_balance_previous_page": previous_page,
                "history_balance_next_page": next_page,
                "order_by": order_by}
-
     return templates.TemplateResponse("user_history_balance.html", context)
 
 

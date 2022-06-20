@@ -1,0 +1,192 @@
+{% extends "user_detail.html" %}
+{% block user_relation %}
+<br>
+<h3 class="text-center">Referal Bonus:</h3>
+<div class="accordion" id="accordionExample">
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingOne">
+        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+          Referal bonus search
+        </button>
+      </h2>
+      <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+        <div class="accordion-body">
+          <form action="">
+            <div class="row justify-content-start">
+                <div class="col-md-4 mb-3">
+                    <!-- INPUT INVITED UUID -->
+                    <label for="zip">Invited user UUID:</label>
+                    <div class="input-group mb-3">
+                      <textarea name="invited_user_uuid" class="form-control" id="" cols="15" rows="1">{% if search.invited_user_uuid %}{{search.invited_user_uuid}}{% endif %}</textarea>
+                      <!-- END INPUT HASH -->
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <!-- INPUT STATE -->
+                    <label for="state">State:</label>
+                    <select name="state" class="form-select" aria-label="Default select example">
+                        <option value="" {% if search.state == None %} selected {% endif %}>State</option>
+                        <option value="created" {% if search.state == 'created'%} selected {% endif %}>Created</option>
+                        <option value="done" {% if search.state == 'done'%} selected {% endif %}>Done</option>
+                        <option value="cancelled" {% if search.state == 'cancelled'%} selected {% endif %}>Cancelled</option>
+                    </select>
+                    <!-- END INPUT STATE -->
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="zip">Amount:</label>
+                    <div class="input-group mb-3">
+                    <input type="number" name="min_amount" class="form-control" placeholder="0"  aria-label="Min amount" step="any"
+                           {% if search.min_amount %}
+                           value="{{search.min_amount}}"
+                           {% endif %}
+                           >
+                    <span class="input-group-text">to</span>
+                    <input type="number" name="max_amount" class="form-control" 
+                    placeholder="Max amount" 
+                    aria-label="Max balance" step="any"
+                           {% if search.max_amount %}
+                           value="{{ search.max_amount }}"
+                           {% endif %}
+                           >
+                    </div>
+                </div>
+            </div>
+                <div class="row justify-content-start">
+                    <div class="col-md-4 mb-3"></div>
+                    <div class="col-md-4 mb-3">
+                    <label for="basic-url" class="form-label">Created at</label>
+                    <div class="input-group mb-3">
+                    <span class="input-group-text" id="basic-addon3">From</span>
+                    <input type="datetime-local" name="min_created_at" class="form-control" id="basic-url" aria-describedby="basic-addon3" 
+                           value={{search.min_created_at}}>
+                    </div>
+                    <div class="input-group mb-3">
+                    <span class="input-group-text" id="basic-addon3">To</span>
+                    <input type="datetime-local" name="max_created_at" class="form-control" id="basic-url" aria-describedby="basic-addon3"
+                            value={{search.max_created_at}}>
+                </div>
+                </div>
+                <div class="col-md-4 mb-3"></div>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success">Search</button>
+                    <a class="btn btn-secondary" href="/user_referal_chidlren/{{user.uuid}}" role="button">Default</a>
+                </div>
+                </div>
+                
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+<table class="table table-striped">
+    <thead>
+      <tr class="text-center">
+        <th scope="col">#</th>
+        <th scope="col">Invited User</th>
+        <th scope="col">State</th>
+        <th scope="col">Amount
+            <div class="btn-group">
+                <div class="dropdown">
+                  <button class="btn btn-{% if 'amount' not in order_by and '-amount' not in order_by %}secondary 
+                                          {% else %}success
+                                          {% endif %}
+                                 btn-sm dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                    {% if "amount" in order_by %}⬆️
+                    {% elif "-amount" in order_by %}⬇️
+                    {% else %} S
+                    {% endif %}
+                  </button>
+                  <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                    <li><a class="dropdown-item" href="/user_referal_chidlren_sort/{{user.uuid}}/~amount{{ params|get_urlencode }}">S</a></li>
+                    <li><a class="dropdown-item" href="/user_referal_chidlren_sort/{{user.uuid}}/+amount{{ params|get_urlencode }}">⬆️</a></li>
+                    <li><a class="dropdown-item" href="/user_referal_chidlren_sort/{{user.uuid}}/-amount{{ params|get_urlencode }}">⬇️</a></li>
+                  </ul>
+                </div>
+              </div>
+        </th>
+        <th scope="col">Created at
+            <div class="btn-group">
+                <div class="dropdown">
+                  <button class="btn btn-{% if 'created_at' not in order_by and '-created_at' not in order_by %}secondary 
+                                          {% else %}success
+                                          {% endif %}
+                                 btn-sm dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                    {% if "created_at" in order_by %}⬆️
+                    {% elif "-created_at" in order_by %}⬇️
+                    {% else %} S
+                    {% endif %}
+                  </button>
+                  <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                    <li><a class="dropdown-item" href="/user_referal_chidlren_sort/{{user.uuid}}/~created_at{{ params|get_urlencode }}">S</a></li>
+                    <li><a class="dropdown-item" href="/user_referal_chidlren_sort/{{user.uuid}}/+created_at{{ params|get_urlencode }}">⬆️</a></li>
+                    <li><a class="dropdown-item" href="/user_referal_chidlren_sort/{{user.uuid}}/-created_at{{ params|get_urlencode }}">⬇️</a></li>
+                  </ul>
+                </div>
+              </div>
+        </th>
+        <th scop="col">Delete</th>
+    </thead>
+    <tbody>
+      <form action="/update_referal_children{{ params|get_urlencode }}" method="post">
+      <input type="hidden" value="{{user.uuid}}" name="user_uuid_hidden">
+       {% for referal_bonus in send_referal %}
+       <tr class="text-center">
+         <input type="hidden" name="referal_uuid" value="{{referal_bonus.uuid}}">
+        <th scope="row">{{loop.index}}</th>
+        <td class="text-center">
+            <div class="input-group mb-3">
+                <a class="btn btn-outline-secondary" href="/user/{{referal_bonus.invited_user.uuid}}" type="button" id="button-addon1" role="button">
+                  {% if referal_bonus.invited_user.tg_username %} {{ referal_bonus.invited_user.tg_username }}{% else %}Children{% endif %}
+                </a>
+                <input name="referal_parent" value="{{referal_bonus.invited_user.uuid}}" 
+                       type="text" class="form-control" placeholder="Referal Parent UUID" 
+                       aria-label="Example text with button addon" aria-describedby="button-addon1">
+              </div>
+        <td>
+            <select name="state" class="form-select" aria-label="Default select example">
+                <option value="created" {% if referal_bonus.state == "created" %}selected{% endif %}>Created</option>
+                <option value="cancelled" {% if referal_bonus.state == "cancelled" %}selected{% endif %}>Cancelled</option>
+                <option value="done" {% if referal_bonus.state == "done" %}selected{% endif %}>Done</option>
+            </select>
+
+        </td>
+        <td>
+            <input name="amount" type="number" class="form-control text-center" placeholder="Amount" 
+        value="{{referal_bonus.amount}}" aria-label="Amount" step="any" required>
+        </td>
+        <td>{{referal_bonus.created_at | format_date }}</td>
+        <td>
+          <select name="delete" class="form-select" aria-label="Default select example">
+            <option value="False" selected>No</option>
+            <option value="True">Yes</option>
+            
+        </select>
+
+      </td>
+       </tr>
+       {% else %} 
+    <tr>
+        <td class="text-center">---</td>
+        <td class="text-center">---</td>
+        <td class="text-center">---</td>
+        <td class="text-center">---</td>
+        <td class="text-center">---</td>
+        <td class="text-center">---</td>
+        <td class="text-center">---</td>
+        <td class="text-center">---</td>
+    </tr>
+       {% endfor %}
+       <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td class="text-center"><button type="submit" class="btn btn-success btn-sm">Update</button></td>
+        </form>
+    </tr>
+    </tbody>
+</table>
+<!--END REFERAL BONUS -->
+
+{% endblock %}

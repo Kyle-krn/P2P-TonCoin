@@ -1,39 +1,4 @@
 
-<br>
-<h3 class="text-center">Referal Bonus:</h3>
-<table class="table table-striped">
-    <thead>
-      <tr class="text-center">
-        <th scope="col">#</th>
-        <th scope="col">Invited User</th>
-        <th scope="col">State</th>
-        <th scope="col">Amount</th>
-        <th scope="col">Created at</th>
-    </thead>
-    <tbody>
-       {% for referal_bonus in user.send_referal %}
-       <tr class="text-center">
-        <th scope="row">{{loop.index}}</th>
-        <td><a href="/user/{{referal_bonus.invited_user.uuid}}">{{referal_bonus.invited_user.tg_username}}</a></td>
-        <td>{{referal_bonus.state}}</td>
-        <td>{{referal_bonus.amount}} TON</td>
-        <td>{{referal_bonus.created_at | format_date }}</td>
-       </tr>
-       {% else %} 
-    <tr>
-        <td class="text-center">---</td>
-        <td class="text-center">---</td>
-        <td class="text-center">---</td>
-        <td class="text-center">---</td>
-        <td class="text-center">---</td>
-        <td class="text-center">---</td>
-        <td class="text-center">---</td>
-        <td class="text-center">---</td>
-    </tr>
-       {% endfor %}
-    </tbody>
-</table>
-<!--END REFERAL BONUS -->
 
 <!-- PAYMENT ACCOUNT -->
 <br>

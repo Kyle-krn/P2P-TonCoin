@@ -87,7 +87,6 @@ async def users_list(request: Request,
                 indx = order_by.index(item)
                 order_by = order_by[:indx] + [item[1:]] + order_by[indx+1:]
         users = await models.User.filter(query).order_by(*order_by)
-    print(order_by)
     context = {"request": request, 
                "users": users,
                "username": username,
@@ -125,14 +124,17 @@ async def sort_user(request: Request,
     return "/users?" + urlencode(params)
 
 
+class NewChildrenExc(Exception):
+    pass
+
 @user_router.get("/user/{uuid}", response_class=HTMLResponse)
 async def user_detail(request: Request, 
                       uuid: UUID,
                       user: models.Staff = Depends(manager)):
-    user = await models.User.get(uuid=uuid).prefetch_related("send_referal__invited_user" ,"history_balance", "payments_account__type")
-    
+    user = await models.User.get(uuid=uuid).prefetch_related("referal_user")
     context = {"request": request,
-               "user": user}
+               "user": user,
+               "params": request.query_params._dict}
     return templates.TemplateResponse("user_detail.html", context)
 
 
@@ -148,17 +150,99 @@ async def update_user(request: Request,
     params = request.query_params
     if params != "":
         params = "?" + str(params)
-    if referal_parent is not None:
-        if isinstance(referal_parent, UUID) is False or (await models.User.get_or_none(uuid=referal_parent)) is None:
-            flash(request, "Error Parent UUID")
-        else:
-            user.referal_user_id = referal_parent
-    elif user.referal_user is not None and referal_parent is None:
-        bonus = await models.UserReferalBonus.get_or_none(user=await user.referal_user, invited_user=user)
-        if bonus:
-            bonus.state = "Invited user deleted"
-            await bonus.save()
-        user.referal_user = None
+   
+    try:
+        if referal_parent != user.referal_user_id:
+            new_parent = None
+            if referal_parent and isinstance(referal_parent, UUID):
+                new_parent = await models.User.get_or_none(uuid=referal_parent)
+                if new_parent is None or user == new_parent:
+                    raise NewChildrenExc()
+            old_referal = None
+            if user.referal_user_id:
+                old_referal = await models.UserReferalBonus.get(user_id=user.referal_user_id,
+                                                                invited_user_id=user.uuid)
+            if old_referal and new_parent is None:
+                old_referal.state = "cancelled"
+                user.referal_user = None
+                await user.save()
+                await old_referal.save()
+            if old_referal is None and new_parent:
+                new_referal = await models.UserReferalBonus.get_or_none(user_id=new_parent.uuid,
+                                                                        invited_user_id=user.uuid)
+                if not new_referal:
+                    pass
+                    new_referal = await models.UserReferalBonus.create(user_id=new_parent.uuid,
+                                                           invited_user_id=user.uuid,
+                                                           amount=1,
+                                                           state="created")
+                else:
+                    new_referal.state = "created"
+                    await new_referal.save()
+                
+                user.referal_user = new_parent
+                await user.save()
+            
+            elif old_referal and new_parent:
+                old_referal.state = "cancelled"
+                await old_referal.save()
+                new_referal = await models.UserReferalBonus.get_or_none(user_id=new_parent.uuid,
+                                                                        invited_user_id=user.uuid)
+                if not new_referal:
+                    pass
+                    new_referal = await models.UserReferalBonus.create(user_id=new_parent.uuid,
+                                                           invited_user_id=user.uuid,
+                                                           amount=1,
+                                                           state="created")
+                else:
+                    new_referal.state = "created"
+                    await new_referal.save()
+                
+                user.referal_user = new_parent
+                await user.save()
+
+            
+    except NewChildrenExc:
+        flash(request, "Invalid UUID")
+
+    # if referal_parent != user.referal_user_id:
+    #     if referal_parent is not None:
+    #         if isinstance(referal_parent, UUID) is False or (await models.User.get_or_none(uuid=referal_parent)) is None or user.uuid == referal_parent:
+    #             flash(request, "Error Parent UUID")
+    #     else:
+    #         if referal_parent is None and user.referal_user_id is not None:
+    #             old_referal = await models.UserReferalBonus.get_or_none(user_id=user.referal_user_id,
+    #                                                                     invited_user_id=user.uuid)  
+    #             print(old_referal)
+    #             if old_referal:
+    #                 old_referal.state = "cancelled"
+    #                 await old_referal.save()
+    #             user.referal_user_id = None
+    #         elif referal_parent is not None and user.referal_user_id is None:
+    #             referal = await models.UserReferalBonus.get_or_none(user_id=referal_parent,
+    #                                                 invited_user_id=user.uuid,
+    #                                                 )
+    #             if not referal:
+    #                 await models.UserReferalBonus.create(user_id=referal_parent,
+    #                                                 invited_user_id=user.uuid,
+    #                                                 state="created",
+    #                                                 amount=1)      
+    #         else:
+    #             old_referal = await models.UserReferalBonus.get_or_none(user_id=user.referal_user_id,
+    #                                                                     invited_user_id=user.uuid)  
+    #             if old_referal:
+    #                 old_referal.state = "cancelled"
+    #                 await old_referal.save()
+                    
+    #             referal = await models.UserReferalBonus.get_or_none(user_id=referal_parent,
+    #                                                 invited_user_id=user.uuid,
+    #                                                 )
+    #             if not referal:
+    #                 await models.UserReferalBonus.create(user_id=referal_parent,
+    #                                                 invited_user_id=user.uuid,
+    #                                                 state="created",
+    #                                                 amount=1)
+
     await user.update_from_dict({"wallet": wallet, "balance": balance, "frozen_balance": frozen_balance})
     await user.save()
     flash(request, "Success", category="success")

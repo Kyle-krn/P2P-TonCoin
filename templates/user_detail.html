@@ -21,7 +21,7 @@
         <td class="text-center"><b>UUID:</b></td>
         <td class="text-center">{{user.uuid}}</td>
       </tr>
-      <form action="/update_user/{{user.uuid}}{{params}}" method="post">
+      <form action="/update_user/{{user.uuid}}{{params | get_urlencode}}" method="post">
       <tr>
         <td class="text-center"><b>Username:</b></td>
         <td class="text-center">{{user.tg_username}}
@@ -57,10 +57,13 @@
         <td class="text-center">
             <div class="input-group mb-3">
                 {% if user.referal_user_id == None %}
-                <a class="btn btn-outline-secondary" href="#" type="button" id="button-addon1" role="button" disabled>Parent</a>
+                <a class="btn btn-outline-secondary" href="#" type="button" id="button-addon1" role="button" disabled>Parent
+                </a>
                 <input name="referal_parent" type="text" class="form-control" placeholder="Referal Parent UUID" aria-label="Example text with button addon" aria-describedby="button-addon1">
                 {% else %}
-                <a class="btn btn-outline-secondary" href="/user/{{user.referal_user_id}}" type="button" id="button-addon1" role="button">Parent</a>
+                <a class="btn btn-outline-secondary" href="/user/{{user.referal_user_id}}" type="button" id="button-addon1" role="button">
+                  {% if user.referal_user.tg_username %} {{ user.referal_user.tg_username }}{% else %}Parent{% endif %}
+                </a>
                 <input name="referal_parent" type="text" class="form-control" placeholder="Referal Parent UUID" aria-label="Example text with button addon" aria-describedby="button-addon1"
                  value="{{user.referal_user_id}}">
                 {% endif %}
@@ -84,7 +87,7 @@
 
 <div class="text-center">
   <a class="btn btn-primary btn-lg" href="/user_history_balance/{{user.uuid}}" role="button">History Balance</a>
-  <a class="btn btn-primary btn-lg" href="#" role="button">Referal children</a>
+  <a class="btn btn-primary btn-lg" href="/user_referal_chidlren/{{user.uuid}}" role="button">Referal children</a>
   <a class="btn btn-primary btn-lg" href="#" role="button">Payment Account</a>
 </div>
 
