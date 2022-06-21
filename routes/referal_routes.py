@@ -19,18 +19,18 @@ async def update_history_balance(request: Request,
     # print(form_list)
     if user_uuid_hidden is not None:
         form_list.pop(0)
-    for indx in range(0, len(form_list), 5):
+    for indx in range(0, len(form_list), 4):
         uuid_referal = form_list[indx][1]
         state = form_list[indx+2][1] #if form_list[indx+2][1] != "" else None
         amount = form_list[indx+3][1]#if form_list[indx+3][1] != "" else None
-        delete_bool = form_list[indx+4][1]
+        # delete_bool = form_list[indx+4][1]
         referal = await models.UserReferalBonus.get(uuid=uuid_referal)
-        if delete_bool == 'True':
-            children = await referal.invited_user
-            children.referal_user = None
-            await children.save()
-            await referal.delete()
-            continue
+        # if delete_bool == 'True':
+        #     children = await referal.invited_user
+        #     children.referal_user = None
+        #     await children.save()
+        #     await referal.delete()
+        #     continue
         
         old_uuid_children = referal.invited_user_id
         new_uuid_children = form_list[indx+1][1]
@@ -55,10 +55,20 @@ async def update_history_balance(request: Request,
             new_children.referal_user_id = new_uuid_children
             await new_children.save()
             referal.invited_user_id = new_uuid_children
-        
-        referal.state = state
         referal.amount = amount
-        await referal.save()
+        if referal.state != state:
+            parent = await referal.user
+            if (referal.state == 'created' or referal.state == 'cancelled') and state == "done":
+                parent.balance += float(referal.amount)
+                referal.state = state
+                await parent.save()
+            elif referal.state == 'done' and state == "cancelled":
+                parent.balance -= float(referal.amount)
+                referal.state = state
+                await parent.save()
+            elif (referal.state == 'created' or referal.state == 'cancelled') and state == "created":
+                flash(request, "Если статус реферала равен 'cancelled' или 'done', то установить статус 'created' нельзя.")
+            await referal.save()
     flash(request, "Success", category="success")
     params = request.query_params
     if params != "":

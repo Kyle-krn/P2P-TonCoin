@@ -9,7 +9,7 @@
           Referal bonus search
         </button>
       </h2>
-      <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+      <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
         <div class="accordion-body">
           <form action="">
             <div class="row justify-content-start">
@@ -125,7 +125,6 @@
                 </div>
               </div>
         </th>
-        <th scop="col">Delete</th>
     </thead>
     <tbody>
       <form action="/update_referal_children{{ params|get_urlencode }}" method="post">
@@ -156,18 +155,15 @@
         value="{{referal_bonus.amount}}" aria-label="Amount" step="any" required>
         </td>
         <td>{{referal_bonus.created_at | format_date }}</td>
-        <td>
-          <select name="delete" class="form-select" aria-label="Default select example">
+          <!-- <select name="delete" class="form-select" aria-label="Default select example">
             <option value="False" selected>No</option>
             <option value="True">Yes</option>
             
-        </select>
+        </select> -->
 
-      </td>
        </tr>
        {% else %} 
     <tr>
-        <td class="text-center">---</td>
         <td class="text-center">---</td>
         <td class="text-center">---</td>
         <td class="text-center">---</td>

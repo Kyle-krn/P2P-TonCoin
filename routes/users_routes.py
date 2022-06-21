@@ -160,7 +160,7 @@ async def update_user(request: Request,
                     raise NewChildrenExc()
             old_referal = None
             if user.referal_user_id:
-                old_referal = await models.UserReferalBonus.get(user_id=user.referal_user_id,
+                old_referal = await models.UserReferalBonus.get_or_none(user_id=user.referal_user_id,
                                                                 invited_user_id=user.uuid)
             if old_referal and new_parent is None:
                 old_referal.state = "cancelled"

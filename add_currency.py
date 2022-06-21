@@ -66,10 +66,14 @@ async def insert_lang():
     
     await models.Lang.create(rus=text, eng=text)
 
+async def test_json_field():
+    await Tortoise.init(config.TORTOISE_ORM)
+    payment = await models.UserPaymentAccountType.filter(Q(data__icontains="email"))
+    print(payment)
 
 if __name__ == '__main__':
     # test()
-    run_async(insert_lang())
+    run_async(test_json_field())
     # run_async(lang_currency("EUR", "Евро", "Euro"))
     # run_async(add_currency("UAH"))
     # run_async(add_payment_type(pay_name="СберБанк", cur_name="RUB", pay_dict={"Номер ЛК": "", "email": "", "Номер телефона": ""}))

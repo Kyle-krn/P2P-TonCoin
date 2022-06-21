@@ -1,8 +1,9 @@
 {% extends "user_detail.html" %}
 {% block user_relation %}
 <!-- CHANGE BALANCE -->
-<br><br>
+<br>
 <!-- FILTER -->
+<h3 class="text-center">Change Balance:</h3>
 <div class="accordion" id="accordionExample">
     <div class="accordion-item">
       <h2 class="accordion-header" id="headingOne">
@@ -10,7 +11,7 @@
           Change balance filter
         </button>
       </h2>
-      <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+      <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
         <div class="accordion-body">
           <form method="get" action="/user_history_balance/{{user.uuid}}{{ params|get_urlencode }}">
             <input type="hidden" name="user_uuid_hidden" value="{{user.uuid}}">
@@ -115,7 +116,6 @@
   </div>
 <!-- END FILTER -->
 <br>
-<h3 class="text-center">Change Balance:</h3>
 <div class="table-responsive">
 <table class="table table-striped">
     <thead>
@@ -297,10 +297,10 @@
           href="/user_history_balance/{{user.uuid}}{{params|get_urlencode}}{% if params|get_urlencode == '' %}?{% else %}&{% endif %}page={{history_balance_page+1}}">{{history_balance_page+1}}</a></li>
       {% elif history_balance_last_page - history_balance_page >= 0 %}
         {% if history_balance_page > 2 %}
-            <li class="page-item"><a class="page-link" href="/user_history_balance/{{params|get_urlencode}}{% if params|get_urlencode == '' %}?{% else %}&{% endif %}page=1">1</a></li>
+            <li class="page-item"><a class="page-link" href="/user_history_balance/{{user.uuid}}{{params|get_urlencode}}{% if params|get_urlencode == '' %}?{% else %}&{% endif %}page=1">1</a></li>
             <li class="page-item"><a class="page-link" href="" disabled="disabled">...</a></li>
         {% endif %}
-        <li class="page-item active"><a class="page-link" href="{{page}}">{{history_balance_page}}</a></li>
+        <li class="page-item active"><a class="page-link" href="/user_history_balance/{{user.uuid}}{{params|get_urlencode}}{% if params|get_urlencode == '' %}?{% else %}&{% endif %}page=1">{{history_balance_page}}</a></li>
       {% endif %}
 
     
