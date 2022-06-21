@@ -1,6 +1,4 @@
-{% extends "user_detail.html" %}
-{% block user_relation %}
-<!-- CHANGE BALANCE -->
+{% block history_balance %}
 <br>
 <!-- FILTER -->
 <h3 class="text-center">Change Balance:</h3>
@@ -13,7 +11,7 @@
       </h2>
       <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
         <div class="accordion-body">
-          <form method="get" action="/user_history_balance/{{user.uuid}}{{ params|get_urlencode }}">
+          <form method="get" action="/{% if user %}user_{% endif %}history_balance/{{user.uuid}}{{ params|get_urlencode }}">
             <input type="hidden" name="user_uuid_hidden" value="{{user.uuid}}">
             <!-- Row first -->
             <div class="row justify-content-start">
@@ -38,7 +36,7 @@
                            >
                     <span class="input-group-text">to</span>
                     <input type="number" name="max_amount" class="form-control" 
-                    placeholder={% if history_balance_search.max_amount_show %}"{{history_balance_search.max_amount_show}}" {% else %}0{% endif %} 
+                    placeholder={% if history_balance_search.max_amount_show %}"{{history_balance_search.max_amount_show}}"{% else %}0{% endif %} 
                     aria-label="Max balance" step="any"
                            {% if history_balance_search.max_amount %}
                            value="{{ history_balance_search.max_amount }}"
@@ -106,7 +104,7 @@
               <div class="col-md-4 mb-3"></div>
               <div class="text-center">
                   <button type="submit" class="btn btn-success">Search</button>
-                  <a class="btn btn-secondary" href="/user_history_balance/{{user.uuid}}" role="button">Deafult</a>
+                  <a class="btn btn-secondary" href="/{% if user %}user_{% endif %}history_balance/{{user.uuid}}" role="button">Deafult</a>
               </div>
               </div>
           </form>
@@ -135,9 +133,9 @@
                 {% endif %}
               </button>
               <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                <li><a class="dropdown-item" href="/user_history_balance_sort/{{user.uuid}}/~amount{{ params|get_urlencode }}">S</a></li>
-                <li><a class="dropdown-item" href="/user_history_balance_sort/{{user.uuid}}/+amount{{ params|get_urlencode }}">⬆️</a></li>
-                <li><a class="dropdown-item" href="/user_history_balance_sort/{{user.uuid}}/-amount{{ params|get_urlencode }}">⬇️</a></li>
+                <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}history_balance_sort/~amount{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">S</a></li>
+                <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}history_balance_sort/+amount{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬆️</a></li>
+                <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}history_balance_sort/-amount{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬇️</a></li>
               </ul>
             </div>
           </div>
@@ -159,9 +157,9 @@
                 {% endif %}
               </button>
               <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                <li><a class="dropdown-item" href="/user_history_balance_sort/{{user.uuid}}/~created_at{{ params|get_urlencode }}">S</a></li>
-                <li><a class="dropdown-item" href="/user_history_balance_sort/{{user.uuid}}/+created_at{{ params|get_urlencode }}">⬆️</a></li>
-                <li><a class="dropdown-item" href="/user_history_balance_sort/{{user.uuid}}/-created_at{{ params|get_urlencode }}">⬇️</a></li>
+                <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}history_balance_sort/~created_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">S</a></li>
+                <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}history_balance_sort/+created_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬆️</a></li>
+                <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}history_balance_sort/-created_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬇️</a></li>
               </ul>
             </div>
           </div>
@@ -169,62 +167,32 @@
         <!-- <th scope="col">Update</th> -->
     </thead>
     <tbody>
-    <form action="/update_history_balance{{ params|get_urlencode }}" method="post">
     <input type="hidden" value="{{user.uuid}}" name="user_uuid_hidden">
     {% for history_balance in history_balance %}
     <input type="hidden" value="{{history_balance.uuid}}" name="uuid_history_balance">
     <tr class="text-center">
     <th scope="row">{{loop.index}}</th>
     <!-- TYPE -->
-    <td>
-        <select name="type" class="form-select" aria-label="Default select example">
-        {% if history_balance.type == "topup" %}
-        <option selected value="topup">Top up</option>
-        <option value="withdraw">Withdraw</option>
-        {% else %}
-        <option selected value="withdraw">Withdraw</option>
-        <option value="topup">Top up</option>
-        {% endif %}
-      </select>
-    </td>
+    <td>{{history_balance.type}}</td>
     <!-- END TYPE -->
     
     <!-- AMOUNT -->
-    <td>
-        <input name="amount" type="number" class="form-control text-center" placeholder="Amount" 
-        value="{{history_balance.amount}}" aria-label="Amount" step="any">
-    </td>
+    <td>{{history_balance.amount}}</td>
     <!-- END AMOUNT  -->
 
     <!-- HASH -->
-    <td>
-        <textarea name="hash" type="text" class="form-control text-center" placeholder="Hash" 
-        aria-label="Hash">{% if history_balance.hash !=None %}{{history_balance.hash}}{%endif%}</textarea>
-    </td>
+    <td>{{history_balance.hash}}</td>
     <!-- END HASH -->
 
     <!-- WALLET -->
-    <td>
-        <textarea name="wallet" type="text" class="form-control text-center" placeholder="Wallet" 
-        aria-label="Wallet">{% if history_balance.wallet != None %}{{history_balance.wallet}}{%endif%}</textarea>
-    </td>
+    <td>{{history_balance.wallet}}</td>
     <!-- END WALLET -->
 
     <!-- CODE -->
-    <td>
-        <textarea name="code" type="text" class="form-control text-center" placeholder="Code" 
-        aria-label="Code">{% if history_balance.code == None %}{% else %}{{history_balance.code}}{% endif %}</textarea>
-    </td>
+    <td>{{history_balance.code}}</td>
 
     <!-- STATE -->
-    <td>
-        <select name="state" class="form-select" aria-label="Default select example">
-            <option value="created" {% if history_balance.state == "created" %}selected{% endif %}>Created</option>
-            <option value="cancelled" {% if history_balance.state == "cancelled" %}selected{% endif %}>Cancelled</option>
-            <option value="done" {% if history_balance.state == "done" %}selected{% endif %}>Done</option>
-            
-        </select>
-    </td>
+    <td>{{history_balance.state}}</td>
     <!-- END STATE -->
     <td>{{ history_balance.created_at | format_date }}</td>
     
@@ -241,79 +209,11 @@
         <td class="text-center">---</td>
     </tr>
     {% endfor %}
-    <tr>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td><td class="text-center"><button type="submit" class="btn btn-success btn-sm">Update</button></td></td> 
-        </form>
-    </tr>
     </tbody>
 </table>
-
-<nav aria-label="Page navigation example">
-  <ul class="pagination justify-content-center pagination-lg">
-    <li class="page-item">
-      {% if history_balance_previous_page %}
-      <a class="page-link" href="/user_history_balance/{{user.uuid}}{{params|get_urlencode}}{% if params|get_urlencode == '' %}?{% else %}&{% endif %}page={{history_balance_previous_page}}" aria-label="Previous">
-        <span aria-hidden="true">&laquo;</span>
-        <span class="sr-only">Previous</span>
-      </a>
-      {% endif %}
-    </li>
-
-    {% if history_balance_last_page - history_balance_page >= 2 %}
-        {% if history_balance_page > 2 %}
-          <li class="page-item"><a class="page-link" href="{{params|get_urlencode}}{% if params|get_urlencode == '' %}?{% else %}&{% endif %}page=1">1</a></li>
-          <li class="page-item"><a class="page-link" href="" disabled="disabled">...</a></li>
-        {% endif %}
-        <li class="page-item active"><a class="page-link" href="">{{history_balance_page}} </a></li>
-        <li class="page-item">
-            <a class="page-link" 
-            href="/user_history_balance/{{user.uuid}}{{params|get_urlencode}}{% if params|get_urlencode == '' %}?{% else %}&{% endif %}page={{history_balance_page+1}}">
-            {{history_balance_page+1}}</a></li>
-        <li class="page-item">
-          <a class="page-link" 
-             href="/user_history_balance/{{user.uuid}}{{params|get_urlencode}}{% if params|get_urlencode == '' %}?{% else %}&{% endif %}page={{history_balance_page+2}}">
-             {{history_balance_page+2}}
-          </a>
-        </li>
-        {% if history_balance_last_page - history_balance_page != 2 %}
-          <li class="page-item"><a class="page-link" href="" disabled="disabled">...</a></li>
-          <li class="page-item"><a class="page-link" 
-            href="/user_history_balance/{{user.uuid}}{{params|get_urlencode}}{% if params|get_urlencode == '' %}?{% else %}&{% endif %}page={{history_balance_last_page}}">{{history_balance_last_page}}</a></li>
-        {% endif %}
-      {% elif history_balance_last_page - history_balance_page >= 1 %}
-        {% if history_balance_page > 2 %}
-          <li class="page-item"><a class="page-link" 
-          href="/user_history_balance/{{user.uuid}}{{params|get_urlencode}}{% if params|get_urlencode == '' %}?{% else %}&{% endif %}page=1">1</a></li>
-          <li class="page-item"><a class="page-link" href="" disabled="disabled">...</a></li>
-        {% endif %}
-        <li class="page-item active"><a class="page-link" href="">{{history_balance_page}}</a></li>
-        <li class="page-item"><a class="page-link" 
-          href="/user_history_balance/{{user.uuid}}{{params|get_urlencode}}{% if params|get_urlencode == '' %}?{% else %}&{% endif %}page={{history_balance_page+1}}">{{history_balance_page+1}}</a></li>
-      {% elif history_balance_last_page - history_balance_page >= 0 %}
-        {% if history_balance_page > 2 %}
-            <li class="page-item"><a class="page-link" href="/user_history_balance/{{user.uuid}}{{params|get_urlencode}}{% if params|get_urlencode == '' %}?{% else %}&{% endif %}page=1">1</a></li>
-            <li class="page-item"><a class="page-link" href="" disabled="disabled">...</a></li>
-        {% endif %}
-        <li class="page-item active"><a class="page-link" href="/user_history_balance/{{user.uuid}}{{params|get_urlencode}}{% if params|get_urlencode == '' %}?{% else %}&{% endif %}page=1">{{history_balance_page}}</a></li>
-      {% endif %}
-
-    
-      {% if history_balance_next_page %}
-      <a class="page-link" 
-      href="/user_history_balance/{{user.uuid}}{{params|get_urlencode}}{% if params|get_urlencode == '' %}?{% else %}&{% endif %}page={{history_balance_next_page}}" aria-label="Next">
-        <span aria-hidden="true">&raquo;</span>
-        <span class="sr-only">Next</span>
-      {% endif %}
-      </a>
-    </li>
-  </ul>
-</nav>
 </div>
-<!-- END CHANGE BALANCE -->
+
+{% include "include/pagination.html" %}
+
+
 {% endblock %}

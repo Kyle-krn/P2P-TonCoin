@@ -1,9 +1,12 @@
-{% extends "user_detail.html" %}
-{% block user_relation %}
+{% block payments_account %}
 
 <!-- PAYMENT ACCOUNT -->
 <br>
-<h3 class="text-center">Payment Account:</h3>
+<h3 class="text-center">Payment Account:
+    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#exampleModal">
+        ➕
+    </button>
+</h3>
 
 <div class="accordion" id="accordionExample">
     <div class="accordion-item">
@@ -113,7 +116,7 @@
 
                 <div class="text-center">
                     <button type="submit" class="btn btn-success">Search</button>
-                    <a class="btn btn-secondary" href="/user_payments_account/{{user.uuid}}" role="button">Default</a>
+                    <a class="btn btn-secondary" href="/{% if user %}user_{% endif %}payments_account/{{user.uuid}}" role="button">Default</a>
                 </div>
                 </div>
                 
@@ -136,7 +139,9 @@
         </thead>
     <tbody>
     <form action="/update_payments_account{{ params|get_urlencode }}" method="post">
+    {% if user %}
     <input type="hidden" value="{{user.uuid}}" name="user_uuid_hidden">
+    {% endif %}
     {% for account in payments_account %}
     <input type="hidden" value="{{account.uuid}}" name="payment_account_uuid">
     <tr class="text-center">
@@ -188,64 +193,55 @@
 </table>
 </div>
 </form>
-<nav aria-label="Page navigation example">
-    <ul class="pagination justify-content-center pagination-lg">
-      <li class="page-item">
-        {% if previous_page %}
-        <a class="page-link" 
-        href="/user_payments_account/{{user.uuid}}{{params|get_urlencode}}{% if params|get_urlencode == '' %}?{% else %}&{% endif %}page={{previous_page}}" aria-label="Previous">
-          <span aria-hidden="true">&laquo;</span>
-          <span class="sr-only">Previous</span>
-        </a>
-        {% endif %}
-      </li> 
-      {% if last_page - page >= 2 %}
-          {% if page > 2 %}
-            <li class="page-item"><a class="page-link" href="{{params|get_urlencode}}{% if params|get_urlencode == '' %}?{% else %}&{% endif %}page=1">1</a></li>
-            <li class="page-item"><a class="page-link" href="" disabled="disabled">...</a></li>
-          {% endif %}
-          <li class="page-item active"><a class="page-link" href="">{{page}} </a></li>
-          <li class="page-item">
-              <a class="page-link" 
-              href="/user_payments_account/{{user.uuid}}{{params|get_urlencode}}{% if params|get_urlencode == '' %}?{% else %}&{% endif %}page={{page+1}}">
-              {{page+1}}</a></li>
-          <li class="page-item">
-            <a class="page-link" 
-               href="/user_payments_account/{{user.uuid}}{{params|get_urlencode}}{% if params|get_urlencode == '' %}?{% else %}&{% endif %}page={{page+2}}">
-               {{page+2}}
-            </a>
-          </li>
-          {% if last_page - page != 2 %}
-            <li class="page-item"><a class="page-link" href="" disabled="disabled">...</a></li>
-            <li class="page-item"><a class="page-link" 
-              href="/user_payments_account/{{user.uuid}}{{params|get_urlencode}}{% if params|get_urlencode == '' %}?{% else %}&{% endif %}page={{last_page}}">{{last_page}}</a></li>
-          {% endif %}
-        {% elif last_page - page >= 1 %}
-          {% if page > 2 %}
-            <li class="page-item"><a class="page-link" 
-            href="/user_payments_account/{{user.uuid}}{{params|get_urlencode}}{% if params|get_urlencode == '' %}?{% else %}&{% endif %}page=1">1</a></li>
-            <li class="page-item"><a class="page-link" href="" disabled="disabled">...</a></li>
-          {% endif %}
-          <li class="page-item active"><a class="page-link" href="">{{page}}</a></li>
-          <li class="page-item"><a class="page-link" 
-            href="/user_payments_account/{{user.uuid}}{{params|get_urlencode}}{% if params|get_urlencode == '' %}?{% else %}&{% endif %}page={{page+1}}">{{page+1}}</a></li>
-        {% elif last_page - page >= 0 %}
-          {% if page > 2 %}
-              <li class="page-item"><a class="page-link" href="/user_payments_account/{{user.uuid}}{{params|get_urlencode}}{% if params|get_urlencode == '' %}?{% else %}&{% endif %}page=1">1</a></li>
-              <li class="page-item"><a class="page-link" href="" disabled="disabled">...</a></li>
-          {% endif %}
-          <li class="page-item active"><a class="page-link" href="#">{{page}}</a></li>
-        {% endif %}
-        {% if next_page %}
-        <a class="page-link" 
-        href="/user_payments_account/{{user.uuid}}{{params|get_urlencode}}{% if params|get_urlencode == '' %}?{% else %}&{% endif %}page={{next_page}}" aria-label="Next">
-          <span aria-hidden="true">&raquo;</span>
-          <span class="sr-only">Next</span>
-        {% endif %}
-        </a>
-      </li>
-    </ul>
-  </nav>
+{% include "include/pagination.html" %}
+
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          
+          <form action="/create_payments_account{{ params|get_urlencode }}" method="post">
+            {% if user %}
+            <input type="hidden" name="user_uuid"  value="{{user.uuid}}">
+            {% else %}
+            <label for="" class="form-label">User UUID:</label>
+            <input name="user_uuid" 
+                type="text" class="form-control" placeholder="Enter referal parent UUID" 
+                aria-label="Example text with button addon" aria-describedby="button-addon1" required>
+            {% endif %}
+            <label for="" class="form-label">Type:</label>
+            <div class="input-group mb-3">
+                <select name="type_uuid" class="form-select" aria-label="Type" required>
+                    {% for type in payments_type %}
+                    <option value="{{type.uuid}}" {% if type.uuid == search.type_uuid %}selected{% endif %}>{{type.name}} | {{type.currency.name}}</option>
+                    {% endfor %}
+                </select>
+                <!-- END TYPE -->
+            </div>
+              <label for="" class="form-label">Data:</label>
+              <textarea name="data" class="form-control" id="" 
+                  cols="30" rows="3"></textarea>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="is_active" id="flexCheckDefault">
+                    <label class="form-check-label" for="flexCheckDefault">
+                      Is active
+                    </label>
+                  </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-success">Create</button>
+        </form>
+        </div>
+      </div>
+    </div>
+  </div>
 
 <!--END PAYMENT ACCOUNT -->
 {% endblock %}

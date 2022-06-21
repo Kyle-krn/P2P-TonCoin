@@ -130,9 +130,6 @@ async def user_detail(request: Request,
         next_page = None
     if page > last_page:
         pass
-
-    
-    
     if len(order_by) == 0:
         history_balance = history_balance.order_by("-created_at")
     else:
@@ -149,18 +146,20 @@ async def user_detail(request: Request,
                "params": params,
                "history_balance_search": search,
                "history_balance": history_balance,
-               "history_balance_page": page,
-               "history_balance_last_page": last_page,
-               "history_balance_previous_page": previous_page,
-               "history_balance_next_page": next_page,
-               "order_by": order_by}
-    return templates.TemplateResponse("user_history_balance.html", context)
+               "page": page,
+               "last_page": last_page,
+               "previous_page": previous_page,
+               "next_page": next_page,
+               "order_by": order_by,
+               "pagination_url": f"/user_history_balance/{user.uuid}"}
+    return templates.TemplateResponse("users/user_history_balance.html", context)
 
 
-@history_balance_router.get("/user_history_balance_sort/{user_uuid}/{column}", response_class=RedirectResponse)
+@history_balance_router.get("/user_history_balance_sort/{column}/{user_uuid}", response_class=RedirectResponse)
+@history_balance_router.get("/user_history_balance_sort/{column}", response_class=RedirectResponse)
 async def sort_user(request: Request,
-                    user_uuid: UUID,
                     column: str,
+                    user_uuid: UUID = None,
                     staff: models.Staff = Depends(manager)):
     params = request.query_params._dict
     if "order_by" not in params:
@@ -177,3 +176,5 @@ async def sort_user(request: Request,
             params["order_by"].append(column)
     return f"/user_history_balance/{user_uuid}?" + urlencode(params)
     # return "ok"
+
+

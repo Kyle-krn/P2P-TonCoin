@@ -1,11 +1,12 @@
 import ast
 from datetime import datetime
 import json
-from typing import Union
+from typing import Any, Union
 from urllib.parse import urlencode
 from fastapi.responses import HTMLResponse, RedirectResponse
 from uuid import UUID
 from fastapi import APIRouter, Depends, Request, Form
+from tortoise.exceptions import DoesNotExist
 from loader import flash, manager, templates
 from models import models
 from tortoise.queryset import Q
@@ -13,6 +14,36 @@ import starlette.status as status
 
 
 payment_account_router = APIRouter()
+
+@payment_account_router.post('/create_payments_account')
+async def create_payments_account(request: Request,
+                                  user_uuid: UUID = Form(),
+                                  type_uuid: UUID = Form(),
+                                  data: str = Form(),
+                                  is_active: bool = Form(False)):
+    try:
+        user = await models.User.get(uuid=user_uuid)
+        while "'" in data:
+            data = data.replace("'", '"')
+        json_data = json.loads(data)
+    except (json.decoder.JSONDecodeError, DoesNotExist) as exc:
+        if isinstance(exc,json.decoder.JSONDecodeError):
+            flash(request, f"Invalid JSON: {data}", 'danger')
+        else:
+            flash(request, f"Not found user: {user_uuid}", 'danger')
+    else:
+        await models.UserPaymentAccount.create(user=user, 
+                                               type_id=type_uuid, 
+                                               data=data, 
+                                               is_active=is_active)
+        flash(request, "Success", 'success')
+    
+    params = request.query_params
+    if params != "":
+        params = "?" + str(params)
+    return RedirectResponse(
+        f'/user_payments_account/{user_uuid}' + params, 
+        status_code=status.HTTP_302_FOUND)  
 
 @payment_account_router.post('/update_payments_account')
 async def user_payments_account(request: Request,
@@ -163,10 +194,11 @@ async def user_payment_account(request: Request,
         "last_page": last_page,
         "previous_page": previous_page,
         "next_page": next_page,
+        "pagination_url": f"/user_payments_account/{user.uuid}"
     }
 
     
-    return templates.TemplateResponse("user_payment_account.html", context)
+    return templates.TemplateResponse("users/user_payment_account.html", context)
 
 
 

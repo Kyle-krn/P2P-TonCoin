@@ -101,7 +101,7 @@ async def users_list(request: Request,
                "order_by": order_by,
                "params": f"?{request.query_params}" if request.query_params != "" else "",
                }
-    return templates.TemplateResponse("users_list.html", context)
+    return templates.TemplateResponse("users/users_list.html", context)
 
 
 @user_router.get("/sort_user/{column}", response_class=RedirectResponse)
@@ -135,7 +135,7 @@ async def user_detail(request: Request,
     context = {"request": request,
                "user": user,
                "params": request.query_params._dict}
-    return templates.TemplateResponse("user_detail.html", context)
+    return templates.TemplateResponse("users/user_detail.html", context)
 
 
 @user_router.post("/update_user/{user_uuid}")

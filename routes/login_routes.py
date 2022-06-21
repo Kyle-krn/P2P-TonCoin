@@ -28,7 +28,7 @@ async def load_superuser(user=Depends(manager)):
 
 @login_router.get("/auth/register")
 async def register(request: Request):
-    return templates.TemplateResponse("register.html", {"request": request})
+    return templates.TemplateResponse("auth/register.html", {"request": request})
 
 @login_router.post("/auth/new_staff")
 async def post_register(request: Request,
@@ -80,5 +80,5 @@ def logout(request: Request):
 @login_router.get("/auth/login",response_class=HTMLResponse)
 def loginwithCreds(request:Request):
     context = {"request": request}
-    return templates.TemplateResponse("login.html", context)
+    return templates.TemplateResponse("auth/login.html", context)
 

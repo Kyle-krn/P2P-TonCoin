@@ -1,5 +1,5 @@
 import ast
-from typing import Union
+from typing import Any, Union
 from urllib.parse import urlencode
 from fastapi.responses import HTMLResponse, RedirectResponse
 from uuid import UUID
@@ -11,14 +11,41 @@ import starlette.status as status
 
 referal_router = APIRouter()
 
+@referal_router.post("/create_referal")
+async def create_referal_children(request: Request,
+                                  referal_parent_uuid: UUID = Form(),
+                                  referal_children_uuid: Union[UUID, Any] = Form(),
+                                  amount: float = Form()):
+    if isinstance(referal_children_uuid, UUID) is False:
+        flash(request, f"Invalid UUID: {referal_children_uuid}", "danger")
+    else: 
+        referal = await models.UserReferalBonus.filter(user_id=referal_parent_uuid,
+                                                            invited_user_id=referal_children_uuid)
+        if len(referal) > 0:
+            flash(request, f"Referal bonus already exists", "info")
+        else:
+            await models.UserReferalBonus.create(user_id=referal_parent_uuid,
+                                                invited_user_id=referal_children_uuid,
+                                                amount=amount,
+                                                state="created")
+    params = request.query_params
+    if params != "":
+        params = "?" + str(params)
+    return RedirectResponse(
+        f'/user_referal_chidlren/{referal_parent_uuid}' + params, 
+        status_code=status.HTTP_302_FOUND)  
+
 @referal_router.post("/update_referal_children")
-async def update_history_balance(request: Request,
+async def update_referal_children(request: Request,
                                  user_uuid_hidden: UUID = Form(None)
                                 ):
     form_list = (await request.form())._list
-    # print(form_list)
-    if user_uuid_hidden is not None:
+    user_uuid = form_list[0]
+    if "user_uuid_hidden" in user_uuid:
         form_list.pop(0)
+    else:
+        pass
+    
     for indx in range(0, len(form_list), 4):
         uuid_referal = form_list[indx][1]
         state = form_list[indx+2][1] #if form_list[indx+2][1] != "" else None
@@ -162,15 +189,17 @@ async def user_detail(request: Request,
         "page": page,
         "last_page": last_page,
         "previous_page": previous_page,
-        "next_page": next_page
+        "next_page": next_page,
+        "pagination_url": f"/user_referal_chidlren/{user.uuid}",
     }
-    return templates.TemplateResponse("user_referal_children.html", context)
+    return templates.TemplateResponse("users/user_referal_children.html", context)
 
 
-@referal_router.get("/user_referal_chidlren_sort/{user_uuid}/{column}", response_class=RedirectResponse)
+@referal_router.get("/user_referal_chidlren_sort/{column}/{user_uuid}", response_class=RedirectResponse)
+@referal_router.get("/user_referal_chidlren_sort/{column}", response_class=RedirectResponse)
 async def sort_user(request: Request,
-                    user_uuid: UUID,
                     column: str,
+                    user_uuid: UUID = None,
                     staff: models.Staff = Depends(manager)):
     params = request.query_params._dict
     if "order_by" not in params:
