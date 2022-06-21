@@ -23,15 +23,7 @@ async def update_history_balance(request: Request,
         uuid_referal = form_list[indx][1]
         state = form_list[indx+2][1] #if form_list[indx+2][1] != "" else None
         amount = form_list[indx+3][1]#if form_list[indx+3][1] != "" else None
-        # delete_bool = form_list[indx+4][1]
         referal = await models.UserReferalBonus.get(uuid=uuid_referal)
-        # if delete_bool == 'True':
-        #     children = await referal.invited_user
-        #     children.referal_user = None
-        #     await children.save()
-        #     await referal.delete()
-        #     continue
-        
         old_uuid_children = referal.invited_user_id
         new_uuid_children = form_list[indx+1][1]
         if not new_uuid_children:
@@ -77,6 +69,7 @@ async def update_history_balance(request: Request,
         f'/user_referal_chidlren/{user_uuid_hidden}' + params, 
         status_code=status.HTTP_302_FOUND)  
 
+
 @referal_router.get("/user_referal_chidlren/{uuid}", response_class=HTMLResponse)
 async def user_detail(request: Request, 
                       uuid: UUID,
@@ -87,7 +80,8 @@ async def user_detail(request: Request,
                       max_amount: Union[float, str] = None,
                       min_created_at: str = None,
                       max_created_at: str = None,
-                      order_by: str = None
+                      order_by: str = None,
+                      page: int = 1
                       ):
     user = await models.User.get(uuid=uuid).prefetch_related("referal_user")
     
@@ -138,14 +132,37 @@ async def user_detail(request: Request,
                 order_by = order_by[:indx] + [item[1:]] + order_by[indx+1:]
         send_referal = send_referal.order_by(*order_by)
 
-    send_referal = await send_referal.prefetch_related("invited_user")
+
+    limit = 5
+    offset = (page - 1) * limit
+    count_history_change = await send_referal.count()
+    last_page = count_history_change/limit
+    if count_history_change % limit == 0:
+        last_page = int(last_page)
+    elif count_history_change % limit != 0:
+        last_page = int(last_page + 1)
+    
+    previous_page = page-1
+    next_page = page+1
+    if page == 1:
+        previous_page = None
+    if page == last_page:
+        next_page = None
+    if page > last_page:
+        pass
+
+    send_referal = await send_referal.offset(offset).limit(limit).prefetch_related("invited_user")
     context = {
         'request': request,
         'user': user,
         'params': request.query_params._dict,
         "send_referal": send_referal,
         "search": search,
-        "order_by": order_by
+        "order_by": order_by,
+        "page": page,
+        "last_page": last_page,
+        "previous_page": previous_page,
+        "next_page": next_page
     }
     return templates.TemplateResponse("user_referal_children.html", context)
 
