@@ -162,7 +162,7 @@ class Order(Model):
     created_at: datetime = fields.DatetimeField(auto_now_add=True)
 
     customer_pay_type: fields.ForeignKeyNullableRelation["UserPaymentAccountType"]  \
-                      = fields.ForeignKeyField("models.UserPaymentAccountType", related_name="customer_pay_type", null=True)
+                      = fields.ForeignKeyField("models.UserPaymentAccountType", related_name="customer_pay_type", null=True, on_delete="SET NULL")
 
     order_user_payment_account: fields.ReverseRelation["OrderUserPaymentAccount"]
     children_order: fields.ReverseRelation["Order"]

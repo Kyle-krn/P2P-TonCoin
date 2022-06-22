@@ -1,4 +1,61 @@
 {% extends "base.html" %}
 {% block body %}
-
+<h3 class="text-center">Payments types:</h3>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+        <tr class="text-center">  
+            <th scope="col">#</th>
+            <th scope="col">Currency</th>
+            <th scope="col">Name</th>
+            <th scope="col">Data</th>
+            <th scope="col">Is active</th>
+            <th scope="col">Created at</th>
+            <!-- <th scope="col">Delete</th> -->
+        </tr>
+        </thead>
+        <tbody>
+            <form action="/update_payment_types" method="post">
+            {% for payment_type in payment_types %}
+            <tr class="text-center">
+            <input type="hidden" name="type_uuid" value="{{payment_type.uuid}}">
+            <th scope="row">{{loop.index}}</th>
+            <td>
+                <select name="currency_uuid" class="form-select" aria-label="Is active">
+                    {% for currency in currencies %}
+                    <option value="{{currency.uuid}}" {% if currency.uuid == payment_type.currency_id %}selected{% endif %}>{{currency.name}}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>{{payment_type.name}}</td>
+            <td><textarea name="data" class="form-control" id="" 
+                cols="30" rows="3">{{payment_type.data}}</textarea></td>
+            <td>
+                <select name="is_active" class="form-select" aria-label="Is active">
+                    <option value="True" {% if payment_type.is_active == True %}selected{% endif %}>Yes</option>
+                    <option value="False" {% if payment_type.is_active == False %}selected{% endif %}>No</option>
+                </select>
+            </td>
+            <td>{{ payment_type.created_at | format_date }}</td>
+            <!-- <td>
+                <select name="delete" class="form-select" aria-label="Is active">
+                    <option value="True">Yes</option>
+                    <option value="False"selected>No</option>
+                </select>
+            </td> -->
+            </tr>
+            {% endfor %}
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <!-- <td></td> -->
+                <td class="text-center"><button type="submit" class="btn btn-success btn-sm">Update</button></td>
+            </form>
+            </tr>
+        </tbody>
+    </table>
+    </div>
 {% endblock %}

@@ -261,9 +261,46 @@ async def sort_user(request: Request,
 
 @payment_account_router.get("/payments_account_type", response_class=HTMLResponse)
 async def payments_account_type(request: Request):
-    payment_types = await models.UserPaymentAccountType.all()
-    context = {
-                "request": request
-              }
+    currencies = await models.Currency.exclude(name="TON")
+    payment_types = await models.UserPaymentAccountType.all().order_by('-created_at').prefetch_related("currency")
+    context = {"request": request,
+               "payment_types": payment_types,
+               "currencies": currencies}
     return templates.TemplateResponse("payment_types.html", context)
     
+
+
+@payment_account_router.post("/update_payment_types", response_class=HTMLResponse)
+async def update_payment_types(request: Request):
+    form_list = (await request.form())._list
+    for indx in range(0, len(form_list), 4):
+        type_uuid = form_list[indx][1]
+        currency_uuid = form_list[indx+1][1]
+        data = form_list[indx+2][1]
+        is_active = form_list[indx+3][1]
+        type = await models.UserPaymentAccountType.get(uuid=type_uuid)
+        while "'" in data:
+            data = data.replace("'", '"')
+        try:
+            json_data = json.loads(data)
+        except json.decoder.JSONDecodeError:
+            json_data = type.data
+            flash(request, f"Invalid JSON - {data}", "danger")
+        if is_active == 'True':
+            is_active = True
+        else:
+            is_active = False
+        type.update_from_dict({'currency_id': UUID(currency_uuid),
+                                        'data': json_data,
+                                        'type_id': type_uuid,
+                                        'is_active': is_active
+                                        })
+        await type.save()
+        flash(request, "Success", "success")
+    params = request.query_params
+    if params != "":
+        params = "?" + str(params)
+    
+    return RedirectResponse(
+        '/payments_account_type' + params, 
+        status_code=status.HTTP_302_FOUND) 
