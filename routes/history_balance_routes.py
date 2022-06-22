@@ -1,5 +1,5 @@
 import ast
-from typing import Union
+from typing import Any, Union
 from urllib.parse import urlencode
 from uuid import UUID
 from fastapi import APIRouter, Depends, Form, Request
@@ -13,41 +13,43 @@ from tortoise.queryset import Q
 history_balance_router = APIRouter()
 
 
-@history_balance_router.post("/update_history_balance")
-async def update_history_balance(request: Request,
-                                 user_uuid_hidden: UUID = Form(None)
-                                ):
-    form_list = (await request.form())._list
-    if user_uuid_hidden is not None:
-        form_list.pop(0)
-    for indx in range(0, len(form_list), 7):
-        uuid_history_balance = form_list[indx][1]
-        history_balance = await models.UserBalanceChange.get(uuid=uuid_history_balance)
-        type = form_list[indx+1][1] 
-        amount = form_list[indx+2][1] if form_list[indx+2][1] != "" else None
-        hash = form_list[indx+3][1] if form_list[indx+3][1] != "" else None
-        wallet = form_list[indx+4][1] if form_list[indx+4][1] != "" else None
-        code = form_list[indx+5][1] if form_list[indx+5][1] != "" else None
-        state = form_list[indx+6][1]
-        history_balance.update_from_dict({"type": type, 
-                                          "amount": amount, 
-                                          "hash": hash, 
-                                          "wallet": wallet, 
-                                          "code": code, 
-                                          "state": state})
-        await history_balance.save()
-    flash(request, "Success", category="success")
-    params = request.query_params
-    if params != "":
-        params = "?" + str(params)
-    return RedirectResponse(
-        f'/user_history_balance/{user_uuid_hidden}' + params, 
-        status_code=status.HTTP_302_FOUND)  
+# @history_balance_router.post("/update_history_balance")
+# async def update_history_balance(request: Request,
+#                                  user_uuid_hidden: UUID = Form(None)
+#                                 ):
+#     form_list = (await request.form())._list
+#     if user_uuid_hidden is not None:
+#         form_list.pop(0)
+#     for indx in range(0, len(form_list), 7):
+#         uuid_history_balance = form_list[indx][1]
+#         history_balance = await models.UserBalanceChange.get(uuid=uuid_history_balance)
+#         type = form_list[indx+1][1] 
+#         amount = form_list[indx+2][1] if form_list[indx+2][1] != "" else None
+#         hash = form_list[indx+3][1] if form_list[indx+3][1] != "" else None
+#         wallet = form_list[indx+4][1] if form_list[indx+4][1] != "" else None
+#         code = form_list[indx+5][1] if form_list[indx+5][1] != "" else None
+#         state = form_list[indx+6][1]
+#         history_balance.update_from_dict({"type": type, 
+#                                           "amount": amount, 
+#                                           "hash": hash, 
+#                                           "wallet": wallet, 
+#                                           "code": code, 
+#                                           "state": state})
+#         await history_balance.save()
+#     flash(request, "Success", category="success")
+#     params = request.query_params
+#     if params != "":
+#         params = "?" + str(params)
+#     return RedirectResponse(
+#         f'/user_history_balance/{user_uuid_hidden}' + params, 
+#         status_code=status.HTTP_302_FOUND)  
 
 
 @history_balance_router.get("/user_history_balance/{uuid}", response_class=HTMLResponse)
+@history_balance_router.get("/history_balance", response_class=HTMLResponse)
 async def user_detail(request: Request, 
-                      uuid: UUID,
+                      uuid: UUID = None,
+                      user_uuid: Union[UUID, Any] = None,
                       user: models.Staff = Depends(manager),
                       type: str = None,
                       min_amount: Union[float, str] = None,
@@ -60,9 +62,16 @@ async def user_detail(request: Request,
                       min_created_at: str = None,
                       max_created_at: str = None,
                       order_by: str = None):
-    user = await models.User.get(uuid=uuid).prefetch_related("referal_user")
-    history_balance = user.history_balance
-    history_balance_show = await user.history_balance.filter(amount__isnull=False).order_by('-amount').first().values("amount")
+    if isinstance(user_uuid, UUID) is False:
+        user_uuid = None
+    if uuid:
+        user = await models.User.get(uuid=uuid).prefetch_related("referal_user")
+        query = Q(user=user)
+    else:
+        user = None
+        query = Q()
+        
+    history_balance_show = await models.UserBalanceChange.filter(query & Q(amount__isnull=False)).order_by('-amount').first().values("amount")
     search = {
         "type": None,
         "min_amount": 0,
@@ -75,6 +84,7 @@ async def user_detail(request: Request,
         "state": None,
         "min_created_at": None,
         "max_created_at": None,
+        "user_uuid": None
     }
 
     if order_by:
@@ -82,7 +92,12 @@ async def user_detail(request: Request,
     else:
         order_by = []
 
-    query = Q()
+    if user_uuid:
+        query = Q(user_id=user_uuid)
+        search['user_uuid'] = user_uuid
+    # else:
+    #     query = Q()
+
     if type:
         query &= Q(type=type)
         search["type"] = type
@@ -112,7 +127,7 @@ async def user_detail(request: Request,
         query = query & Q(created_at__lte=max_created_at)
         search["max_created_at"] = max_created_at
     
-    history_balance = history_balance.filter(query)
+    history_balance = models.UserBalanceChange.filter(query)
     limit = 5
     offset = (page - 1) * limit
     count_history_change = await history_balance.count()
@@ -139,7 +154,13 @@ async def user_detail(request: Request,
                 order_by = order_by[:indx] + [item[1:]] + order_by[indx+1:]
         history_balance = history_balance.order_by(*order_by)
     
-    history_balance = await history_balance.offset(offset).limit(limit)
+   
+    history_balance = history_balance.offset(offset).limit(limit)
+    prefetch_related = "user" if not user else None
+    if prefetch_related:
+        history_balance = await history_balance.prefetch_related(prefetch_related)
+    else:
+        history_balance = await history_balance
     params = request.query_params._dict
     context = {"request": request,
                "user": user,
@@ -151,12 +172,13 @@ async def user_detail(request: Request,
                "previous_page": previous_page,
                "next_page": next_page,
                "order_by": order_by,
-               "pagination_url": f"/user_history_balance/{user.uuid}"}
-    return templates.TemplateResponse("users/user_history_balance.html", context)
+               "pagination_url": f"/user_history_balance/{user.uuid}" if user else "/history_balance"}
+    template_name = "users/user_history_balance.html" if user else "history_balance.html"
+    return templates.TemplateResponse(template_name, context)
 
 
 @history_balance_router.get("/user_history_balance_sort/{column}/{user_uuid}", response_class=RedirectResponse)
-@history_balance_router.get("/user_history_balance_sort/{column}", response_class=RedirectResponse)
+@history_balance_router.get("/history_balance_sort/{column}", response_class=RedirectResponse)
 async def sort_user(request: Request,
                     column: str,
                     user_uuid: UUID = None,
@@ -174,7 +196,8 @@ async def sort_user(request: Request,
         elif column[0] != "~":
             params["order_by"] = [i for i in params["order_by"] if column_name != i[1:]]
             params["order_by"].append(column)
-    return f"/user_history_balance/{user_uuid}?" + urlencode(params)
-    # return "ok"
+    redirect_url = f"/user_history_balance/{user_uuid}?" if user_uuid else "/history_balance?"
+    return redirect_url + urlencode(params)
+    
 
 

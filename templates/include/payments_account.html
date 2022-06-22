@@ -130,6 +130,9 @@
     <thead>
       <tr class="text-center">  
         <th scope="col">#</th>
+        {% if not user %}
+        <th scope="col">User</th>
+        {% endif %}
         <th scope="col">Type</th>
         <th scope="col">Currency</th>
         <th scope="col">Data</th>
@@ -143,9 +146,22 @@
     <input type="hidden" value="{{user.uuid}}" name="user_uuid_hidden">
     {% endif %}
     {% for account in payments_account %}
-    <input type="hidden" value="{{account.uuid}}" name="payment_account_uuid">
     <tr class="text-center">
     <th scope="row">{{loop.index}}</th>
+    <input type="hidden" value="{{account.uuid}}" name="payment_account_uuid">
+    {% if user %}
+    <input type="hidden" value="{{user.uuid}}" name="user_uuid">
+    {% else %}
+    <td>
+    <div class="input-group mb-3">
+      <a class="btn btn-outline-secondary" href="/user/{{account.user_id}}" type="button" id="button-addon1" role="button">
+        {% if account.user.tg_username %}{{ account.user.tg_username }}{% else %}User{% endif %}
+      </a>
+      <input name="user_uuid" type="text" class="form-control" placeholder="User UUID" aria-label="Example text with button addon" aria-describedby="button-addon1"
+       value="{{account.user_id}}">      
+    </div>
+  </td>
+    {% endif %}
     <td>
         <select name="type" class="form-select" aria-label="Type">
             {% for type in payments_type %}
@@ -186,6 +202,9 @@
         <td></td>
         <td></td>
         <td></td>
+        {% if not user %}
+        <td></td>
+        {% endif %}
         <td class="text-center"><button type="submit" class="btn btn-success btn-sm">Update</button></td>
         </form>
     </tr>
@@ -208,6 +227,7 @@
           
           <form action="/create_payments_account{{ params|get_urlencode }}" method="post">
             {% if user %}
+            <input type="hidden" name="redirect_uuid"  value="{{user.uuid}}">
             <input type="hidden" name="user_uuid"  value="{{user.uuid}}">
             {% else %}
             <label for="" class="form-label">User UUID:</label>

@@ -11,12 +11,16 @@ import starlette.status as status
 
 referal_router = APIRouter()
 
+# @referal_router.post("/create_referal/{uuid}")
 @referal_router.post("/create_referal")
 async def create_referal_children(request: Request,
+                                  redirect_uuid: UUID = Form(None),
                                   referal_parent_uuid: UUID = Form(),
                                   referal_children_uuid: Union[UUID, Any] = Form(),
                                   amount: float = Form()):
     if isinstance(referal_children_uuid, UUID) is False:
+        flash(request, f"Invalid UUID: {referal_children_uuid}", "danger")
+    elif referal_parent_uuid == referal_children_uuid:
         flash(request, f"Invalid UUID: {referal_children_uuid}", "danger")
     else: 
         referal = await models.UserReferalBonus.filter(user_id=referal_parent_uuid,
@@ -31,49 +35,50 @@ async def create_referal_children(request: Request,
     params = request.query_params
     if params != "":
         params = "?" + str(params)
+    
+    redirect_url = f'/user_referal_chidlren/{redirect_uuid}' if redirect_uuid else "/referal_chidlren"
     return RedirectResponse(
-        f'/user_referal_chidlren/{referal_parent_uuid}' + params, 
+        redirect_url + params, 
         status_code=status.HTTP_302_FOUND)  
 
 @referal_router.post("/update_referal_children")
-async def update_referal_children(request: Request,
-                                 user_uuid_hidden: UUID = Form(None)
-                                ):
+async def update_referal_children(request: Request):
     form_list = (await request.form())._list
     user_uuid = form_list[0]
     if "user_uuid_hidden" in user_uuid:
-        form_list.pop(0)
+        user_uuid = form_list.pop(0)
+        user_uuid = user_uuid[1]
     else:
-        pass
+        user_uuid = None
     
-    for indx in range(0, len(form_list), 4):
+    for indx in range(0, len(form_list), 3):
         uuid_referal = form_list[indx][1]
-        state = form_list[indx+2][1] #if form_list[indx+2][1] != "" else None
-        amount = form_list[indx+3][1]#if form_list[indx+3][1] != "" else None
+        state = form_list[indx+1][1] #if form_list[indx+2][1] != "" else None
+        amount = form_list[indx+2][1]#if form_list[indx+3][1] != "" else None
         referal = await models.UserReferalBonus.get(uuid=uuid_referal)
-        old_uuid_children = referal.invited_user_id
-        new_uuid_children = form_list[indx+1][1]
-        if not new_uuid_children:
-            flash(request, message="Empty children UUID", category="danger")
-            continue
-        else:
-            try:
-                UUID(new_uuid_children)
-                new_children = await models.User.get_or_none(uuid=new_uuid_children)
-                if new_children is None:
-                    flash(request, message=f"{new_uuid_children} not exists")
-                    continue    
-            except ValueError:
-                flash(request, message=f"Invalid UUID - {new_uuid_children}")
-                continue
-        if old_uuid_children != new_uuid_children:
-            old_children: models.User = await referal.invited_user
-            old_children.referal_user = None
-            await old_children.save()
-            new_children = await models.User.get(uuid=new_uuid_children)
-            new_children.referal_user_id = new_uuid_children
-            await new_children.save()
-            referal.invited_user_id = new_uuid_children
+        # old_uuid_children = referal.invited_user_id
+        # new_uuid_children = form_list[indx+1][1]
+        # if not new_uuid_children:
+        #     flash(request, message="Empty children UUID", category="danger")
+        #     continue
+        # else:
+        #     try:
+        #         UUID(new_uuid_children)
+        #         new_children = await models.User.get_or_none(uuid=new_uuid_children)
+        #         if new_children is None:
+        #             flash(request, message=f"{new_uuid_children} not exists")
+        #             continue    
+        #     except ValueError:
+        #         flash(request, message=f"Invalid UUID - {new_uuid_children}")
+        #         continue
+        # if old_uuid_children != new_uuid_children:
+        #     old_children: models.User = await referal.invited_user
+        #     old_children.referal_user = None
+        #     await old_children.save()
+        #     new_children = await models.User.get(uuid=new_uuid_children)
+        #     new_children.referal_user_id = new_uuid_children
+        #     await new_children.save()
+        #     referal.invited_user_id = new_uuid_children
         referal.amount = amount
         if referal.state != state:
             parent = await referal.user
@@ -85,22 +90,26 @@ async def update_referal_children(request: Request,
                 parent.balance -= float(referal.amount)
                 referal.state = state
                 await parent.save()
-            elif (referal.state == 'created' or referal.state == 'cancelled') and state == "created":
+            elif (referal.state == 'done' or referal.state == 'cancelled') and state == "created":
                 flash(request, "Если статус реферала равен 'cancelled' или 'done', то установить статус 'created' нельзя.")
             await referal.save()
     flash(request, "Success", category="success")
     params = request.query_params
     if params != "":
         params = "?" + str(params)
+    
+    redirect_url = f'/user_referal_chidlren/{user_uuid}' if user_uuid else "/referal_chidlren"
     return RedirectResponse(
-        f'/user_referal_chidlren/{user_uuid_hidden}' + params, 
+        redirect_url + params, 
         status_code=status.HTTP_302_FOUND)  
 
 
 @referal_router.get("/user_referal_chidlren/{uuid}", response_class=HTMLResponse)
+@referal_router.get("/referal_chidlren", response_class=HTMLResponse)
 async def user_detail(request: Request, 
-                      uuid: UUID,
-                      user: models.Staff = Depends(manager),
+                      uuid: UUID = None,
+                      staff: models.Staff = Depends(manager),
+                      user_uuid: Union[UUID, str] = None,
                       invited_user_uuid: Union[UUID, str] = None,
                       state: str = None,
                       min_amount: Union[float, str] = None,
@@ -110,8 +119,20 @@ async def user_detail(request: Request,
                       order_by: str = None,
                       page: int = 1
                       ):
-    user = await models.User.get(uuid=uuid).prefetch_related("referal_user")
-    
+
+
+    if user_uuid is not None and (isinstance(user_uuid, UUID) is False or (await models.User.get_or_none(uuid=user_uuid)) is None):
+        user_uuid = None
+        flash(request, "Error Parent UUID")
+
+    if uuid:
+        user = await models.User.get(uuid=uuid).prefetch_related("referal_user")
+        query = Q(user=user)
+    else:
+        user = None
+        query = Q()
+
+
     if order_by:
         order_by = ast.literal_eval(order_by)
     else:
@@ -123,12 +144,18 @@ async def user_detail(request: Request,
         "min_amount": None,
         "max_amount": None,
         "min_created_at": None,
-        "max_created_at": None
+        "max_created_at": None,
+        "user_uuid": None
     }
-    query = Q(user=user)
+    # query = Q(user=user)
+
+    if user_uuid:
+        query = Q(user_id=user_uuid)
+        search['user_uuid'] = user_uuid
+
     if invited_user_uuid:
         if isinstance(invited_user_uuid, UUID) is False or (await models.User.get_or_none(uuid=invited_user_uuid)) is None:
-            flash(request, "Error Parent UUID")
+            flash(request, "Error children UUID")
         else:
             query &= Q(invited_user_id=invited_user_uuid)
             search["invited_user_uuid"] = invited_user_uuid
@@ -178,7 +205,7 @@ async def user_detail(request: Request,
     if page > last_page:
         pass
 
-    send_referal = await send_referal.offset(offset).limit(limit).prefetch_related("invited_user")
+    send_referal = await send_referal.offset(offset).limit(limit).prefetch_related("invited_user", "user")
     context = {
         'request': request,
         'user': user,
@@ -190,13 +217,14 @@ async def user_detail(request: Request,
         "last_page": last_page,
         "previous_page": previous_page,
         "next_page": next_page,
-        "pagination_url": f"/user_referal_chidlren/{user.uuid}",
+        "pagination_url": f"/user_referal_chidlren/{user.uuid}" if user else "/referal_chidlren",
     }
-    return templates.TemplateResponse("users/user_referal_children.html", context)
+    template_name = "users/user_referal_children.html" if user else "referals.html"
+    return templates.TemplateResponse(template_name, context)
 
 
-@referal_router.get("/user_referal_chidlren_sort/{column}/{user_uuid}", response_class=RedirectResponse)
-@referal_router.get("/user_referal_chidlren_sort/{column}", response_class=RedirectResponse)
+@referal_router.get("/user_referal_children_sort/{column}/{user_uuid}", response_class=RedirectResponse)
+@referal_router.get("/referal_children_sort/{column}", response_class=RedirectResponse)
 async def sort_user(request: Request,
                     column: str,
                     user_uuid: UUID = None,
@@ -214,4 +242,6 @@ async def sort_user(request: Request,
         elif column[0] != "~":
             params["order_by"] = [i for i in params["order_by"] if column_name != i[1:]]
             params["order_by"].append(column)
-    return f"/user_referal_chidlren/{user_uuid}?" + urlencode(params)
+    
+    redirect_url = f'/user_referal_chidlren/{user_uuid}?' if user_uuid else "/referal_chidlren?"
+    return redirect_url + urlencode(params)

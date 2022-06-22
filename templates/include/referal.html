@@ -15,8 +15,20 @@
       <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
         <div class="accordion-body">
           <form method="get">
+            
             <div class="row justify-content-start">
-                <div class="col-md-4 mb-3">
+              {% if user %}
+                <input type="hidden" name="user_uuid" value="{{user.uuid}}">
+                {% else %}
+                <div class="col-md-4 mb-3"> 
+                <label for="state">User UUID:</label>
+                <input type="text" name="user_uuid" class="form-control" placeholder="Enter user UUID"  aria-label="User UUID"
+                              {% if search.user_uuid %}
+                              value="{{search.user_uuid}}"
+                              {% endif %}>
+                              </div>
+                {% endif %}
+              <div class="col-md-4 mb-3">
                     <!-- INPUT INVITED UUID -->
                     <label for="zip">Invited user UUID:</label>
                     <div class="input-group mb-3">
@@ -53,9 +65,6 @@
                            >
                     </div>
                 </div>
-            </div>
-                <div class="row justify-content-start">
-                    <div class="col-md-4 mb-3"></div>
                     <div class="col-md-4 mb-3">
                     <label for="basic-url" class="form-label">Created at</label>
                     <div class="input-group mb-3">
@@ -69,11 +78,11 @@
                             value={{search.max_created_at}}>
                 </div>
                 </div>
-                <div class="col-md-4 mb-3"></div>
+              </div>
+
                 <div class="text-center">
                     <button type="submit" class="btn btn-success">Search</button>
                     <a class="btn btn-secondary" href="/{% if user %}user_{% endif %}referal_chidlren/{{user.uuid}}" role="button">Default</a>
-                </div>
                 </div>
                 
           </form>
@@ -86,6 +95,9 @@
     <thead>
       <tr class="text-center">
         <th scope="col">#</th>
+        {% if not user %}
+        <th scope="col">User</th>
+        {% endif %}
         <th scope="col">Invited User</th>
         <th scope="col">State</th>
         <th scope="col">Amount
@@ -101,9 +113,9 @@
                     {% endif %}
                   </button>
                   <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                    <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}referal_chidlren_sort/~amount{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">S</a></li>
-                    <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}referal_chidlren_sort/+amount{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬆️</a></li>
-                    <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}referal_chidlren_sort/-amount{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬇️</a></li>
+                    <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}referal_children_sort/~amount{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">S</a></li>
+                    <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}referal_children_sort/+amount{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬆️</a></li>
+                    <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}referal_children_sort/-amount{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬇️</a></li>
                   </ul>
                 </div>
               </div>
@@ -121,9 +133,9 @@
                     {% endif %}
                   </button>
                   <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                    <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}referal_chidlren_sort/~created_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">S</a></li>
-                    <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}referal_chidlren_sort/+created_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬆️</a></li>
-                    <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}referal_chidlren_sort/-created_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬇️</a></li>
+                    <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}referal_children_sort/~created_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">S</a></li>
+                    <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}referal_children_sort/+created_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬆️</a></li>
+                    <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}referal_children_sort/-created_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬇️</a></li>
                   </ul>
                 </div>
               </div>
@@ -138,15 +150,20 @@
        <tr class="text-center">
          <input type="hidden" name="referal_uuid" value="{{referal_bonus.uuid}}">
         <th scope="row">{{loop.index}}</th>
+        {% if not user %}
         <td class="text-center">
-            <div class="input-group mb-3">
+          <a href="/user/{{referal_bonus.user_id}}">{% if referal_bonus.user.tg_username %}{{referal_bonus.user.tg_username}}{% else %}{{referal_bonus.user_id}}{% endif %}</a>
+        {% endif %}
+        <td class="text-center">
+          <a href="/user/{{referal_bonus.invited_user_id}}">{% if referal_bonus.invited_user.tg_username %}{{referal_bonus.invited_user.tg_username}}{% else %}{{referal_bonus.invited_user_id}}{% endif %}</a>
+            <!-- <div class="input-group mb-3">
                 <a class="btn btn-outline-secondary" href="/user/{{referal_bonus.invited_user.uuid}}" type="button" id="button-addon1" role="button">
                   {% if referal_bonus.invited_user.tg_username %} {{ referal_bonus.invited_user.tg_username }}{% else %}Children{% endif %}
                 </a>
                 <input name="referal_parent" value="{{referal_bonus.invited_user.uuid}}" 
                        type="text" class="form-control" placeholder="Referal Parent UUID" 
                        aria-label="Example text with button addon" aria-describedby="button-addon1">
-              </div>
+              </div> -->
         <td>
             <select name="state" class="form-select" aria-label="Default select example">
                 <option value="created" {% if referal_bonus.state == "created" %}selected{% endif %}>Created</option>
@@ -176,6 +193,9 @@
         <td class="text-center">---</td>
         <td class="text-center">---</td>
         <td class="text-center">---</td>
+        {% if not user %}
+        <td class="text-center">---</td>
+        {% endif %}
     </tr>
        {% endfor %}
        <tr>
@@ -183,6 +203,9 @@
         <td></td>
         <td></td>
         <td></td>
+        {% if not user %}
+        <td></td>
+        {% endif %}
         <td class="text-center"><button type="submit" class="btn btn-success btn-sm">Update</button></td>
         </form>
     </tr>
@@ -203,6 +226,7 @@
         
         <form action="/create_referal{{ params|get_urlencode }}" method="post">
           {% if user %}
+          <input type="hidden" name="redirect_uuid"  value="{{user.uuid}}">
           <input type="hidden" name="referal_parent_uuid"  value="{{user.uuid}}">
           {% else %}
           <label for="" class="form-label">Parent UUID:</label>

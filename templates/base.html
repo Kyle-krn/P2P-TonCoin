@@ -19,10 +19,19 @@
         <div class="collapse navbar-collapse" id="navbarCollapse">
           <ul class="navbar-nav me-auto mb-2 mb-md-0">
             <li class="nav-item">
-              <a class="nav-link" aria-current="page" href="/users">Все пользователи</a>
+              <a class="nav-link" aria-current="page" href="/users">List user</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" aria-current="page" href="/auth/register">Register staff</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" aria-current="page" href="/history_balance">History balance</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" aria-current="page" href="/referal_chidlren">Referal</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" aria-current="page" href="/payments_account">Payments Account</a>
             </li>
           </ul>
           <a class="nav-link" aria-current="page" href="/auth/logout">Logout</a>
@@ -34,6 +43,11 @@
   <br><br><br>
   <body>
       <div class="container">
+        {% for message in get_flashed_messages(request) %}
+        <div class="alert alert-{{message.category}}" role="alert">
+          {{ message.message }}
+        </div>
+       {% endfor %}
       {% block body %}
       {% endblock %}
         </div>

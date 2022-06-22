@@ -1,8 +1,5 @@
-import ast
-from datetime import datetime
 import json
-from typing import Any, Union
-from urllib.parse import urlencode
+from typing import Union
 from fastapi.responses import HTMLResponse, RedirectResponse
 from uuid import UUID
 from fastapi import APIRouter, Depends, Request, Form
@@ -11,12 +8,14 @@ from loader import flash, manager, templates
 from models import models
 from tortoise.queryset import Q
 import starlette.status as status
+from utils.search_db_json import rowsql_get_distinct_list_value
 
 
 payment_account_router = APIRouter()
 
 @payment_account_router.post('/create_payments_account')
 async def create_payments_account(request: Request,
+                                  redirect_uuid: UUID = Form(None),
                                   user_uuid: UUID = Form(),
                                   type_uuid: UUID = Form(),
                                   data: str = Form(),
@@ -41,8 +40,9 @@ async def create_payments_account(request: Request,
     params = request.query_params
     if params != "":
         params = "?" + str(params)
+    redirect_url = f'/user_payments_account/{redirect_uuid}' if redirect_uuid else f'/payments_account'
     return RedirectResponse(
-        f'/user_payments_account/{user_uuid}' + params, 
+        redirect_url + params, 
         status_code=status.HTTP_302_FOUND)  
 
 @payment_account_router.post('/update_payments_account')
@@ -50,14 +50,17 @@ async def user_payments_account(request: Request,
                                  user_uuid_hidden: UUID = Form(None)
                                 ):
     form_list = (await request.form())._list
-    if user_uuid_hidden is not None:
+    user_uuid = form_list[0]
+    if "user_uuid_hidden" in user_uuid:
         form_list.pop(0)
-    for indx in range(0, len(form_list), 4):
+    else:
+        pass
+    for indx in range(0, len(form_list), 5):
         payment_account_uuid = form_list[indx][1]
         payment_account = await models.UserPaymentAccount.get(uuid=payment_account_uuid)
-        type_uuid = form_list[indx+1][1]
-        data = form_list[indx+2][1]
-        print(data)
+        user_uuid = form_list[indx+1][1]
+        type_uuid = form_list[indx+2][1]
+        data = form_list[indx+3][1]
         while "'" in data:
             data = data.replace("'", '"')
         # print(data)
@@ -66,26 +69,12 @@ async def user_payments_account(request: Request,
         except json.decoder.JSONDecodeError:
             json_data = payment_account.data
             flash(request, f"Invalid JSON - {data}", "danger")
-        # data = [i for i in data.split("\n") if i != ""]
-        # parse_data = {}
-        # for i in data:
-        #     if i != "\r":
-        #         while "\r" in i: 
-        #             i = i.replace("\r", "")
-        #         parse_row = i.split('-')
-        #         print(parse_row)
-        #         try:
-        #             key = parse_row[0]
-        #             value = parse_row[1]
-        #             parse_data[key] = value
-        #         except IndexError:
-        #             flash(request, f"Invalid string - {i}", "danger")
-        is_active = form_list[indx+3][1]
+        is_active = form_list[indx+4][1]
         if is_active == 'True':
             is_active = True
         else:
             is_active = False
-        payment_account.update_from_dict({
+        payment_account.update_from_dict({'user_id': user_uuid,
                                         'data': json_data,
                                         'type_id': type_uuid,
                                         'is_active': is_active
@@ -95,13 +84,17 @@ async def user_payments_account(request: Request,
     params = request.query_params
     if params != "":
         params = "?" + str(params)
+    
+    redirect_url = f'/user_payments_account/{user_uuid_hidden}' if user_uuid_hidden else "/payments_account"
     return RedirectResponse(
-        f'/user_payments_account/{user_uuid_hidden}' + params, 
+        redirect_url + params, 
         status_code=status.HTTP_302_FOUND)  
 
 @payment_account_router.get('/user_payments_account/{uuid}')
+@payment_account_router.get('/payments_account')
 async def user_payment_account(request: Request,
-                               uuid: UUID,
+                               uuid: UUID = None,
+                               user_uuid: Union[UUID,str] = None,
                                type_uuid: Union[UUID,str] = None,
                                currency_uuid: Union[UUID,str] = None,
                                payment_data: str = None,
@@ -111,7 +104,21 @@ async def user_payment_account(request: Request,
                                min_created_at: str = None,
                                max_created_at: str = None,
                                page:int = 1):
-    user = await models.User.get(uuid=uuid).prefetch_related("referal_user")
+    
+    if user_uuid is not None and (isinstance(user_uuid, UUID) is False or (await models.User.get_or_none(uuid=user_uuid)) is None):
+        user_uuid = None
+        flash(request, "Error Parent UUID")
+    
+    if uuid:
+        user = await models.User.get(uuid=uuid).prefetch_related("referal_user")
+        query = Q(user=user)
+    else:
+        user = None
+        query = Q()
+
+    
+    # user = await models.User.get(uuid=uuid)
+
     if isinstance(is_active, str):
         is_active = None
     if isinstance(type_uuid, str):
@@ -128,10 +135,16 @@ async def user_payment_account(request: Request,
         'max_updated_at': None,
         'min_created_at': None,
         'max_created_at': None,
+        'user_uuid': None
     }
-    payments_account = models.UserPaymentAccount.filter(user=user)
+    payments_account = models.UserPaymentAccount.filter(query)
     
-    query = Q()
+    # query = Q()
+
+    if user_uuid:
+        query = Q(user_id=user_uuid)
+        search['user_uuid'] = user_uuid
+
     if type_uuid:
         query &= Q(type_id=type_uuid)
         search['type_uuid'] = type_uuid
@@ -156,8 +169,9 @@ async def user_payment_account(request: Request,
         search["max_created_at"] = max_created_at
 
     if payment_data:
-        pass
-
+        uuid_list = await rowsql_get_distinct_list_value(payment_data)
+        uuid_list = [i['uuid'] for i in uuid_list]
+        query = query & Q(uuid__in=uuid_list)
     payments_account = payments_account.filter(query)
 
     limit = 5
@@ -180,7 +194,7 @@ async def user_payment_account(request: Request,
     
     currency = await models.Currency.exclude(name="TON")
     payments_type = await models.UserPaymentAccountType.filter().prefetch_related("currency")
-    payments_account = await payments_account.limit(limit).offset(offset).order_by('-created_at', 'uuid').prefetch_related("type__currency")
+    payments_account = await payments_account.limit(limit).offset(offset).order_by('-created_at', 'uuid').prefetch_related("type__currency", "user")
 
     context = {
         'request': request,
@@ -194,11 +208,11 @@ async def user_payment_account(request: Request,
         "last_page": last_page,
         "previous_page": previous_page,
         "next_page": next_page,
-        "pagination_url": f"/user_payments_account/{user.uuid}"
+        "pagination_url": f"/user_payments_account/{user.uuid}" if user else "/payments_account"
     }
 
-    
-    return templates.TemplateResponse("users/user_payment_account.html", context)
+    template_name = "users/user_payment_account.html" if user else "/payments_account.html"
+    return templates.TemplateResponse(template_name, context)
 
 
 

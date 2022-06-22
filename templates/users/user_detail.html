@@ -2,11 +2,7 @@
 {% block title %}User {{user.tg_username}}{% endblock %}
 {% block body %}
 
-{% for message in get_flashed_messages(request) %}
-  <div class="alert alert-{{message.category}}" role="alert">
-    {{ message.message }}
-  </div>
- {% endfor %}
+
 
 <!-- USER INFO -->
 <table class="table table-striped table-hover">
