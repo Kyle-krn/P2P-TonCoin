@@ -137,8 +137,46 @@
         <th scope="col">Currency</th>
         <th scope="col">Data</th>
         <th scope="col">is_active</th>
-        <th scope="col">Updated at</th>
-        <th scope="col">Created at</th>
+        <th scope="col">Updated at
+          <div class="btn-group">
+            <div class="dropdown">
+              <button class="btn btn-{% if 'updated_at' not in order_by and '-updated_at' not in order_by %}secondary 
+                                      {% else %}success
+                                      {% endif %}
+                             btn-sm dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                {% if "updated_at" in order_by %}⬆️
+                {% elif "-updated_at" in order_by %}⬇️
+                {% else %} S
+                {% endif %}
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}payments_account_sort/~updated_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">S</a></li>
+                <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}payments_account_sort/+updated_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬆️</a></li>
+                <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}payments_account_sort/-updated_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬇️</a></li>
+              </ul>
+            </div>
+          </div>
+        </th>
+        <th scope="col">Created at
+          <div class="btn-group">
+            <div class="dropdown">
+              <button class="btn btn-{% if 'created_at' not in order_by and '-created_at' not in order_by %}secondary 
+                                      {% else %}success
+                                      {% endif %}
+                             btn-sm dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                {% if "created_at" in order_by %}⬆️
+                {% elif "-created_at" in order_by %}⬇️
+                {% else %} S
+                {% endif %}
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}payments_account_sort/~created_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">S</a></li>
+                <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}payments_account_sort/+created_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬆️</a></li>
+                <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}payments_account_sort/-created_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬇️</a></li>
+              </ul>
+            </div>
+          </div>
+        </th>
         </thead>
     <tbody>
     <form action="/update_payments_account{{ params|get_urlencode }}" method="post">

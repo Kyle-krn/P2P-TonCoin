@@ -1,5 +1,7 @@
+import ast
 import json
 from typing import Union
+from urllib.parse import urlencode
 from fastapi.responses import HTMLResponse, RedirectResponse
 from uuid import UUID
 from fastapi import APIRouter, Depends, Request, Form
@@ -103,6 +105,7 @@ async def user_payment_account(request: Request,
                                max_updated_at: str = None,
                                min_created_at: str = None,
                                max_created_at: str = None,
+                               order_by: str = None,
                                page:int = 1):
     
     if user_uuid is not None and (isinstance(user_uuid, UUID) is False or (await models.User.get_or_none(uuid=user_uuid)) is None):
@@ -116,6 +119,10 @@ async def user_payment_account(request: Request,
         user = None
         query = Q()
 
+    if order_by:
+        order_by = ast.literal_eval(order_by)
+    else:
+        order_by = []
     
     # user = await models.User.get(uuid=uuid)
 
@@ -194,7 +201,18 @@ async def user_payment_account(request: Request,
     
     currency = await models.Currency.exclude(name="TON")
     payments_type = await models.UserPaymentAccountType.filter().prefetch_related("currency")
-    payments_account = await payments_account.limit(limit).offset(offset).order_by('-created_at', 'uuid').prefetch_related("type__currency", "user")
+
+
+    if len(order_by) == 0:
+        payments_account = payments_account.order_by("-created_at", "uuid")
+    else:
+        for item in order_by:
+            if item[0] == "+":
+                indx = order_by.index(item)
+                order_by = order_by[:indx] + [item[1:]] + order_by[indx+1:]
+        payments_account = payments_account.order_by(*order_by)
+        
+    payments_account = await payments_account.limit(limit).offset(offset).prefetch_related("type__currency", "user")
 
     context = {
         'request': request,
@@ -204,6 +222,7 @@ async def user_payment_account(request: Request,
         'payments_type': payments_type,
         'currency': currency,
         'search': search,
+        'order_by': order_by,
         "page": page,
         "last_page": last_page,
         "previous_page": previous_page,
@@ -216,3 +235,35 @@ async def user_payment_account(request: Request,
 
 
 
+@payment_account_router.get("/user_payments_account_sort/{column}/{user_uuid}", response_class=RedirectResponse)
+@payment_account_router.get("/payments_account_sort/{column}", response_class=RedirectResponse)
+async def sort_user(request: Request,
+                    column: str,
+                    user_uuid: UUID = None,
+                    staff: models.Staff = Depends(manager)):
+    params = request.query_params._dict
+    if "order_by" not in params:
+        if column[0] != "~":
+            params['order_by'] = [column]
+    else:
+        params['order_by'] = ast.literal_eval(params['order_by'])
+        column_name = column[1:] 
+        
+        if column[0] == "~" and len([i for i in params["order_by"] if column_name == i[1:]]) > 0:
+            params["order_by"] = [i for i in params["order_by"] if column_name != i[1:]]
+        elif column[0] != "~":
+            params["order_by"] = [i for i in params["order_by"] if column_name != i[1:]]
+            params["order_by"].append(column)
+    
+    redirect_url = f'/user_payments_account/{user_uuid}?' if user_uuid else "/payments_account?"
+    return redirect_url + urlencode(params)
+
+
+@payment_account_router.get("/payments_account_type", response_class=HTMLResponse)
+async def payments_account_type(request: Request):
+    payment_types = await models.UserPaymentAccountType.all()
+    context = {
+                "request": request
+              }
+    return templates.TemplateResponse("payment_types.html", context)
+    

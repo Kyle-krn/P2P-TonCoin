@@ -15,9 +15,8 @@
             <!-- Row first -->
             <div class="row justify-content-start">
               {% if user %}
-              
-            <input type="hidden" name="user_uuid" value="{{user.uuid}}">
-            {% else %}
+              <input type="hidden" name="user_uuid" value="{{user.uuid}}">
+              {% else %}
             <div class="col-md-4 mb-3"> 
             <label for="state">User UUID:</label>
             <input type="text" name="user_uuid" class="form-control" placeholder="Enter user UUID"  aria-label="User UUID"

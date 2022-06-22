@@ -15,6 +15,7 @@ app.include_router(routes.history_balance_router)
 app.include_router(routes.login_router)
 app.include_router(routes.referal_router)
 app.include_router(routes.payment_account_router)
+app.include_router(routes.currency_router)
 
     
 
