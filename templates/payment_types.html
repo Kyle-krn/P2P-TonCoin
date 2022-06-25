@@ -1,6 +1,104 @@
 {% extends "base.html" %}
 {% block body %}
 <h3 class="text-center">Payments types:</h3>
+<div class="accordion" id="accordionExample">
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingOne">
+        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+          Payment account search
+        </button>
+      </h2>
+      <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+        <div class="accordion-body">
+          <form action="">
+            <div class="row justify-content-start">
+                <div class="col-md-4 mb-3">
+                    <!-- INPUT TYPE -->
+                    <label for="zip">Currency:</label>
+                    <div class="input-group mb-3">
+                        <select name="currency_uuid" class="form-select" aria-label="Is active">
+                            <option {% if not search.currency_uuid %}selected{% endif %}>Currency</option>
+                            {% for currency in currencies %}
+                            <option value="{{currency.uuid}}" {% if currency.uuid == search.currency_uuid %}selected{% endif %}>{{currency.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <!-- INPUT CURRENCY -->
+                    <label for="zip">Name:</label>
+                    <div class="input-group mb-3">
+                    <input type="text" name="name" class="form-control" placeholder="Enter iconatains name:"  aria-label="Name"
+                           {% if search.name %}
+                           value="{{search.name}}"
+                           {% endif %}
+                           >
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="zip">Data:</label>
+                    <div class="input-group mb-3">
+                    <input type="text" name="payment_data" class="form-control" placeholder="Enter iconatains payment data:"  aria-label="Payment Data"
+                           {% if search.payment_data %}
+                           value="{{search.payment_data}}"
+                           {% endif %}
+                           >
+                    </div>
+                </div>
+                <!-- END DATA -->
+            </div>
+                <div class="row justify-content-start">
+                    <!-- INPUT ACTIVE -->
+                    <div class="col-md-4 mb-3">
+                        <label for="zip">Is Active:</label>
+                        <div class="input-group mb-3">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" name="is_active" type="radio" id="inlineRadio1" value="True"
+                                    {% if search.is_active == True %} checked {% endif %}>
+                                <label class="form-check-label" for="inlineRadio1">True</label>
+                              </div>
+                              <div class="form-check form-check-inline">
+                                <input class="form-check-input" name="is_active" type="radio" id="inlineRadio2" value="False"
+                                    {% if search.is_active == False %} checked {% endif %}>
+                                <label class="form-check-label" for="inlineRadio2">False</label>
+                              </div>
+                              <div class="form-check form-check-inline">
+                                <input class="form-check-input" name="is_active" type="radio" id="inlineRadio3" value="None"
+                                    {% if search.is_active == None %} checked {% endif %}>
+                                <label class="form-check-label" for="inlineRadio3">All</label>
+                              </div>
+                          </div>
+                    </div>
+                    <!-- END ACTIVE -->
+
+
+                <!-- INPUT CREATED AT -->
+                <div class="col-md-4 mb-3">
+                    <label for="basic-url" class="form-label">Created at</label>
+                            <div class="input-group mb-3">
+                            <span class="input-group-text" id="basic-addon3">From</span>
+                            <input type="datetime-local" name="min_created_at" class="form-control" id="basic-url" aria-describedby="basic-addon3" 
+                                value={{search.min_created_at}}>
+                            </div>
+                            <div class="input-group mb-3">
+                            <span class="input-group-text" id="basic-addon3">To</span>
+                            <input type="datetime-local" name="max_created_at" class="form-control" id="basic-url" aria-describedby="basic-addon3"
+                                    value={{search.max_created_at}}>
+                        </div>
+                </div>
+                <!-- END CREATED -->
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success">Search</button>
+                    <a class="btn btn-secondary" href="/payments_account_type" role="button">Default</a>
+                </div>
+                </div>
+                
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 <div class="table-responsive">
     <table class="table table-striped">
         <thead>
@@ -10,7 +108,26 @@
             <th scope="col">Name</th>
             <th scope="col">Data</th>
             <th scope="col">Is active</th>
-            <th scope="col">Created at</th>
+            <th scope="col">Created at
+                <div class="btn-group">
+                    <div class="dropdown">
+                      <button class="btn btn-{% if 'created_at' not in order_by and '-created_at' not in order_by %}secondary 
+                                              {% else %}success
+                                              {% endif %}
+                                     btn-sm dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if "created_at" in order_by %}⬆️
+                        {% elif "-created_at" in order_by %}⬇️
+                        {% else %} S
+                        {% endif %}
+                      </button>
+                      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                        <li><a class="dropdown-item" href="/sort/payments_account_type/~created_at{{ params|get_urlencode }}">S</a></li>
+                        <li><a class="dropdown-item" href="/sort/payments_account_type/+created_at{{ params|get_urlencode }}">⬆️</a></li>
+                        <li><a class="dropdown-item" href="/sort/payments_account_type/-created_at{{ params|get_urlencode }}">⬇️</a></li>
+                      </ul>
+                    </div>
+                  </div>
+            </th>
             <!-- <th scope="col">Delete</th> -->
         </tr>
         </thead>

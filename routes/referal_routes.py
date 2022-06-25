@@ -9,9 +9,10 @@ from models import models
 from tortoise.queryset import Q
 import starlette.status as status
 
+from utils.pagination import pagination
+
 referal_router = APIRouter()
 
-# @referal_router.post("/create_referal/{uuid}")
 @referal_router.post("/create_referal")
 async def create_referal_children(request: Request,
                                   redirect_uuid: UUID = Form(None),
@@ -36,7 +37,7 @@ async def create_referal_children(request: Request,
     if params != "":
         params = "?" + str(params)
     
-    redirect_url = f'/user_referal_chidlren/{redirect_uuid}' if redirect_uuid else "/referal_chidlren"
+    redirect_url = f'/user_referal_children/{redirect_uuid}' if redirect_uuid else "/referal_children"
     return RedirectResponse(
         redirect_url + params, 
         status_code=status.HTTP_302_FOUND)  
@@ -98,14 +99,14 @@ async def update_referal_children(request: Request):
     if params != "":
         params = "?" + str(params)
     
-    redirect_url = f'/user_referal_chidlren/{user_uuid}' if user_uuid else "/referal_chidlren"
+    redirect_url = f'/user_referal_children/{user_uuid}' if user_uuid else "/referal_children"
     return RedirectResponse(
         redirect_url + params, 
         status_code=status.HTTP_302_FOUND)  
 
 
-@referal_router.get("/user_referal_chidlren/{uuid}", response_class=HTMLResponse)
-@referal_router.get("/referal_chidlren", response_class=HTMLResponse)
+@referal_router.get("/user_referal_children/{uuid}", response_class=HTMLResponse)
+@referal_router.get("/referal_children", response_class=HTMLResponse)
 async def user_detail(request: Request, 
                       uuid: UUID = None,
                       staff: models.Staff = Depends(manager),
@@ -188,22 +189,8 @@ async def user_detail(request: Request,
 
 
     limit = 5
-    offset = (page - 1) * limit
-    count_history_change = await send_referal.count()
-    last_page = count_history_change/limit
-    if count_history_change % limit == 0:
-        last_page = int(last_page)
-    elif count_history_change % limit != 0:
-        last_page = int(last_page + 1)
-    
-    previous_page = page-1
-    next_page = page+1
-    if page == 1:
-        previous_page = None
-    if page == last_page:
-        next_page = None
-    if page > last_page:
-        pass
+    offset, last_page, previous_page, next_page = pagination(limit=limit, page=page, count_model=await send_referal.count())
+    send_referal = send_referal.offset(offset).limit(limit)
 
     send_referal = await send_referal.offset(offset).limit(limit).prefetch_related("invited_user", "user")
     context = {
@@ -217,31 +204,8 @@ async def user_detail(request: Request,
         "last_page": last_page,
         "previous_page": previous_page,
         "next_page": next_page,
-        "pagination_url": f"/user_referal_chidlren/{user.uuid}" if user else "/referal_chidlren",
+        "pagination_url": f"/user_referal_children/{user.uuid}" if user else "/referal_children",
     }
     template_name = "users/user_referal_children.html" if user else "referals.html"
     return templates.TemplateResponse(template_name, context)
 
-
-@referal_router.get("/user_referal_children_sort/{column}/{user_uuid}", response_class=RedirectResponse)
-@referal_router.get("/referal_children_sort/{column}", response_class=RedirectResponse)
-async def sort_user(request: Request,
-                    column: str,
-                    user_uuid: UUID = None,
-                    staff: models.Staff = Depends(manager)):
-    params = request.query_params._dict
-    if "order_by" not in params:
-        if column[0] != "~":
-            params['order_by'] = [column]
-    else:
-        params['order_by'] = ast.literal_eval(params['order_by'])
-        column_name = column[1:] 
-        
-        if column[0] == "~" and len([i for i in params["order_by"] if column_name == i[1:]]) > 0:
-            params["order_by"] = [i for i in params["order_by"] if column_name != i[1:]]
-        elif column[0] != "~":
-            params["order_by"] = [i for i in params["order_by"] if column_name != i[1:]]
-            params["order_by"].append(column)
-    
-    redirect_url = f'/user_referal_chidlren/{user_uuid}?' if user_uuid else "/referal_chidlren?"
-    return redirect_url + urlencode(params)

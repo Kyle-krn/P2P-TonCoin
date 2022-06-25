@@ -150,9 +150,9 @@
                 {% endif %}
               </button>
               <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}payments_account_sort/~updated_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">S</a></li>
-                <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}payments_account_sort/+updated_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬆️</a></li>
-                <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}payments_account_sort/-updated_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬇️</a></li>
+                <li><a class="dropdown-item" href="/sort/{% if user %}user_{% endif %}payments_account/~updated_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">S</a></li>
+                <li><a class="dropdown-item" href="/sort/{% if user %}user_{% endif %}payments_account/+updated_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬆️</a></li>
+                <li><a class="dropdown-item" href="/sort/{% if user %}user_{% endif %}payments_account/-updated_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬇️</a></li>
               </ul>
             </div>
           </div>
@@ -170,9 +170,9 @@
                 {% endif %}
               </button>
               <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}payments_account_sort/~created_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">S</a></li>
-                <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}payments_account_sort/+created_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬆️</a></li>
-                <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}payments_account_sort/-created_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬇️</a></li>
+                <li><a class="dropdown-item" href="/sort/{% if user %}user_{% endif %}payments_account/~created_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">S</a></li>
+                <li><a class="dropdown-item" href="/sort/{% if user %}user_{% endif %}payments_account/+created_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬆️</a></li>
+                <li><a class="dropdown-item" href="/sort/{% if user %}user_{% endif %}payments_account/-created_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬇️</a></li>
               </ul>
             </div>
           </div>

@@ -10,6 +10,8 @@ import starlette.status as status
 from loader import templates, flash, manager
 from tortoise.queryset import Q
 
+from utils.pagination import pagination
+
 history_balance_router = APIRouter()
 
 
@@ -128,23 +130,12 @@ async def user_detail(request: Request,
         search["max_created_at"] = max_created_at
     
     history_balance = models.UserBalanceChange.filter(query)
+
     limit = 5
-    offset = (page - 1) * limit
-    count_history_change = await history_balance.count()
-    last_page = count_history_change/limit
-    if count_history_change % limit == 0:
-        last_page = int(last_page)
-    elif count_history_change % limit != 0:
-        last_page = int(last_page + 1)
+    offset, last_page, previous_page, next_page = pagination(limit=limit, page=page, count_model=await history_balance.count())
+    history_balance = history_balance.offset(offset).limit(limit)
     
-    previous_page = page-1
-    next_page = page+1
-    if page == 1:
-        previous_page = None
-    if page == last_page:
-        next_page = None
-    if page > last_page:
-        pass
+    
     if len(order_by) == 0:
         history_balance = history_balance.order_by("-created_at")
     else:
@@ -155,7 +146,7 @@ async def user_detail(request: Request,
         history_balance = history_balance.order_by(*order_by)
     
    
-    history_balance = history_balance.offset(offset).limit(limit)
+    
     prefetch_related = "user" if not user else None
     if prefetch_related:
         history_balance = await history_balance.prefetch_related(prefetch_related)
@@ -177,27 +168,6 @@ async def user_detail(request: Request,
     return templates.TemplateResponse(template_name, context)
 
 
-@history_balance_router.get("/user_history_balance_sort/{column}/{user_uuid}", response_class=RedirectResponse)
-@history_balance_router.get("/history_balance_sort/{column}", response_class=RedirectResponse)
-async def sort_user(request: Request,
-                    column: str,
-                    user_uuid: UUID = None,
-                    staff: models.Staff = Depends(manager)):
-    params = request.query_params._dict
-    if "order_by" not in params:
-        if column[0] != "~":
-            params['order_by'] = [column]
-    else:
-        params['order_by'] = ast.literal_eval(params['order_by'])
-        column_name = column[1:] 
-        
-        if column[0] == "~" and len([i for i in params["order_by"] if column_name == i[1:]]) > 0:
-            params["order_by"] = [i for i in params["order_by"] if column_name != i[1:]]
-        elif column[0] != "~":
-            params["order_by"] = [i for i in params["order_by"] if column_name != i[1:]]
-            params["order_by"].append(column)
-    redirect_url = f"/user_history_balance/{user_uuid}?" if user_uuid else "/history_balance?"
-    return redirect_url + urlencode(params)
     
 
 

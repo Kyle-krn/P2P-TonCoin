@@ -82,7 +82,7 @@
 
                 <div class="text-center">
                     <button type="submit" class="btn btn-success">Search</button>
-                    <a class="btn btn-secondary" href="/{% if user %}user_{% endif %}referal_chidlren/{{user.uuid}}" role="button">Default</a>
+                    <a class="btn btn-secondary" href="/{% if user %}user_{% endif %}referal_children/{{user.uuid}}" role="button">Default</a>
                 </div>
                 
           </form>
@@ -113,9 +113,9 @@
                     {% endif %}
                   </button>
                   <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                    <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}referal_children_sort/~amount{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">S</a></li>
-                    <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}referal_children_sort/+amount{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬆️</a></li>
-                    <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}referal_children_sort/-amount{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬇️</a></li>
+                    <li><a class="dropdown-item" href="/sort/{% if user %}user_{% endif %}referal_children/~amount{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">S</a></li>
+                    <li><a class="dropdown-item" href="/sort/{% if user %}user_{% endif %}referal_children/+amount{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬆️</a></li>
+                    <li><a class="dropdown-item" href="/sort/{% if user %}user_{% endif %}referal_children/-amount{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬇️</a></li>
                   </ul>
                 </div>
               </div>
@@ -133,9 +133,9 @@
                     {% endif %}
                   </button>
                   <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                    <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}referal_children_sort/~created_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">S</a></li>
-                    <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}referal_children_sort/+created_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬆️</a></li>
-                    <li><a class="dropdown-item" href="/{% if user %}user_{% endif %}referal_children_sort/-created_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬇️</a></li>
+                    <li><a class="dropdown-item" href="/sort/{% if user %}user_{% endif %}referal_children/~created_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">S</a></li>
+                    <li><a class="dropdown-item" href="/sort/{% if user %}user_{% endif %}referal_children/+created_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬆️</a></li>
+                    <li><a class="dropdown-item" href="/sort/{% if user %}user_{% endif %}referal_children/-created_at{% if user %}/{{user.uuid}}{% endif %}{{ params|get_urlencode }}">⬇️</a></li>
                   </ul>
                 </div>
               </div>

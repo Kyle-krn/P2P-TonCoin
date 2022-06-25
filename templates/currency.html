@@ -16,20 +16,136 @@
     <div class="col-md-4 mb-3"></div>
 </div>
 
+
 <h3 class="text-center">Currency:
     <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#exampleModal">
         ➕
     </button>
 </h3>
+<div class="accordion" id="accordionExample">
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingOne">
+        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+          Currency search
+        </button>
+      </h2>
+      <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+        <div class="accordion-body">
+          <form action="">
+            <div class="row justify-content-start">
+                <div class="col-md-4 mb-3">
+                    <label for="zip">Name:</label>
+                    <input type="text" name="name" class="form-control" placeholder="Enter name:"  aria-label="name"  value="{% if search.name %}{{search.name}}{% endif %}">
+                   
+                    <!-- END INPUT AMOUNT -->
+                  </div>
+                <div class="col-md-4 mb-3">
+                    <label for="zip">Amount:</label>
+                  <div class="input-group mb-3">
+                    <input type="number" name="min_rate" class="form-control" placeholder="Min amount"  aria-label="Min balance" step="any"
+                           value="{{search.min_rate}}"
+                           >
+                    <span class="input-group-text">to</span>
+                    <input type="number" name="max_rate" class="form-control" 
+                    placeholder="Max amount" 
+                    aria-label="Max balance" step="any"
+                           value="{{ search.max_rate }}"
+                           >
+                    <!-- END INPUT AMOUNT -->
+                  </div>
+                    </div>
+                <div class="col-md-4 mb-3">
+                    <label for="basic-url" class="form-label">Created at</label>
+                    <div class="input-group mb-3">
+                    <span class="input-group-text" id="basic-addon3">From</span>
+                    <input type="datetime-local" name="min_created_at" class="form-control" id="basic-url" aria-describedby="basic-addon3" 
+                           value={{search.min_created_at}}>
+                    </div>
+                    <div class="input-group mb-3">
+                    <span class="input-group-text" id="basic-addon3">To</span>
+                    <input type="datetime-local" name="max_created_at" class="form-control" id="basic-url" aria-describedby="basic-addon3"
+                            value={{search.max_created_at}}>
+                </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="zip">Is active:</label>
+                  <div class="input-group mb-3">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="is_active" id="inlineRadio1" value="True"
+                            {% if search.is_active == True %} checked {% endif %}>
+                        <label class="form-check-label" for="inlineRadio1">Yes</label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" name="is_active" type="radio" id="inlineRadio2" value="False"
+                            {% if search.is_active == False %} checked {% endif %}>
+                        <label class="form-check-label" for="inlineRadio2">No</label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" name="is_active" type="radio" id="inlineRadio3" value="None"
+                            {% if search.is_active == None %} checked {% endif %}>
+                        <label class="form-check-label" for="inlineRadio3">All</label>
+                      </div>
+                  </div>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success">Search</button>
+                    <a class="btn btn-secondary" href="/currency" role="button">Default</a>
+                </div>
+                
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <div class="table-responsive">
 <table class="table table-striped">
     <thead>
     <tr class="text-center">  
         <th scope="col">#</th>
         <th scope="col">Name</th>
-        <th scope="col">Exchange rate</th>
+        <th scope="col">Exchange rate
+            <div class="btn-group">
+                <div class="dropdown">
+                  <button class="btn btn-{% if 'exchange_rate' not in order_by and '-exchange_rate' not in order_by %}secondary 
+                                          {% else %}success
+                                          {% endif %}
+                                 btn-sm dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                    {% if "exchange_rate" in order_by %}⬆️
+                    {% elif "-exchange_rate" in order_by %}⬇️
+                    {% else %} S
+                    {% endif %}
+                  </button>
+                  <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                    <li><a class="dropdown-item" href="/sort/currency/~exchange_rate{{ params|get_urlencode }}">S</a></li>
+                    <li><a class="dropdown-item" href="/sort/currency/+exchange_rate{{ params|get_urlencode }}">⬆️</a></li>
+                    <li><a class="dropdown-item" href="/sort/currency/-exchange_rate{{ params|get_urlencode }}">⬇️</a></li>
+                  </ul>
+                </div>
+              </div>
+        </th>
         <th scope="col">Is active</th>
-        <th scope="col">Created at</th>
+        <th scope="col">Created at
+            <div class="btn-group">
+                <div class="dropdown">
+                  <button class="btn btn-{% if 'created_at' not in order_by and '-created_at' not in order_by %}secondary 
+                                          {% else %}success
+                                          {% endif %}
+                                 btn-sm dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                    {% if "created_at" in order_by %}⬆️
+                    {% elif "-created_at" in order_by %}⬇️
+                    {% else %} S
+                    {% endif %}
+                  </button>
+                  <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                    <li><a class="dropdown-item" href="/sort/currency/~created_at{{ params|get_urlencode }}">S</a></li>
+                    <li><a class="dropdown-item" href="/sort/currency/+created_at{{ params|get_urlencode }}">⬆️</a></li>
+                    <li><a class="dropdown-item" href="/sort/currency/-created_at{{ params|get_urlencode }}">⬇️</a></li>
+                  </ul>
+                </div>
+              </div>
+        </th>
         <!-- <th scope="col">Delete</th> -->
     </tr>
     </thead>
@@ -75,6 +191,8 @@
 </table>
 </div>
 
+{% include "include/pagination.html" %}
+
 
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -85,9 +203,9 @@
         </div>
         <div class="modal-body">
           <form action="/add_currency" method="post">
-            <label for="" class="form-label">User UUID:</label>
+            <label for="" class="form-label">Currency:</label>
             <input name="cur_name"
-                type="text" class="form-control" placeholder="Enter currency name" 
+                type="text" class="form-control" placeholder="You can add multiple currencies separated by commas: UAH, USD, RUB" 
                 aria-label="Example text with button addon" aria-describedby="button-addon1" required>
             </div>
         <div class="modal-footer">

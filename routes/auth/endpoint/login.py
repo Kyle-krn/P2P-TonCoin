@@ -1,8 +1,9 @@
+
 from fastapi import Form, Request, APIRouter
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import Request
-from loader import flash, manager, templates
+from loader import flash, load_user, manager, templates
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_login.exceptions import InvalidCredentialsException #Exception class
 from fastapi import Depends,status
@@ -13,35 +14,6 @@ import hashlib
 from models import models
 
 login_router = APIRouter()
-
-
-
-@manager.user_loader
-async def load_user(username:str):
-    user = await models.Staff.get_or_none(login=username)
-    return user
-
-
-async def load_superuser(user=Depends(manager)):
-    return None
-
-
-@login_router.get("/auth/register")
-async def register(request: Request):
-    return templates.TemplateResponse("auth/register.html", {"request": request})
-
-@login_router.post("/auth/new_staff")
-async def post_register(request: Request,
-                  username: str = Form(),
-                  password: str = Form(),
-                  superuser: bool = Form(False)):
-    hashed_pass = hashlib.sha256(password.encode('utf-8')).hexdigest()
-    await models.Staff.create(login=username, password=hashed_pass, superuser=superuser)
-    flash(request, "Success", "success")
-    return RedirectResponse(
-                            f'/auth/register', 
-                            status_code=status.HTTP_302_FOUND
-                            )  
 
 @login_router.post("/auth/login")
 async def login(request: Request, 

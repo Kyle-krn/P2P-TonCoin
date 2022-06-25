@@ -12,7 +12,8 @@ from starlette.templating import Jinja2Templates
 from starlette.middleware import Middleware
 from starlette.middleware.sessions import SessionMiddleware
 import typing
-from fastapi_login import LoginManager #Loginmanager Class
+from fastapi_login import LoginManager
+from models import models #Loginmanager Class
 from utils.exceptions import NotAuthenticatedException
 
 
@@ -39,6 +40,13 @@ manager = LoginManager(SECRET,
 manager.cookie_name = "access_token"
 
 templates = Jinja2Templates(directory="templates")
+
+
+@manager.user_loader
+async def load_user(username:str):
+    user = await models.Staff.get_or_none(login=username)
+    return user
+
 
 def get_urlencode(params: dict):
     str_params = urlencode(params)

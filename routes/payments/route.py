@@ -1,0 +1,8 @@
+from fastapi import APIRouter
+from routes.payments.endpoint import payments_account_routes
+from routes.payments.endpoint import payments_types_routes
+
+payments_router = APIRouter()
+
+payments_router.include_router(payments_account_routes.payment_account_router)
+payments_router.include_router(payments_types_routes.payments_type_router)
