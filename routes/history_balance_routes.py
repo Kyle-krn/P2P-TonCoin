@@ -9,6 +9,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 import starlette.status as status
 from loader import templates, flash, manager
 from tortoise.queryset import Q
+from utils.order_by import order_by_utils
 
 from utils.pagination import pagination
 
@@ -89,17 +90,19 @@ async def user_detail(request: Request,
         "user_uuid": None
     }
 
-    if order_by:
-        order_by = ast.literal_eval(order_by)
-    else:
-        order_by = []
+    # if order_by:
+    #     order_by = ast.literal_eval(order_by)
+    # else:
+    #     order_by = []
 
     if user_uuid:
         query = Q(user_id=user_uuid)
         search['user_uuid'] = user_uuid
     # else:
     #     query = Q()
-
+    # filter_dict = [
+    #                 {"type": type, }
+    # ]
     if type:
         query &= Q(type=type)
         search["type"] = type
@@ -119,7 +122,7 @@ async def user_detail(request: Request,
         query &= Q(code__icontains=code)
         search["code"] = code
     if state:
-        query &= Q(hash=state)
+        query &= Q(state=state)
         search["state"] = state
 
     if min_created_at:
@@ -133,17 +136,18 @@ async def user_detail(request: Request,
 
     limit = 5
     offset, last_page, previous_page, next_page = pagination(limit=limit, page=page, count_model=await history_balance.count())
-    history_balance = history_balance.offset(offset).limit(limit)
+    order_by, order_by_args = order_by_utils(order_by)
+    history_balance = history_balance.order_by(*order_by_args).offset(offset).limit(limit)
     
     
-    if len(order_by) == 0:
-        history_balance = history_balance.order_by("-created_at")
-    else:
-        for item in order_by:
-            if item[0] == "+":
-                indx = order_by.index(item)
-                order_by = order_by[:indx] + [item[1:]] + order_by[indx+1:]
-        history_balance = history_balance.order_by(*order_by)
+    # if len(order_by) == 0:
+    #     history_balance = history_balance.order_by("-created_at")
+    # else:
+    #     for item in order_by:
+    #         if item[0] == "+":
+    #             indx = order_by.index(item)
+    #             order_by = order_by[:indx] + [item[1:]] + order_by[indx+1:]
+    #     history_balance = history_balance.order_by(*order_by)
     
    
     
@@ -164,6 +168,7 @@ async def user_detail(request: Request,
                "next_page": next_page,
                "order_by": order_by,
                "pagination_url": f"/user_history_balance/{user.uuid}" if user else "/history_balance"}
+               
     template_name = "users/user_history_balance.html" if user else "history_balance.html"
     return templates.TemplateResponse(template_name, context)
 

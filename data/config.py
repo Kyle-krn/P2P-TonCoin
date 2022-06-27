@@ -33,3 +33,5 @@ TORTOISE_ORM = {
     "use_tz": False,
     "timezone": "UTC"
 }
+
+SHOW_INT_ORDER = 5432

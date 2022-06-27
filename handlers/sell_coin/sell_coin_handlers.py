@@ -201,6 +201,7 @@ async def sell_coin_choice_pay_acc_handler(call: types.CallbackQuery, state: FSM
     pay_account_id = call.data.split(':')[1]
     
     order = await models.Order.get(uuid=user_data['order_uuid'])
+    await models.OrderStateChange.create(order=order, old_state=order.state, new_state='ready_for_sale')
     order.state = 'ready_for_sale'
     await order.save()
 
@@ -223,7 +224,7 @@ async def sell_coin_choice_pay_acc_handler(call: types.CallbackQuery, state: FSM
     await state.finish()
     text = await models.Lang.get(uuid="697085d7-ebfd-4756-9425-7f0b160b41af")
     text = text.rus if user.lang == "ru" else text.eng
-    text = text.format(order_uuid=order.serial_int + 5432, 
+    text = text.format(order_uuid=order.serial_int, 
                        order_amount=order.amount - order.commission)
     # text =f"Ваш заказ № {order.uuid} успешно опубликован.\n"  \
     #        "Комиссия за продажу равна 1% в TonCoin\n"  \

@@ -25,6 +25,8 @@ order_by_router = APIRouter()
 
 @order_by_router.get("/sort/user_referal_children/{column}/{user_uuid}", response_class=RedirectResponse)
 @order_by_router.get("/sort/referal_children/{column}", response_class=RedirectResponse)
+
+@order_by_router.get("/sort/orders/{column}", response_class=RedirectResponse)
 async def sort(request: Request,
                     column: str,
                     user_uuid: UUID = None,

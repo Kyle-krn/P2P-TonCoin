@@ -1,0 +1,42 @@
+{% extends "orders/detail_order.html" %}
+{% block order_relation %}
+<br>
+<h3 class="text-center">Order change amount:</h3>
+<div class="table-responsive">
+    <table class="table table-striped">
+    <thead>
+      <tr class="text-center">  
+        <th scope="col">#</th>
+        <th scope="col">Old amount</th>
+        <th scope="col">New amount</th>
+        <th scope="col">Description</th>
+        <th scope="col">Target order</th>
+        <th scope="col">Staff</th>
+        <th scope="col">Created at</th>
+      </tr>
+    </thead>
+    <tbody>
+        {% for change_amount in order_change_amount %}
+        <tr class="text-center">
+            <th scope="row">{{loop.index}}</th>
+            <td>{{change_amount.old_amount | format_float }}</td>
+            <td>{{change_amount.new_amount | format_float }}</td>
+            <td>{% if change_amount.description %}
+                {{change_amount.description}}
+                {% endif %}
+            </td>
+            <td>
+              {% if change_amount.target_order_id %}
+              <a class="btn btn-primary btn-sm" href="{{url_for('order_detail', uuid=change_amount.target_order_id)}}" role="button">{{change_amount.target_order.serial_int}}</a>
+              {% endif %}
+            </td>
+            <td>{{change_amount.staff.login}}</td>
+            <td>{{change_amount.created_at | format_date}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+</div>
+
+{% include "include/pagination.html" %}
+{% endblock %}

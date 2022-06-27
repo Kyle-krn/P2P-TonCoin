@@ -1,4 +1,420 @@
 {% extends 'base.html' %}
 {% block body %}
-hui
+<h3 class="text-center">Orders:</h3>
+
+<div class="accordion" id="accordionExample">
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingOne">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+        Order search
+      </button>
+    </h2>
+    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+      <div class="accordion-body">
+        <form action="">
+          <div class="row justify-content-start">
+              <div class="col-md-4 mb-3">
+                <label for="zip">Parent order:</label>
+                <div class="input-group mb-3">
+                  <input name="parent_id" type="text" class="form-control" placeholder="Parnet order UUID" aria-label="Enter parent order UUID" aria-describedby="button-addon1"
+                  {% if search.parent_id %}value="{{search.parent_id}}"{% endif %}>
+                  </div>
+                </div>
+              <div class="col-md-4 mb-3">
+                <label for="zip">Seller:</label>
+                <div class="input-group mb-3">
+                  <input name="seller_id" type="text" class="form-control" placeholder="Seller UUID" aria-label="Enter seller UUID" aria-describedby="button-addon1"
+                     value={% if search.seller_id %}"{{search.seller_id}}"{% endif %}>
+                  </div>
+                </div>
+              <div class="col-md-4 mb-3">
+                <label for="zip">Customer:</label>
+                <div class="input-group mb-3">
+                  <input name="customer_id" type="text" class="form-control" placeholder="Seller UUID" aria-label="Enter seller UUID" aria-describedby="button-addon1"
+                     value={% if search.seller_id %}"{{search.seller_id}}"{% endif %}>
+                  </div>
+                </div>
+              <div class="col-md-4 mb-3">
+                <label for="zip">Currency:</label>
+                <div class="input-group mb-3">
+                  <select name="currency_id" class="form-select text-center" aria-label="Currency">
+                    <option {% if search.currency_id == None %}selected{% endif %}></option>
+                    {% for currency in currencies %}
+                    <option value={{currency.uuid}} {% if currency.uuid == search.currency_id %}selected{% endif %}>{{ currency.name }}</option>
+                    {% endfor %}
+                  </select>
+                  </div>
+                </div>
+              <div class="col-md-4 mb-3">
+                <label for="zip">State:</label>
+                <div class="input-group mb-3">
+                  <select name="state" class="form-select text-center" aria-label="State">
+                    <option {% if search.state == None %}selected{% endif %}></option>
+                    <option value='created' {% if search.state == "created" %}selected{% endif %}>Created</option>
+                    <option value='ready_for_sale' {% if search.state == "ready_for_sale" %}selected{% endif %}>Ready for sale</option>
+                    <option value='wait_buyer_send_funds' {% if search.state == "wait_buyer_send_funds" %}selected{% endif %}>Wait buyer send funds</option>
+                    <option value='buyer_sent_funds' {% if search.state == "buyer_sent_funds" %}selected{% endif %}>Buyer sent funds</option>
+                    <option value='seller_approved_funds' {% if search.state == "seller_approved_funds" %}selected{% endif %}>Seller approved funds</option>
+                    <option value='done' {% if search.state == "done" %}selected{% endif %}>Done</option>
+                    <option value='problem_seller_no_funds' {% if search.state == "problem_seller_no_funds" %}selected{% endif %}>Problem seller no funds</option>
+                    <option value='need_admin_resolution' {% if search.state == "need_admin_resolution" %}selected{% endif %}>Need admin resolution</option>
+                    <option value='request_cancelled_by_seller' {% if search.state == "request_cancelled_by_seller" %}selected{% endif %}>Request cancelled by seller</option>
+                    <option value='cancelled_by_seller' {% if search.state == "cancelled_by_seller" %}selected{% endif %}>Cancelled by seller</option>
+                    <option value='cancelled_by_customer' {% if search.state == "cancelled_by_customer" %}selected{% endif %}>Cancelled by customer</option>
+                    <option value='suspended' {% if search.state == "suspended" %}selected{% endif %}>Suspended</option>
+                </select>
+                  </div>
+                </div>
+              <div class="col-md-4 mb-3">
+                  <label for="zip">Amount:</label>
+                <div class="input-group mb-3">
+                  <input type="number" name="amount__gte" class="form-control" placeholder="Min amount"  aria-label="Min balance" step="any"
+                         value="{{search.amount_gte}}"
+                         >
+                  <span class="input-group-text">to</span>
+                  <input type="number" name="amount__lte" class="form-control" 
+                  placeholder="Max amount" 
+                  aria-label="Max balance" step="any"
+                         value="{{ search.amount_lte }}"
+                         >
+                  <!-- END INPUT AMOUNT -->
+                </div>
+              </div>
+              
+              <div class="col-md-4 mb-3">
+                  <label for="zip">Origin amount:</label>
+                <div class="input-group mb-3">
+                  <input type="number" name="origin_amount__gte" class="form-control" placeholder="Min origin amount"  aria-label="Min origin amount" step="any"
+                         value="{{search.origin_amount_gte}}"
+                         >
+                  <span class="input-group-text">to</span>
+                  <input type="number" name="origin_amount__lte" class="form-control" 
+                  placeholder="Max origin amount" 
+                  aria-label="Max origin amount" step="any"
+                         value="{{ search.origin_amount_lte }}"
+                         >
+                  <!-- END INPUT AMOUNT -->
+                </div>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                  <label for="zip">Margin:</label>
+                <div class="input-group mb-3">
+                  <input type="number" name="margin__gte" class="form-control" placeholder="Min margin"  aria-label="Min margin" step="any"
+                         value="{{search.margin_gte}}">
+                  <span class="input-group-text">to</span>
+                  <input type="number" name="margin__lte" class="form-control" 
+                  placeholder="Max margin" 
+                  aria-label="Max margin" step="any"
+                         value="{{ search.margin_lte }}"
+                         >
+                  <!-- END INPUT AMOUNT -->
+                </div>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                  <label for="zip">Commission:</label>
+                <div class="input-group mb-3">
+                  <input type="number" name="commission__gte" class="form-control" placeholder="Min commission"  aria-label="Min commission" step="any"
+                         value="{{search.commission_gte}}">
+                  <span class="input-group-text">to</span>
+                  <input type="number" name="commission__lte" class="form-control" 
+                  placeholder="Max commission" 
+                  aria-label="Max commission" step="any"
+                         value="{{ search.commission_lte }}"
+                         >
+                  <!-- END INPUT AMOUNT -->
+                </div>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                  <label for="zip">Final price:</label>
+                <div class="input-group mb-3">
+                  <input type="number" name="final_price__gte" class="form-control" placeholder="Min final price"  aria-label="Min final price" step="any"
+                         value="{{search.final_price_gte}}">
+                  <span class="input-group-text">to</span>
+                  <input type="number" name="final_price__lte" class="form-control" 
+                  placeholder="Max final price" 
+                  aria-label="Max final price" step="any"
+                         value="{{ search.final_price_lte }}">
+                  <!-- END INPUT AMOUNT -->
+                </div>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                  <label for="zip">Min buy sum:</label>
+                <div class="input-group mb-3">
+                  <input type="number" name="min_buy_sum__gte" class="form-control" placeholder="Min buy sum"  aria-label="Min buy sum" step="any"
+                         value="{{search.min_buy_sum_gte}}">
+                  <span class="input-group-text">to</span>
+                  <input type="number" name="min_buy_sum__lte" class="form-control" 
+                  placeholder="Max buy sum" 
+                  aria-label="Max buy sum" step="any"
+                         value="{{ search.min_buy_sum_lte }}">
+                  <!-- END INPUT AMOUNT -->
+                </div>
+              </div>
+              
+              <div class="col-md-4 mb-3">
+                  <label for="basic-url" class="form-label">Updated at</label>
+                  <div class="input-group mb-3">
+                  <span class="input-group-text" id="basic-addon3">From</span>
+                  <input type="datetime-local" name="updated_at__gte" class="form-control" id="basic-url" aria-describedby="basic-addon3" 
+                         value={{search.updated_at_gte}}>
+                  </div>
+                  <div class="input-group mb-3">
+                  <span class="input-group-text" id="basic-addon3">To</span>
+                  <input type="datetime-local" name="updated_at__lte" class="form-control" id="basic-url" aria-describedby="basic-addon3"
+                          value={{search.updated_at_lte}}>
+                  </div>
+              </div>
+              
+              <div class="col-md-4 mb-3">
+                  <label for="basic-url" class="form-label">Created at</label>
+                  <div class="input-group mb-3">
+                  <span class="input-group-text" id="basic-addon3">From</span>
+                  <input type="datetime-local" name="created_at__gte" class="form-control" id="basic-url" aria-describedby="basic-addon3" 
+                         value={{search.created_at_gte}}>
+                  </div>
+                  <div class="input-group mb-3">
+                  <span class="input-group-text" id="basic-addon3">To</span>
+                  <input type="datetime-local" name="created_at__lte" class="form-control" id="basic-url" aria-describedby="basic-addon3"
+                          value={{search.created_at_lte}}>
+                  </div>
+              </div>
+            </div>
+          </div>
+
+              <div class="text-center">
+                  <button type="submit" class="btn btn-success">Search</button>
+                  <a class="btn btn-secondary" href="{{url_for('list_orders')}}" role="button">Default</a>
+              </div>
+              
+        </form>
+      </div>
+    </div>
+  </div>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+        <tr class="text-center">  
+            <th scope="col">#</th>
+            <th scope="col">Parent Order</th>
+            <th scope="col">Seller</th>
+            <th scope="col">Customer</th>
+            <th scope="col">Currency</th>
+            <th scope="col">State</th>
+            <th scope="col">Amount
+                <div class="btn-group">
+                    <div class="dropdown">
+                      <button class="btn btn-{% if 'amount' not in order_by and '-amount' not in order_by %}secondary 
+                                              {% else %}success
+                                              {% endif %}
+                                     btn-sm dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if "amount" in order_by %}⬆️
+                        {% elif "-amount" in order_by %}⬇️
+                        {% else %} S
+                        {% endif %}
+                      </button>
+                      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                        <li><a class="dropdown-item" href="/sort/orders/~amount{{ params|get_urlencode }}">S</a></li>
+                        <li><a class="dropdown-item" href="/sort/orders/+amount{{ params|get_urlencode }}">⬆️</a></li>
+                        <li><a class="dropdown-item" href="/sort/orders/-amount{{ params|get_urlencode }}">⬇️</a></li>
+                      </ul>
+                    </div>
+                  </div>
+            </th>
+            <th scope="col">Origin amount
+                <div class="btn-group">
+                    <div class="dropdown">
+                      <button class="btn btn-{% if 'origin_amount' not in order_by and '-origin_amount' not in order_by %}secondary 
+                                              {% else %}success
+                                              {% endif %}
+                                     btn-sm dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if "origin_amount" in order_by %}⬆️
+                        {% elif "-origin_amount" in order_by %}⬇️
+                        {% else %} S
+                        {% endif %}
+                      </button>
+                      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                        <li><a class="dropdown-item" href="/sort/orders/~origin_amount{{ params|get_urlencode }}">S</a></li>
+                        <li><a class="dropdown-item" href="/sort/orders/+origin_amount{{ params|get_urlencode }}">⬆️</a></li>
+                        <li><a class="dropdown-item" href="/sort/orders/-origin_amount{{ params|get_urlencode }}">⬇️</a></li>
+                      </ul>
+                    </div>
+                  </div>
+            </th>
+            <th scope="col">Margin
+                <div class="btn-group">
+                    <div class="dropdown">
+                      <button class="btn btn-{% if 'margin' not in order_by and '-margin' not in order_by %}secondary 
+                                              {% else %}success
+                                              {% endif %}
+                                     btn-sm dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if "margin" in order_by %}⬆️
+                        {% elif "-margin" in order_by %}⬇️
+                        {% else %} S
+                        {% endif %}
+                      </button>
+                      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                        <li><a class="dropdown-item" href="/sort/orders/~margin{{ params|get_urlencode }}">S</a></li>
+                        <li><a class="dropdown-item" href="/sort/orders/+margin{{ params|get_urlencode }}">⬆️</a></li>
+                        <li><a class="dropdown-item" href="/sort/orders/-margin{{ params|get_urlencode }}">⬇️</a></li>
+                      </ul>
+                    </div>
+                  </div>
+            </th>
+            <th scope="col">Commision
+                <div class="btn-group">
+                    <div class="dropdown">
+                      <button class="btn btn-{% if 'commission' not in order_by and '-commission' not in order_by %}secondary 
+                                              {% else %}success
+                                              {% endif %}
+                                     btn-sm dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if "commission" in order_by %}⬆️
+                        {% elif "-commission" in order_by %}⬇️
+                        {% else %} S
+                        {% endif %}
+                      </button>
+                      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                        <li><a class="dropdown-item" href="/sort/orders/~commission{{ params|get_urlencode }}">S</a></li>
+                        <li><a class="dropdown-item" href="/sort/orders/+commission{{ params|get_urlencode }}">⬆️</a></li>
+                        <li><a class="dropdown-item" href="/sort/orders/-commission{{ params|get_urlencode }}">⬇️</a></li>
+                      </ul>
+                    </div>
+                  </div>
+            </th>
+            <th scope="col">Final price
+                <div class="btn-group">
+                    <div class="dropdown">
+                      <button class="btn btn-{% if 'final_price' not in order_by and '-final_price' not in order_by %}secondary 
+                                              {% else %}success
+                                              {% endif %}
+                                     btn-sm dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if "final_price" in order_by %}⬆️
+                        {% elif "-final_price" in order_by %}⬇️
+                        {% else %} S
+                        {% endif %}
+                      </button>
+                      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                        <li><a class="dropdown-item" href="/sort/orders/~final_price{{ params|get_urlencode }}">S</a></li>
+                        <li><a class="dropdown-item" href="/sort/orders/+final_price{{ params|get_urlencode }}">⬆️</a></li>
+                        <li><a class="dropdown-item" href="/sort/orders/-final_price{{ params|get_urlencode }}">⬇️</a></li>
+                      </ul>
+                    </div>
+                  </div>
+            </th>
+            <th scope="col">Min sum
+                <div class="btn-group">
+                    <div class="dropdown">
+                      <button class="btn btn-{% if 'min_buy_sum' not in order_by and '-min_buy_sum' not in order_by %}secondary 
+                                              {% else %}success
+                                              {% endif %}
+                                     btn-sm dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if "min_buy_sum" in order_by %}⬆️
+                        {% elif "-min_buy_sum" in order_by %}⬇️
+                        {% else %} S
+                        {% endif %}
+                      </button>
+                      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                        <li><a class="dropdown-item" href="/sort/orders/~min_buy_sum{{ params|get_urlencode }}">S</a></li>
+                        <li><a class="dropdown-item" href="/sort/orders/+min_buy_sum{{ params|get_urlencode }}">⬆️</a></li>
+                        <li><a class="dropdown-item" href="/sort/orders/-min_buy_sum{{ params|get_urlencode }}">⬇️</a></li>
+                      </ul>
+                    </div>
+                  </div>
+            </th>
+            <th scope="col">Updated at
+                <div class="btn-group">
+                    <div class="dropdown">
+                      <button class="btn btn-{% if 'updated_at' not in order_by and '-updated_at' not in order_by %}secondary 
+                                              {% else %}success
+                                              {% endif %}
+                                     btn-sm dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if "updated_at" in order_by %}⬆️
+                        {% elif "-updated_at" in order_by %}⬇️
+                        {% else %} S
+                        {% endif %}
+                      </button>
+                      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                        <li><a class="dropdown-item" href="/sort/orders/~updated_at{{ params|get_urlencode }}">S</a></li>
+                        <li><a class="dropdown-item" href="/sort/orders/+updated_at{{ params|get_urlencode }}">⬆️</a></li>
+                        <li><a class="dropdown-item" href="/sort/orders/-updated_at{{ params|get_urlencode }}">⬇️</a></li>
+                      </ul>
+                    </div>
+                  </div>
+            </th>
+            <th scope="col">Created at
+                <div class="btn-group">
+                    <div class="dropdown">
+                      <button class="btn btn-{% if 'created_at' not in order_by and '-created_at' not in order_by %}secondary 
+                                              {% else %}success
+                                              {% endif %}
+                                     btn-sm dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if "created_at" in order_by %}⬆️
+                        {% elif "-created_at" in order_by %}⬇️
+                        {% else %} S
+                        {% endif %}
+                      </button>
+                      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                        <li><a class="dropdown-item" href="/sort/orders/~created_at{{ params|get_urlencode }}">S</a></li>
+                        <li><a class="dropdown-item" href="/sort/orders/+created_at{{ params|get_urlencode }}">⬆️</a></li>
+                        <li><a class="dropdown-item" href="/sort/orders/-created_at{{ params|get_urlencode }}">⬇️</a></li>
+                      </ul>
+                    </div>
+                  </div>
+            </th>
+            <th scope="col">Detail</th>
+        </tr>
+      </thead>
+      <tbody>
+          {% for order in orders %}
+        <tr class="text-center"> 
+            <th scope="row">{{order.serial_int}}</th>
+            <td>
+                {% if order.parent_id %}
+                <a class="btn btn-primary btn-sm" href="{{url_for('order_detail', uuid=order.parent_id)}}" role="button">{{order.parent.serial_int}}
+                </a>
+                {% endif %}
+            </td>
+            <td>
+                <a class="btn btn-primary btn-sm" href="{{url_for('user_detail', uuid=order.seller_id)}}" role="button"
+                >{% if order.seller.tg_username %}{{order.seller.tg_username}}{% else %}{{order.seller.tg_username}}{% endif %}
+                </a>
+            </td>        
+            <td>
+                {% if order.customer %}
+                <a class="btn btn-primary btn-sm" href="{{url_for('user_detail', uuid=order.customer_id)}}" role="button"
+                >{% if order.customer.tg_username %}{{order.customer.tg_username}}{% else %}{{order.customer.tg_username}}{% endif %}
+                </a>
+                {% endif %}
+            </td>  
+            <td>
+                <a class="btn btn-primary btn-sm" href="{{url_for('get_currency')}}?name={{order.currency.name}}" role="button">
+                {{order.currency.name}}
+                </a>
+            </td>      
+            <td>{{order.state}}</td>        
+            <td>{{order.amount | format_float}} </td>        
+            <td>{{order.origin_amount | format_float}}</td>        
+            <td>{{order.margin}} %</td>        
+            <td>{{order.commission | format_float}}</td>        
+            <td>
+                {% if order.final_price  %}
+                {{order.final_price}} {{order.currency.name}}
+                {% endif %}
+            </td>        
+            <td>{{order.min_buy_sum}} {{order.currency.name}}</td>        
+            <td>{{order.updated_at | format_date}}</td>        
+            <td>{{order.created_at | format_date}}</td>        
+            <td>
+                <a class="btn btn-primary btn-sm" href="{{url_for('order_detail', uuid=order.uuid)}}" role="button">Detail
+                </a>
+            </td>        
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% include "/include/pagination.html" %}
 {% endblock %}

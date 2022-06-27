@@ -11,7 +11,9 @@ from loader import templates, flash, manager
 from tortoise.queryset import Q
 
 from utils.currency import get_api_currency
+from utils.order_by import order_by_utils
 from utils.pagination import pagination
+from utils.utils import str_bool
 
 currency_router = APIRouter()
 
@@ -27,18 +29,18 @@ async def get_currency(request: Request,
                        order_by: str = None,
                        page: int = 1
                         ):
-    if is_active == 'True':
-        is_active = True
-    elif is_active == 'False':
-        is_active = False
-    else:
-        is_active = None
-    
-    if order_by:
-        order_by = ast.literal_eval(order_by)
-    else:
-        order_by = []
-    print(order_by)
+    # if is_active == 'True':
+    #     is_active = True
+    # elif is_active == 'False':
+    #     is_active = False
+    # else:
+    #     is_active = None
+    is_active = str_bool(is_active)
+    # if order_by:
+    #     order_by = ast.literal_eval(order_by)
+    # else:
+    #     order_by = []
+
     ton_currency = await models.Currency.get(name="TON")
     search = {
         "name": None,
@@ -75,16 +77,19 @@ async def get_currency(request: Request,
 
     limit = 5
     offset, last_page, previous_page, next_page = pagination(limit=limit, page=page, count_model=await currencies.count())
-    currencies = currencies.offset(offset).limit(limit)
+    order_by, order_by_args = order_by_utils(order_by)
+
+    currencies = currencies.order_by(*order_by_args).offset(offset).limit(limit)
     
-    if len(order_by) == 0:
-        currencies = currencies.order_by("-created_at")
-    else:
-        for item in order_by:
-            if item[0] == "+":
-                indx = order_by.index(item)
-                order_by = order_by[:indx] + [item[1:]] + order_by[indx+1:]
-        currencies = currencies.order_by(*order_by)
+    
+    # if len(order_by) == 0:
+    #     currencies = currencies.order_by("-created_at")
+    # else:
+    #     for item in order_by:
+    #         if item[0] == "+":
+    #             indx = order_by.index(item)
+    #             order_by = order_by[:indx] + [item[1:]] + order_by[indx+1:]
+    #     currencies = currencies.order_by(*order_by)
     currencies = await currencies
 
     context = {
@@ -120,11 +125,11 @@ async def update_currency(request: Request):
     for indx in range(0, len(form_list), 3):
         currency_uuid = form_list[indx][1]
         exchange_rate = form_list[indx+1][1]
-        is_active = form_list[indx+2][1]
-        if is_active == 'True':
-            is_active = True
-        else:
-            is_active = False
+        is_active = str_bool(form_list[indx+2][1])
+        # if is_active == 'True':
+        #     is_active = True
+        # else:
+        #     is_active = False
         # delete = form_list[indx+3][1]
 
         currency = await models.Currency.get(uuid=UUID(currency_uuid))

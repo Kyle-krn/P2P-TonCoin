@@ -202,7 +202,7 @@ class OrderAmountChange(Model):
     """модель изменения продаваемого количества Toncoin в заказе Order"""
     uuid: UUID = fields.UUIDField(pk=True)
     order: fields.ForeignKeyRelation['Order'] = fields.ForeignKeyField("models.Order", related_name="order_amount_change")
-    target_order: fields.ForeignKeyRelation['Order'] = fields.ForeignKeyField("models.Order", related_name="target_order_amount_change")
+    target_order: fields.ForeignKeyNullableRelation['Order'] = fields.ForeignKeyField("models.Order", related_name="target_order_amount_change", null=True)
     old_amount: float = fields.FloatField()
     new_amount: float = fields.FloatField()
     staff: fields.ForeignKeyNullableRelation = fields.ForeignKeyField("models.Staff", related_name="order_amount_change", null=True)

@@ -1,4 +1,6 @@
 import ast
+import asyncio
+from datetime import datetime
 import json
 from typing import Union
 from urllib.parse import urlencode
@@ -10,98 +12,42 @@ from loader import flash, manager, templates
 from models import models
 from tortoise.queryset import Q
 import starlette.status as status
+from utils.models_utils import query_filters
+from utils.order_by import order_by_utils
 from utils.pagination import pagination
 from utils.search_db_json import rowsql_get_distinct_list_value
+from utils.utils import str_bool
+from pydantic import BaseModel, validator
+from ..pydantic_models import PaymentsAccountSearch
+
 
 payment_account_router = APIRouter()
 
-@payment_account_router.get('/user_payments_account/{uuid}')
+    
+
+@payment_account_router.get('/user_payments_account/{user_uuid}')
 @payment_account_router.get('/payments_account')
 async def user_payment_account(request: Request,
-                               uuid: UUID = None,
-                               user_uuid: Union[UUID,str] = None,
-                               type_uuid: Union[UUID,str] = None,
-                               currency_uuid: Union[UUID,str] = None,
-                               payment_data: str = None,
-                               is_active: Union[bool,str] = None,
-                               min_updated_at: str = None,
-                               max_updated_at: str = None,
-                               min_created_at: str = None,
-                               max_created_at: str = None,
+                               user_uuid: UUID = None,
+                               search: PaymentsAccountSearch = Depends(PaymentsAccountSearch),
                                order_by: str = None,
                                page:int = 1):
-    
-    if user_uuid is not None and (isinstance(user_uuid, UUID) is False or (await models.User.get_or_none(uuid=user_uuid)) is None):
-        user_uuid = None
-        flash(request, "Error Parent UUID")
-    
-    if uuid:
-        user = await models.User.get(uuid=uuid).prefetch_related("referal_user")
+    if user_uuid:
+        user = await models.User.get(uuid=user_uuid).prefetch_related("referal_user")
         query = Q(user=user)
     else:
         user = None
         query = Q()
 
-    if order_by:
-        order_by = ast.literal_eval(order_by)
-    else:
-        order_by = []
-    
-    # user = await models.User.get(uuid=uuid)
-
-    if isinstance(is_active, str):
-        is_active = None
-    if isinstance(type_uuid, str):
-        type_uuid = None
-    if isinstance(currency_uuid, str):
-        currency_uuid = None
-
-    # selected_type = await models.UserPaymentAccountType.get(name="Тинькоф")
-    search = {
-        'type_uuid': None,
-        'currency_uuid': None,
-        'is_active': None,
-        'min_updated_at': None,
-        'max_updated_at': None,
-        'min_created_at': None,
-        'max_created_at': None,
-        'user_uuid': None
-    }
-    payments_account = models.UserPaymentAccount.filter(query)
-    
-    # query = Q()
-
-    if user_uuid:
-        query = Q(user_id=user_uuid)
-        search['user_uuid'] = user_uuid
-
-    if type_uuid:
-        query &= Q(type_id=type_uuid)
-        search['type_uuid'] = type_uuid
-    if currency_uuid:
-        query &= Q(type__currency_id=currency_uuid)
-        search['currency_uuid'] = currency_uuid
-    if is_active is not None:
-        query = query & Q(is_active=is_active)
-        search["is_active"] = is_active
-
-    if min_updated_at:
-        query = query & Q(created_at__gte=min_updated_at)
-        search["min_updated_at"] = min_updated_at
-    if max_updated_at:
-        query = query & Q(created_at__lte=max_updated_at)
-        search["max_updated_at"] = max_updated_at
-    if min_created_at:
-        query = query & Q(created_at__gte=min_created_at)
-        search["min_created_at"] = min_created_at
-    if max_created_at:
-        query = query & Q(created_at__lte=max_created_at)
-        search["max_created_at"] = max_created_at
-
-    if payment_data:
-        uuid_list = await rowsql_get_distinct_list_value(payment_data, table="user_payment_account")
+    query &= await query_filters(search)
+    if search.data__json:
+        uuid_list = await rowsql_get_distinct_list_value(search.data__json, table="user_payment_account")
         uuid_list = [i['uuid'] for i in uuid_list]
-        query = query & Q(uuid__in=uuid_list)
+        query &= Q(uuid__in=uuid_list)
+
+    payments_account = models.UserPaymentAccount.filter(query)
+  
+
     payments_account = payments_account.filter(query)
 
     limit = 5
@@ -111,16 +57,9 @@ async def user_payment_account(request: Request,
     currency = await models.Currency.exclude(name="TON")
     payments_type = await models.UserPaymentAccountType.filter().prefetch_related("currency")
 
+    order_by, order_by_args = order_by_utils(order_by)
+    payments_account = payments_account.order_by(*order_by_args)
 
-    if len(order_by) == 0:
-        payments_account = payments_account.order_by("-created_at", "uuid")
-    else:
-        for item in order_by:
-            if item[0] == "+":
-                indx = order_by.index(item)
-                order_by = order_by[:indx] + [item[1:]] + order_by[indx+1:]
-        payments_account = payments_account.order_by(*order_by)
-        
     payments_account = await payments_account.prefetch_related("type__currency", "user")
 
     context = {
@@ -194,17 +133,12 @@ async def user_payments_account(request: Request,
         data = form_list[indx+3][1]
         while "'" in data:
             data = data.replace("'", '"')
-        # print(data)
         try:
             json_data = json.loads(data)
         except json.decoder.JSONDecodeError:
             json_data = payment_account.data
             flash(request, f"Invalid JSON - {data}", "danger")
-        is_active = form_list[indx+4][1]
-        if is_active == 'True':
-            is_active = True
-        else:
-            is_active = False
+        is_active = str_bool(form_list[indx+4][1])
         payment_account.update_from_dict({'user_id': user_uuid,
                                         'data': json_data,
                                         'type_id': type_uuid,

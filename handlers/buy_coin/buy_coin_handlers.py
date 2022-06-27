@@ -184,6 +184,7 @@ async def buy_amount_state(message: types.Message, state: FSMContext):
                                               currency_id=order.currency_id,
                                               seller_id=order.seller_id,
                                               customer_pay_type=pay_type)
+        await models.OrderStateChange.create(order=new_order, old_state="created children order", new_state="wait_buyer_send_funds")
         old_amount = order.amount
         order.amount -= buy_ton_amount
         order.commission = order.amount * 0.01
@@ -194,6 +195,7 @@ async def buy_amount_state(message: types.Message, state: FSMContext):
                                               new_amount=order.amount) 
         order = new_order
     else:
+        await models.OrderStateChange.create(order=order, old_state=order.state, new_state="wait_buyer_send_funds")
         order.state = "wait_buyer_send_funds"
         order.customer = user
         order.final_price = buy_amount
@@ -257,10 +259,12 @@ async def cancel_buy_order_handler(call :types.CallbackQuery):
                                               new_amount=0) 
         order.amount = 0
         order.commission = 0
+        await models.OrderStateChange.create(order=order, old_state=order.state, new_state="cancelled_by_customer")
         order.state = "cancelled_by_customer"
         await order.save()
         await order_parent.save()
     else:
+        await models.OrderStateChange.create(order=order, old_state=order.state, new_state="ready_for_sale")
         order.state = "ready_for_sale"
         order.customer = None
         order.final_price = None
@@ -283,7 +287,7 @@ async def send_money_order_handler(call: types.CallbackQuery):
         pay_account = await parent_order.order_user_payment_account.filter(account__type__uuid=order.customer_pay_type_id)
     else:
         pay_account = await order.order_user_payment_account.filter(account__type__uuid=order.customer_pay_type_id)
-
+    await models.OrderStateChange.create(order=order, old_state=order.state, new_state="buyer_sent_funds")
     order.state = "buyer_sent_funds"
     await order.save()
     await models.PaymentOperation.create(order=order,
@@ -298,7 +302,7 @@ async def send_money_order_handler(call: types.CallbackQuery):
 
     text_for_seller = await models.Lang.get(uuid="f1defc4d-e4cc-4afa-be24-5f911a4508bf")
     text_for_seller = text_for_seller.rus if seller.lang == 'ru' else text_for_seller.eng
-    text_for_seller = text_for_seller.format(uuid=order.serial_int + 5432, 
+    text_for_seller = text_for_seller.format(uuid=order.serial_int, 
                                              currency=cur_name,
                                              final_price=float(order.final_price))
     # text = f"По заказу №{order.uuid} покупатель отправил денежные средства в размере {float(order.final_price)}$.\n"  \

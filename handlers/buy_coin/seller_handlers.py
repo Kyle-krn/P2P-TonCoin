@@ -14,6 +14,7 @@ async def seller_approved_funds_handler(call: types.CallbackQuery):
     customer = await order.customer
     customer.balance += (order.amount - order.commission)
     seller.frozen_balance -= order.amount
+    await models.OrderStateChange.create(order=order, old_state=order.state, new_state="done")
     order.state = "done"
     payment_operation = await order.payment_operation.all().first()
     payment_operation.state = "success"
@@ -26,7 +27,7 @@ async def seller_approved_funds_handler(call: types.CallbackQuery):
     # seller_text = "Ваш заказ завершен! Спасибо, что пользуетесь нашим ботом"
     customer_text = await models.Lang.get(uuid="02d0faf7-fc2f-420c-bac4-d7642546b903")
     customer_text = customer_text.rus if customer.lang == 'ru' else customer_text.eng
-    customer_text = customer_text.format(uuid=order.serial_int + 5432, balance=customer.balance)
+    customer_text = customer_text.format(uuid=order.serial_int, balance=customer.balance)
     # customer_text = f"Продавец подтвердил получение ваших денежных средств по заказу № {order.uuid} TON отправлены на ваш кошелек"  \
     #                 f"Ваш баланс: {customer.balance} TON"
     await call.message.delete()
@@ -54,6 +55,7 @@ async def problem_seller_no_funds_handler(call: types.CallbackQuery):
     await call.message.answer(text)
     payment_operation = await order.payment_operation.all().first()
     payment_operation.state = "disputed"
+    await models.OrderStateChange.create(order=order, old_state=order.state, new_state="problem_seller_no_funds")
     order.state = "problem_seller_no_funds"
     await order.save()
     await payment_operation.save()

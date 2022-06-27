@@ -98,7 +98,7 @@ async def cancel_order_handler(call: types.CallbackQuery):
     await user.save()
     text = await models.Lang.get(uuid="56a300c4-ee27-4619-8112-c98c10bfdaec")
     text = text.rus if user.lang == 'ru' else text.eng
-    text = text.format(order_uuid=order.serial_int + 5432, 
+    text = text.format(order_uuid=order.serial_int, 
                        order_amount=order.amount)
     # text = f"Ваш заказ № {order.uuid} отменен!\n"  \
     #        f"Мы вернули вам {order.amount} TON ваш кошелек\n"  \

@@ -16,10 +16,10 @@
                     <!-- INPUT TYPE -->
                     <label for="zip">Currency:</label>
                     <div class="input-group mb-3">
-                        <select name="currency_uuid" class="form-select" aria-label="Is active">
-                            <option {% if not search.currency_uuid %}selected{% endif %}>Currency</option>
+                        <select name="currency_id" class="form-select" aria-label="Is active">
+                            <option {% if not search.currency_id %}selected{% endif %}>Currency</option>
                             {% for currency in currencies %}
-                            <option value="{{currency.uuid}}" {% if currency.uuid == search.currency_uuid %}selected{% endif %}>{{currency.name}}</option>
+                            <option value="{{currency.uuid}}" {% if currency.uuid == search.currency_id %}selected{% endif %}>{{currency.name}}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -28,7 +28,7 @@
                     <!-- INPUT CURRENCY -->
                     <label for="zip">Name:</label>
                     <div class="input-group mb-3">
-                    <input type="text" name="name" class="form-control" placeholder="Enter iconatains name:"  aria-label="Name"
+                    <input type="text" name="name__icontains" class="form-control" placeholder="Enter iconatains name:"  aria-label="Name"
                            {% if search.name %}
                            value="{{search.name}}"
                            {% endif %}
@@ -38,7 +38,7 @@
                 <div class="col-md-4 mb-3">
                     <label for="zip">Data:</label>
                     <div class="input-group mb-3">
-                    <input type="text" name="payment_data" class="form-control" placeholder="Enter iconatains payment data:"  aria-label="Payment Data"
+                    <input type="text" name="data__json" class="form-control" placeholder="Enter iconatains payment data:"  aria-label="Payment Data"
                            {% if search.payment_data %}
                            value="{{search.payment_data}}"
                            {% endif %}
@@ -77,13 +77,13 @@
                     <label for="basic-url" class="form-label">Created at</label>
                             <div class="input-group mb-3">
                             <span class="input-group-text" id="basic-addon3">From</span>
-                            <input type="datetime-local" name="min_created_at" class="form-control" id="basic-url" aria-describedby="basic-addon3" 
-                                value={{search.min_created_at}}>
+                            <input type="datetime-local" name="created_at__gte" class="form-control" id="basic-url" aria-describedby="basic-addon3" 
+                                value={{search.created_at__gte}}>
                             </div>
                             <div class="input-group mb-3">
                             <span class="input-group-text" id="basic-addon3">To</span>
-                            <input type="datetime-local" name="max_created_at" class="form-control" id="basic-url" aria-describedby="basic-addon3"
-                                    value={{search.max_created_at}}>
+                            <input type="datetime-local" name="created_at__lte" class="form-control" id="basic-url" aria-describedby="basic-addon3"
+                                    value={{search.created_at__lte}}>
                         </div>
                 </div>
                 <!-- END CREATED -->

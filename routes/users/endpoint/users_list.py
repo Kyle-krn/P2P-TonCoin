@@ -13,6 +13,7 @@ from urllib.parse import urlencode
 import ast
 import starlette.status as status
 from utils.exceptions import NotAuthenticatedException
+from utils.order_by import order_by_utils
 
 users_router = APIRouter()
 
@@ -36,10 +37,10 @@ async def users_list(request: Request,
     if lang == "":
         lang = None 
 
-    if order_by:
-        order_by = ast.literal_eval(order_by)
-    else:
-        order_by = []
+    # if order_by:
+    #     order_by = ast.literal_eval(order_by)
+    # else:
+    #     order_by = []
     query = Q()
     if username:
         query = query & Q(tg_username__icontains=username)
@@ -78,15 +79,16 @@ async def users_list(request: Request,
     if not max_created_at:
         max_created_at = (datetime.utcnow() + timedelta(days=1))
         max_created_at = max_created_at.replace(microsecond=0)
-
-    if len(order_by) == 0:
-        users = await models.User.filter(query).order_by("-created_at")
-    else:
-        for item in order_by:
-            if item[0] == "+":
-                indx = order_by.index(item)
-                order_by = order_by[:indx] + [item[1:]] + order_by[indx+1:]
-        users = await models.User.filter(query).order_by(*order_by)
+    users = models.User.filter(query)
+    order_by, order_by_args = order_by_utils(order_by)
+    # if len(order_by) == 0:
+    #     users = await models.User.filter(query).order_by("-created_at")
+    # else:
+    #     for item in order_by:
+    #         if item[0] == "+":
+    #             indx = order_by.index(item)
+    #             order_by = order_by[:indx] + [item[1:]] + order_by[indx+1:]
+    users = await users.order_by(*order_by_args)
     context = {"request": request, 
                "users": users,
                "username": username,

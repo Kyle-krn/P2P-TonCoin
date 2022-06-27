@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block body %}
+<table class="table table-striped table-hover">
+    <thead class="table-dark">
+      <tr>
+        <th scope="col"></th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <form action="{{url_for('update_order',  uuid=order.uuid)}}" method="post">
+        <td class="text-center"><b>ID:</b></td>
+        <td class="text-center">#{{order.serial_int}}</td>
+      </tr>
+      <tr>
+        <td class="text-center"><b>UUID:</b></td>
+        <td class="text-center">{{order.uuid}}</td>
+      </tr>
+      <tr>
+        <td class="text-center"><b>Parent order:</b></td>
+        <td class="text-center">
+            <div class="input-group mb-3">
+                <a class="btn btn-outline-secondary" {% if order.parent_id %} href="/order/{{order.parent_id}}"{% endif %} type="button" id="button-addon1" role="button">Parent order
+                  </a>
+                  <input name="parent_id" type="text" class="form-control" placeholder="Parnet order UUID" aria-label="Enter parent order UUID" aria-describedby="button-addon1"
+                   value={% if order.parent %}"{{order.parent_id}}"{% endif %}>
+                </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="text-center"><b>Children order:</b></td>
+        <td class="text-center">
+            {% for children in order.children_order %}
+            <a class="btn btn-primary btn-sm" href="/order/{{children.uuid}}" role="button">{{children.serial_int}}
+                </a>
+            {% endfor %}
+        </td>
+      </tr>
+      <tr>
+        <td class="text-center"><b>Seller:</b></td>
+        <td class="text-center">
+            <div class="input-group mb-3">
+            <a class="btn btn-outline-secondary" href="/user/{{order.seller_id}}" type="button" id="button-addon1" role="button">
+                {% if order.seller.tg_username %} {{ order.seller.tg_username }}{% else %}Seller{% endif %}
+              </a>
+              <input name="seller_id" type="text" class="form-control" placeholder="Seller UUID" aria-label="Enter seller UUID" aria-describedby="button-addon1"
+               value="{{order.seller_id}}" required>
+            </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="text-center"><b>Customer:</b></td>
+        <td class="text-center">
+
+            <div class="input-group mb-3">
+                <a class="btn btn-outline-secondary" href="/update_order/{{order.customer_id}}" type="button" id="button-addon1" role="button">
+                    {% if order.customer.tg_username %} {{ order.customer.tg_username }}{% else %}Customer{% endif %}
+                  </a>
+                  <input name="customer_id" type="text" class="form-control" placeholder="Customer UUID" aria-label="Enter customer UUID" aria-describedby="button-addon1"
+                   value={% if order.customer %}"{{order.customer_id}}"{% endif %}>
+                </div>
+      </tr>
+      <tr>
+        <td class="text-center"><b>Currency:</b></td>
+        <td class="text-center">
+            <select name="currency_id" class="form-select text-center" aria-label="Currency">
+                {% for currency in currencies %}
+                <option value={{currency.uuid}} {% if currency.uuid == order.currency_id %}selected{% endif %}>{{ currency.name }}</option>
+                {% endfor %}
+            </select>
+      </tr>
+      <tr>
+        <td class="text-center"><b>Origin amount:</b></td>
+        <td class="text-center">
+            <div class="input-group flex-nowrap">
+            <input name="origin_amount" type="number" class="form-control text-center" placeholder="Orgin amount" value="{{order.origin_amount | format_float }}" aria-label="Amount" step="any" required>
+            <span class="input-group-text" id="addon-wrapping">TON</span>
+            </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="text-center"><b>Commission:</b></td>
+        <td class="text-center">
+            <div class="input-group flex-nowrap">
+            <input name="commission" type="number" class="form-control text-center" placeholder="Commission" value="{{order.commission | format_float }}" aria-label="Commission" step="any" required>
+            <span class="input-group-text" id="addon-wrapping">TON</span>
+            </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="text-center"><b>Margin:</b></td>
+        <td class="text-center">
+            <div class="input-group flex-nowrap">
+            <input name="margin" type="number" class="form-control text-center" placeholder="Margin" value="{{order.margin}}" aria-label="margin" step="any" required>
+            <span class="input-group-text" id="addon-wrapping">%</span>
+            </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="text-center"><b>Min buy sum:</b></td>
+        <td class="text-center">
+            <div class="input-group flex-nowrap">
+            <input name="min_buy_sum" type="number" class="form-control text-center" placeholder="Min buy sum" value="{{order.min_buy_sum}}" aria-label="margin" step="any" required>
+            <span class="input-group-text" id="addon-wrapping">{{order.currency.name}}</span>
+            </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="text-center"><b>Final price:</b></td>
+        <td class="text-center">
+            <div class="input-group flex-nowrap">
+            <input name="final_price" type="number" class="form-control text-center" placeholder="Final price" 
+            {% if order.final_price %}value="{{order.final_price}}"{% endif %} 
+            aria-label="Final price" step="any" >
+            <span class="input-group-text" id="addon-wrapping">{{order.currency.name}}</span>
+            </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="text-center"><b>Updated at:</b></td>
+        <td class="text-center">{{order.updated_at | format_date }}</td>
+      </tr>
+      <tr>
+        <td class="text-center"><b>Created at:</b></td>
+        <td class="text-center">{{order.created_at | format_date }}</td>
+      </tr>
+      <tr>
+        <td class="text-center"><b>Update:</b></td>
+        <td class="text-center"><button type="submit" class="btn btn-success btn-sm">Update</button></td>
+      </form>
+      </tr>
+      </tbody>
+</table>
+
+
+<div class="row justify-content-start">
+<div class="col-6 text-center">
+  <form action="{{url_for('update_amount_order',  uuid=order.uuid)}}" method="post">
+    <label for="" class="form-label">Amount:</label>
+        <td class="text-center">
+            <div class="input-group flex-nowrap">
+            <input name="amount" type="number" class="form-control text-center" placeholder="Amount" value="{{order.amount | format_float }}" aria-label="Amount" step="any" required>
+            <span class="input-group-text" id="addon-wrapping">TON</span>
+            </div>
+
+        <label for="" class="form-label m-3">Description:</label>
+        <textarea name="description" class="form-control" id="" 
+            cols="30" rows="3" required></textarea>
+        <button type="submit" class="btn btn-success btn m-3">Update</button>
+  </form>
+</div>
+
+
+<div class="col-6 text-center">
+  <form action="{{url_for('update_state_order',  uuid=order.uuid)}}" method="post">
+  <label for="" class="form-label">State:</label>
+  <select name="state" class="form-select text-center" aria-label="State">
+    <option value='created' {% if order.state == "created" %}selected{% endif %}>Created</option>
+    <option value='ready_for_sale' {% if order.state == "ready_for_sale" %}selected{% endif %}>Ready for sale</option>
+    <option value='wait_buyer_send_funds' {% if order.state == "wait_buyer_send_funds" %}selected{% endif %}>Wait buyer send funds</option>
+    <option value='buyer_sent_funds' {% if order.state == "buyer_sent_funds" %}selected{% endif %}>Buyer sent funds</option>
+    <option value='seller_approved_funds' {% if order.state == "seller_approved_funds" %}selected{% endif %}>Seller approved funds</option>
+    <option value='done' {% if order.state == "done" %}selected{% endif %}>Done</option>
+    <option value='problem_seller_no_funds' {% if order.state == "problem_seller_no_funds" %}selected{% endif %}>Problem seller no funds</option>
+    <option value='need_admin_resolution' {% if order.state == "need_admin_resolution" %}selected{% endif %}>Need admin resolution</option>
+    <option value='request_cancelled_by_seller' {% if order.state == "request_cancelled_by_seller" %}selected{% endif %}>Request cancelled by seller</option>
+    <option value='cancelled_by_seller' {% if order.state == "cancelled_by_seller" %}selected{% endif %}>Cancelled by seller</option>
+    <option value='cancelled_by_customer' {% if order.state == "cancelled_by_customer" %}selected{% endif %}>Cancelled by customer</option>
+    <option value='suspended' {% if order.state == "suspended" %}selected{% endif %}>Suspended</option>
+  </select>
+
+  <label for="" class="form-label m-3">Description:</label>
+        <textarea name="description" class="form-control" id="" 
+            cols="30" rows="3" required></textarea>
+    <button type="submit" class="btn btn-success btn m-3">Update</button>
+  </form>
+
+
+</div>
+
+
+
+</div>
+
+<br><br>
+<div class="text-center">
+  <a class="btn btn-primary btn-lg" href="{{url_for('show_change_state_order', uuid=order.uuid)}}" role="button">Order change state</a>
+  <a class="btn btn-primary btn-lg" href="{{url_for('show_change_amount_order', uuid=order.uuid)}}" role="button">Order change amount</a>
+  <a class="btn btn-primary btn-lg" href="{{url_for('payments_order_account', uuid=order.uuid)}}" role="button">Order payments account</a>
+</div>
+
+{% block order_relation %}
+{% endblock %}
+
+{% endblock %}

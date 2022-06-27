@@ -8,6 +8,7 @@ from loader import flash, manager, templates
 from models import models
 from tortoise.queryset import Q
 import starlette.status as status
+from utils.order_by import order_by_utils
 
 from utils.pagination import pagination
 
@@ -134,10 +135,10 @@ async def user_detail(request: Request,
         query = Q()
 
 
-    if order_by:
-        order_by = ast.literal_eval(order_by)
-    else:
-        order_by = []
+    # if order_by:
+    #     order_by = ast.literal_eval(order_by)
+    # else:
+    #     order_by = []
 
     search = {
         "invited_user_uuid": None,
@@ -178,19 +179,20 @@ async def user_detail(request: Request,
         search['max_created_at'] = max_created_at
     send_referal = models.UserReferalBonus.filter(query) #.
 
-    if len(order_by) == 0:
-        send_referal = send_referal.order_by("-created_at")
-    else:
-        for item in order_by:
-            if item[0] == "+":
-                indx = order_by.index(item)
-                order_by = order_by[:indx] + [item[1:]] + order_by[indx+1:]
-        send_referal = send_referal.order_by(*order_by)
+    # if len(order_by) == 0:
+    #     send_referal = send_referal.order_by("-created_at")
+    # else:
+    #     for item in order_by:
+    #         if item[0] == "+":
+    #             indx = order_by.index(item)
+    #             order_by = order_by[:indx] + [item[1:]] + order_by[indx+1:]
+    #     send_referal = send_referal.order_by(*order_by)
 
 
     limit = 5
     offset, last_page, previous_page, next_page = pagination(limit=limit, page=page, count_model=await send_referal.count())
-    send_referal = send_referal.offset(offset).limit(limit)
+    order_by, order_by_args = order_by_utils(order_by)
+    send_referal = send_referal.order_by(*order_by_args).offset(offset).limit(limit)
 
     send_referal = await send_referal.offset(offset).limit(limit).prefetch_related("invited_user", "user")
     context = {

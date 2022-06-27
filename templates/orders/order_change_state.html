@@ -1,0 +1,36 @@
+{% extends "orders/detail_order.html" %}
+{% block order_relation %}
+<br>
+<h3 class="text-center">Order change state:</h3>
+<div class="table-responsive">
+    <table class="table table-striped">
+    <thead>
+      <tr class="text-center">  
+        <th scope="col">#</th>
+        <th scope="col">Old state</th>
+        <th scope="col">New state</th>
+        <th scope="col">Description</th>
+        <th scope="col">Staff</th>
+        <th scope="col">Created at</th>
+      </tr>
+    </thead>
+    <tbody>
+        {% for change_state in order_change_state %}
+        <tr class="text-center">
+            <th scope="row">{{loop.index}}</th>
+            <td>{{change_state.old_state}}</td>
+            <td>{{change_state.new_state}}</td>
+            <td>{% if change_state.description %}
+                {{change_state.description}}
+                {% endif %}
+            </td>
+            <td>{{change_state.staff.login}}</td>
+            <td>{{change_state.created_at | format_date}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+</div>
+
+{% include "include/pagination.html" %}
+{% endblock %}

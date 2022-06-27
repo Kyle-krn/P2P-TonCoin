@@ -1,0 +1,31 @@
+{% extends "orders/detail_order.html" %}
+
+{% block order_relation %}
+<h3 class="text-center">Order payment accounts</h3>
+<div class="table-responsive">
+    <table class="table table-striped">
+    <thead>
+      <tr class="text-center">  
+        <th scope="col">#</th>
+        <th scope="col">Currency</th>
+        <th scope="col">Type</th>
+        <th scope="col">Data</th>
+        <th scope="col">Is active</th>
+      </tr>
+    </thead>
+    <tbody>
+        {% for order_payment_account in order_payments_account %}
+        <tr class="text-center">
+            <th scope="row">{{loop.index}}</th>
+            <td>{{ order_payment_account.account.type.currency.name }}</td>
+            <td>{{ order_payment_account.account.type.name }}</td>
+            <td>{{ order_payment_account.account.data }}</td>
+            <td>{{ order_payment_account.account.is_active }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+</div>
+
+
+{% endblock %}
