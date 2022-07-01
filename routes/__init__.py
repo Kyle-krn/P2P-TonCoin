@@ -11,3 +11,4 @@ from .payments.route import payments_router
 from .users.route import user_router
 from .auth.route import auth_router
 from .orders.route import order_router
+from .lang.route import lang_router

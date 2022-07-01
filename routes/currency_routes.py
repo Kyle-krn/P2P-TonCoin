@@ -29,17 +29,7 @@ async def get_currency(request: Request,
                        order_by: str = None,
                        page: int = 1
                         ):
-    # if is_active == 'True':
-    #     is_active = True
-    # elif is_active == 'False':
-    #     is_active = False
-    # else:
-    #     is_active = None
     is_active = str_bool(is_active)
-    # if order_by:
-    #     order_by = ast.literal_eval(order_by)
-    # else:
-    #     order_by = []
 
     ton_currency = await models.Currency.get(name="TON")
     search = {
@@ -81,17 +71,13 @@ async def get_currency(request: Request,
 
     currencies = currencies.order_by(*order_by_args).offset(offset).limit(limit)
     
-    
-    # if len(order_by) == 0:
-    #     currencies = currencies.order_by("-created_at")
-    # else:
-    #     for item in order_by:
-    #         if item[0] == "+":
-    #             indx = order_by.index(item)
-    #             order_by = order_by[:indx] + [item[1:]] + order_by[indx+1:]
-    #     currencies = currencies.order_by(*order_by)
     currencies = await currencies
-
+    for cur in currencies:
+        lang_cur = await models.Lang.get_or_none(target_table="currency", target_id=cur.uuid)
+        cur.rus = lang_cur.rus if lang_cur else None
+        cur.eng = lang_cur.eng if lang_cur else None
+        
+            
     context = {
                 "request": request,
                 "ton_currency": ton_currency,
@@ -122,23 +108,43 @@ async def update_ton(request: Request,
 @currency_router.post('/update_currency', response_class=RedirectResponse)
 async def update_currency(request: Request):
     form_list = (await request.form())._list
-    for indx in range(0, len(form_list), 3):
+    for indx in range(0, len(form_list), 5):
         currency_uuid = form_list[indx][1]
-        exchange_rate = form_list[indx+1][1]
-        is_active = str_bool(form_list[indx+2][1])
-        # if is_active == 'True':
-        #     is_active = True
-        # else:
-        #     is_active = False
-        # delete = form_list[indx+3][1]
+        rus_lang = form_list[indx+1][1] if form_list[indx+1][1] else None
+        eng_lang = form_list[indx+2][1] if form_list[indx+2][1] else None
+        exchange_rate = form_list[indx+3][1]
+        is_active = str_bool(form_list[indx+4][1])
 
         currency = await models.Currency.get(uuid=UUID(currency_uuid))
-        currency.exchange_rate = exchange_rate
-        currency.is_active = is_active
-        await currency.save()
-        # if delete == 'True':
-        #     await currency.delete()
 
+        if rus_lang and eng_lang:
+            lang_save = False
+            cur_lang = await models.Lang.get_or_none(target_table="currency", target_id=currency_uuid)
+            if cur_lang is None:
+                cur_lang = models.Lang(target_table="currency", target_id=currency_uuid)
+                lang_save = True
+            
+            if cur_lang.rus != rus_lang:
+                cur_lang.rus = rus_lang
+                lang_save = True
+            if cur_lang.eng != eng_lang:
+                cur_lang.eng = eng_lang
+                lang_save = True
+            if lang_save:
+                await cur_lang.save()
+
+
+        save = False
+        if currency.exchange_rate != exchange_rate:
+            currency.exchange_rate = float(exchange_rate)
+            save = True
+        if currency.is_active != is_active:
+            currency.is_active = is_active
+            save = True
+        
+        if save:
+            await currency.save()
+        
     return RedirectResponse(
         "/currency", 
         status_code=status.HTTP_302_FOUND)

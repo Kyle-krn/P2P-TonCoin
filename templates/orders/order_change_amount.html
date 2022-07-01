@@ -30,7 +30,11 @@
               <a class="btn btn-primary btn-sm" href="{{url_for('order_detail', uuid=change_amount.target_order_id)}}" role="button">{{change_amount.target_order.serial_int}}</a>
               {% endif %}
             </td>
-            <td>{{change_amount.staff.login}}</td>
+            <td>
+              {% if change_amount.staff %} 
+              <a class="btn btn-primary btn-sm" href="{{url_for('get_staff')}}?staff_uuid={{change_amount.staff.uuid}}" role="button">{{change_amount.staff.login}}</a>
+              {% endif %}
+            </td>
             <td>{{change_amount.created_at | format_date}}</td>
         </tr>
         {% endfor %}

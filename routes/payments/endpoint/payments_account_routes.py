@@ -115,6 +115,9 @@ async def create_payments_account(request: Request,
         redirect_url + params, 
         status_code=status.HTTP_302_FOUND)  
 
+
+        
+
 @payment_account_router.post('/update_payments_account')
 async def user_payments_account(request: Request,
                                  user_uuid_hidden: UUID = Form(None)

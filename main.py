@@ -18,6 +18,7 @@ app.include_router(routes.payments_router)
 app.include_router(routes.currency_router)
 app.include_router(routes.order_by_router)
 app.include_router(routes.order_router)
+app.include_router(routes.lang_router)
 
     
 

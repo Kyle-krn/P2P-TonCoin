@@ -66,7 +66,8 @@ async def view_pay_account(message: Union[types.CallbackQuery, types.Message], p
     #       f"Тип оплаты: {type_name}\n"  \
     #       f"{user_data_text}"
     keyboard = await payment_account_keyboards.pay_account_control_keyboard(payment_type_serial_int=payment_type.serial_int, 
-                                                                            payment_acc_serial_int=pay_account.serial_int)
+                                                                            payment_acc_serial_int=pay_account.serial_int,
+                                                                            user=user)
     if isinstance(message, types.CallbackQuery):
         await message.message.edit_text(type_name)
         return await message.message.answer(text=text, reply_markup=keyboard)
@@ -81,7 +82,8 @@ async def add_payment_account_handler(call: types.CallbackQuery):
     text = await models.Lang.get(uuid="f2bdd4ea-71c6-4d8c-9e2b-1875ebbe7403")
     text = text.rus if user.lang == "ru" else text.eng
     # text = "Выберите валюту способа оплаты:"
-    return await call.message.answer(text=text, reply_markup=await currency_keyboards.currency_keyboard(callback="add_cur_pay_acc"))
+    return await call.message.answer(text=text, reply_markup=await currency_keyboards.currency_keyboard(callback="add_cur_pay_acc",
+                                                                                                        user=user))
 
 
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'add_cur_pay_acc')
@@ -99,7 +101,9 @@ async def choice_currency_payment_account_hanlder(call: types.CallbackQuery):
     
     
     # text = "Выберите тип способа оплаты:"
-    await call.message.answer(text=text, reply_markup=await payment_account_keyboards.choice_payment_keyboard(callback="pay_type",currency=currency))
+    await call.message.answer(text=text, reply_markup=await payment_account_keyboards.choice_payment_keyboard(callback="pay_type",
+                                                                                                              currency=currency,
+                                                                                                              user=user))
 
 
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'pay_type')
@@ -129,7 +133,7 @@ async def set_state_data_pay_type_handler(call: types.CallbackQuery, state: FSMC
     text = text.rus if user.lang == "ru" else text.eng
     text = text.format(payment_type_data_value=payment_type_data_list[0])
     # text = f"Введите {payment_type_data_list[0]}:"
-    await call.message.answer(text=text, reply_markup=await stop_state_keyboard())
+    await call.message.answer(text=text, reply_markup=await stop_state_keyboard(user))
 
 
 @dp.message_handler(state=PaymentAccountState.data)
@@ -160,7 +164,7 @@ async def add_data_state(message: types.Message, state: FSMContext):
         text = text.rus if user.lang == "ru" else text.eng
         text = text.format(payment_type_data_value=next_data)
         # text = f"Введите {next_data}:"
-        return await message.answer(text=text, reply_markup=await stop_state_keyboard())
+        return await message.answer(text=text, reply_markup=await stop_state_keyboard(user))
     else:
         
         if current_state.split(':')[0] == "PaymentAccountState":

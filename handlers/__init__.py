@@ -6,7 +6,6 @@ from . import buy_coin
 from . import deals
 from . import referal
 
-from . import message_filters
-
+from . import lang
 from . import cancel_state_handlers
 from . import customer_proof_handler

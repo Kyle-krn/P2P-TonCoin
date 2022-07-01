@@ -66,7 +66,7 @@ async def choice_pay_acc_buy_coin_handler(call: types.CallbackQuery):
                    if order.min_buy_sum < (order.amount - order.commission) * float(ton_cur.exchange_rate)* float(user_currency.exchange_rate)   \
                    else (order.amount - order.commission) * float(ton_cur.exchange_rate) * float(user_currency.exchange_rate)
         orders_payments_type = [await i.account for i in await order.order_user_payment_account.all()]
-        text = await models.Lang.get(uuid="ddd66c21-b642-4e39-aebf-57dd80b69eb5")
+        text = await models.Lang.get(uuid="fbddd2d5-a3cd-4a70-95a3-e0128da7c9b7")
         text = text.rus if user.lang == 'ru' else text.eng
         text = text.format(price_one_coin=price_one_coin,
                            currency=cur_name,
@@ -80,7 +80,8 @@ async def choice_pay_acc_buy_coin_handler(call: types.CallbackQuery):
         #        f"Общая стоимость - {'%.2f' % (price_one_coin * allowed_sum_coin)}\n"  \
         #        f"Доступные способы оплаты - {', '.join([(await i.type).name for i in orders_payments_type])}\n"
         await call.message.answer(text=text, reply_markup=await buy_keyboards.choice_order_keboard(pay_type_serial_int=payment_type.serial_int, 
-                                                                                                   order_uuid=order.uuid))
+                                                                                                   order_uuid=order.uuid,
+                                                                                                   user=user))
 
 
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'buy_order')
@@ -106,7 +107,7 @@ async def buy_order_hanlder(call: types.CallbackQuery):
                if order.min_buy_sum < (order.amount - order.commission) * float(ton_cur.exchange_rate)* float(user_currency.exchange_rate)  \
              else (order.amount - order.commission) * float(ton_cur.exchange_rate) * float(user_currency.exchange_rate)
     price_one_coin = (float(user_currency.exchange_rate) * float(ton_cur.exchange_rate)) * (1+(order.margin/100))
-    text = await models.Lang.get(uuid="e4ae3df2-f1ce-4003-86c0-36d1fc7028b6")
+    text = await models.Lang.get(uuid="efeb95c8-46b0-485e-bd44-d27a4b0d633d")
     text = text.rus if user.lang == 'ru' else text.eng
     text = text.format(min_buy_sum=min_buy_sum,
                        full_price="%.2f" % (price_one_coin * (order.amount-order.commission)),
@@ -116,7 +117,7 @@ async def buy_order_hanlder(call: types.CallbackQuery):
     await BuyState.buy_amount.set()
     
     state = dp.get_current().current_state()
-    msg = await call.message.answer(text=text, reply_markup=await stop_state_keyboard())
+    msg = await call.message.answer(text=text, reply_markup=await stop_state_keyboard(user))
     await state.update_data(min_buy_sum=min_buy_sum,
                             ton_cur=ton_cur.exchange_rate, 
                             user_cur=user_currency.exchange_rate, 
@@ -240,7 +241,8 @@ async def view_buy_order_handler(message: Union[types.Message, types.CallbackQue
     #       f"{user_data_text}\n"  \
     #       f"Вы получите {order.amount - order.commission} TON\n"  \
     #        "После оплаты нажмите кнопку Я отправил средства"
-    keyboard = await buy_keyboards.send_money_order(order.uuid)
+    keyboard = await buy_keyboards.send_money_order(order_uuid=order.uuid,
+                                                    user=user)
     await message.answer(text=text, reply_markup=keyboard)
 
 
@@ -308,4 +310,7 @@ async def send_money_order_handler(call: types.CallbackQuery):
     # text = f"По заказу №{order.uuid} покупатель отправил денежные средства в размере {float(order.final_price)}$.\n"  \
     #         "Подтвердите получение оплаты, нажав кнопку Я получил средства, либо нажмите Средства не поступили, если деньги не поступили на ваш счет"
     await call.message.edit_text("Ожидайте ответа от продавца.")
-    await bot.send_message(seller.telegram_id, text=text_for_seller, reply_markup=await buy_keyboards.keyboard_for_seller(order_uuid=order.uuid))
+    await bot.send_message(seller.telegram_id, 
+                           text=text_for_seller, 
+                           reply_markup=await buy_keyboards.keyboard_for_seller(order_uuid=order.uuid,
+                                                                                user=seller))

@@ -11,6 +11,7 @@ from utils.generate_code import generate_code
 
 
 @dp.message_handler(regexp=f"^(Кошелек)$")
+@dp.message_handler(regexp=f"^(Wallet)$")
 async def main_wallet_handler(message: types.Message):
     user = await models.User.get(telegram_id=message.chat.id)
     text = await models.Lang.get(uuid="de220ffc-1210-4433-a681-76c30a829ca7")

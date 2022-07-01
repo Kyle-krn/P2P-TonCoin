@@ -75,6 +75,7 @@ class Lang(Model):
     description: str = fields.CharField(max_length=255, null=True)
     updated_at: datetime = fields.DatetimeField(auto_now=True)
     created_at: datetime = fields.DatetimeField(auto_now_add=True)
+    button: bool = fields.BooleanField(default=False)
 
     class Meta:
         table = "lang"

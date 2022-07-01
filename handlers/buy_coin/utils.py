@@ -11,7 +11,8 @@ async def check_unfinished_deal(user:models.User):
     if len(buy_order_user) > 0:
         keyboard = None
         if buy_order_user[0].state == "wait_buyer_send_funds":
-            keyboard = await buy_keyboards.go_to_buy_order_keyboard(buy_order_user[0].uuid)
+            keyboard = await buy_keyboards.go_to_buy_order_keyboard(order_uuid=buy_order_user[0].uuid,
+                                                                    user=user)
         return True, keyboard
     return False, None
     

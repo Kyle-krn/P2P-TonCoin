@@ -106,6 +106,8 @@
             <th scope="col">#</th>
             <th scope="col">Currency</th>
             <th scope="col">Name</th>
+            <th scope="col">Rus</th>
+            <th scope="col">Eng</th>
             <th scope="col">Data</th>
             <th scope="col">Is active</th>
             <th scope="col">Created at
@@ -144,7 +146,15 @@
                     {% endfor %}
                 </select>
             </td>
-            <td>{{payment_type.name}}</td>
+            <td>
+                <input name="name" type="text" class="form-control" value="{{payment_type.name}}">
+            </td>
+            <td>
+                <input name="rus_lang" type="text" class="form-control" {% if payment_type.rus %}value="{{payment_type.rus}}{% endif %}">
+            </td>
+            <td>
+                <input name="eng_lang" type="text" class="form-control" {% if payment_type.eng %}value="{{payment_type.eng}}{% endif %}">
+            </td>
             <td><textarea name="data" class="form-control" id="" 
                 cols="30" rows="3">{{payment_type.data}}</textarea></td>
             <td>
@@ -154,15 +164,12 @@
                 </select>
             </td>
             <td>{{ payment_type.created_at | format_date }}</td>
-            <!-- <td>
-                <select name="delete" class="form-select" aria-label="Is active">
-                    <option value="True">Yes</option>
-                    <option value="False"selected>No</option>
-                </select>
-            </td> -->
+
             </tr>
             {% endfor %}
             <tr>
+                <td></td>
+                <td></td>
                 <td></td>
                 <td></td>
                 <td></td>

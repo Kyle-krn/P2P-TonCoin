@@ -22,17 +22,20 @@ async def pruf_handler(message: types.Message):
     elif message.document:
         file_type = message.document.file_name.split('.')[-1]
         if file_type.lower() not in ALLOWED_TYPES:
-            text = "Неверный формат подтверждения оплаты."  \
-                   "Пришлите, пожалуйста, подтверждение оплаты"  \
-                   "(чек) в формате pdf / xls / xcls / jpg / pdf / gif"  \
-                   " в ответ на это сообщение. Если вы не пришлете подтверждение"  \
-                   " в течение 24 часов, то заказ будет автоматически отменен."
+            text = await models.Lang.get(uuid="cb5de656-c423-4e0c-a5a7-e8c07b3891ce")
+            text = text.rus if user.lang == 'ru' else text.eng
+            # text = "Неверный формат подтверждения оплаты. Пришлите, пожалуйста, подтверждение оплаты (чек) в формате pdf / xls / xcls / jpg / pdf / gif в ответ на это сообщение. Если вы не пришлете подтверждение в течение 24 часов, то заказ будет автоматически отменен."
             return await message.answer(text)
         await message.document.download(BASE_DIR + problem_order_dir_path + f"{problem_order.uuid}.{file_type}")
         file_path = BASE_DIR + problem_order_dir_path + f"{problem_order.uuid}.{file_type}"
     await models.ProblemOrderProof.create(order=problem_order, file_path=file_path)
-    text = "Спасибо! Мы инициировали разбирательство по заказу. В течение 24 часов вы получите ответ"
+    text = await models.Lang.get(uuid="419722a1-70a0-430a-a2e0-033f17245ba0")
+    text = text.rus if user.lang == 'ru' else text.eng
+    # text = "Спасибо! Мы инициировали разбирательство по заказу. В течение 24 часов вы получите ответ"
     await message.answer(text)
+    await models.OrderStateChange.create(order=problem_order, 
+                                         old_state=problem_order.state, 
+                                         new_state="need_admin_resolution")
     problem_order.state = "need_admin_resolution"
     await problem_order.save()
     await models.Order.filter(Q(seller=await problem_order.seller) & Q(state="ready_for_sale")).update(state="suspended")

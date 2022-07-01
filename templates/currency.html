@@ -105,6 +105,8 @@
     <tr class="text-center">  
         <th scope="col">#</th>
         <th scope="col">Name</th>
+        <th scope="col">Ru</th>
+        <th scope="col">Eng</th>
         <th scope="col">Exchange rate
             <div class="btn-group">
                 <div class="dropdown">
@@ -156,6 +158,12 @@
         <input type="hidden" name="currency_uuid" value="{{currency.uuid}}">
         <th scope="row">{{loop.index}}</th>
         <td>{{currency.name}}</td>
+        <td>
+            <input name="rus_lang" type="text" class="form-control" {% if currency.rus %}value="{{currency.rus}}"{% endif %}>
+        </td>
+        <td>
+          <input name="eng_lang" type="text" class="form-control" {% if currency.rus %}value="{{currency.eng}}"{% endif %}>
+        </td>
         <td>
             <div class="input-group flex-nowrap">
                 <input type="number" name="exchange_rate" class="form-control" 

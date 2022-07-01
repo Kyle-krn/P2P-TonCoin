@@ -36,7 +36,10 @@ async def my_deals_handler(message: Union[types.Message, types.CallbackQuery]):
     text = await models.Lang.get(uuid="f11ebe57-866f-4bd3-8550-690fa288dd9f")
     text = text.rus if user.lang == "ru" else text.eng
     # text = "Выберите заказ:"
-    await message.answer(text=text, reply_markup=await deals_keyboards.show_deals_keyboard(orders=orders, page=page, last_page=last_page))
+    await message.answer(text=text, reply_markup=await deals_keyboards.show_deals_keyboard(orders=orders, 
+                                                                                           page=page, 
+                                                                                           last_page=last_page,
+                                                                                           user=user))
 
 
 @dp.callback_query_handler(lambda call: call.data.split(":")[0] == "view_order")
@@ -45,13 +48,18 @@ async def view_order_handler(call: types.CallbackQuery):
     order = await models.Order.get(uuid=call.data.split(':')[1])
     user = await models.User.get(telegram_id=call.message.chat.id)
     if order.state == 'created':
-        keyboard = await deals_keyboards.created_order_keyboard(order.uuid)
+        keyboard = await deals_keyboards.created_order_keyboard(order_uuid=order.uuid, 
+                                                                user=user)
     elif order.state == 'ready_for_sale':
-        keyboard = await deals_keyboards.cancel_order_keyboard(order.uuid)
+        keyboard = await deals_keyboards.cancel_order_keyboard(order_uuid=order.uuid, 
+                                                               user=user)
     elif order.state == "wait_buyer_send_funds" or order.state == "buyer_sent_funds":
-         keyboard = await buy_keyboards.keyboard_for_seller(order_uuid=order.uuid)
+         keyboard = await buy_keyboards.keyboard_for_seller(order_uuid=order.uuid, 
+                                                            user=user)
     elif order.state == "problem_seller_no_funds" or order.state == "need_admin_resolution":
-        keyboard = await buy_keyboards.keyboard_for_seller(order_uuid=order.uuid, no_funds_button=False)
+        keyboard = await buy_keyboards.keyboard_for_seller(order_uuid=order.uuid, 
+                                                           no_funds_button=False,
+                                                           user=user)
 
     user_currency = await order.currency
 

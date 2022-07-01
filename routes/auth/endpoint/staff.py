@@ -1,18 +1,25 @@
-
 import hashlib
+from uuid import UUID
 from fastapi import APIRouter, Request, Form
 from fastapi.responses import RedirectResponse,HTMLResponse
 from starlette import status
 from loader import flash, templates
 from models import models
 from utils.utils import str_bool
-
+from tortoise.queryset import Q
 
 register_router = APIRouter()
 
 @register_router.get("/auth/register")
-async def register(request: Request):
-    staffs = await models.Staff.all()
+async def get_staff(request: Request,
+                   staff_uuid: UUID = None,
+                   login: str = None):
+    query = Q()
+    if staff_uuid:
+        query &= Q(uuid=staff_uuid)
+    if login:
+        query &= Q(login=login)
+    staffs = await models.Staff.filter(query)
     context = {"request": request,
                "staffs": staffs}
     return templates.TemplateResponse("auth/register.html", context)

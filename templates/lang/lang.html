@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block body %}
+<h3 class="text-center">Bot lang text</h3>
+
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+        <tr class="text-center">  
+            <th scope="col">#</th>
+            <th scope="col">Rus</th>
+            <th scope="col">Eng</th>
+            <th scope="col">Description</th>
+            <th scope="col">Updated at
+                <div class="btn-group">
+                    <div class="dropdown">
+                      <button class="btn btn-{% if 'updated_at' not in order_by and '-updated_at' not in order_by %}secondary 
+                                              {% else %}success
+                                              {% endif %}
+                                     btn-sm dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if "updated_at" in order_by %}⬆️
+                        {% elif "-updated_at" in order_by %}⬇️
+                        {% else %} S
+                        {% endif %}
+                      </button>
+                      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                        <li><a class="dropdown-item" href="/sort/bot_text/~updated_at{{ params|get_urlencode }}">S</a></li>
+                        <li><a class="dropdown-item" href="/sort/bot_text/+updated_at{{ params|get_urlencode }}">⬆️</a></li>
+                        <li><a class="dropdown-item" href="/sort/bot_text/-updated_at{{ params|get_urlencode }}">⬇️</a></li>
+                      </ul>
+                    </div>
+                  </div> 
+            </th>
+            <th scope="col">Created at
+                <div class="btn-group">
+                    <div class="dropdown">
+                      <button class="btn btn-{% if 'created_at' not in order_by and '-created_at' not in order_by %}secondary 
+                                              {% else %}success
+                                              {% endif %}
+                                     btn-sm dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if "created_at" in order_by %}⬆️
+                        {% elif "-created_at" in order_by %}⬇️
+                        {% else %} S
+                        {% endif %}
+                      </button>
+                      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                        <li><a class="dropdown-item" href="/sort/bot_text/~created_at{{ params|get_urlencode }}">S</a></li>
+                        <li><a class="dropdown-item" href="/sort/bot_text/+created_at{{ params|get_urlencode }}">⬆️</a></li>
+                        <li><a class="dropdown-item" href="/sort/bot_text/-created_at{{ params|get_urlencode }}">⬇️</a></li>
+                      </ul>
+                    </div>
+                  </div>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+            <form method="post" action="{{url_for('update_bot_text')}}">
+            {% for bot_text in lang %}
+            <tr class="text-center">
+            <input type="hidden" name="uuid" value="{{bot_text.uuid}}">
+            <th scope="row">{{bot_text.uuid}}</th>
+            <th><textarea class="form-control" name="rus" id="" cols="15" rows="5">{{bot_text.rus}}</textarea></th>
+            <th><textarea class="form-control" name="eng" id="" cols="15" rows="5">{{bot_text.eng}}</textarea></th>
+            <th><input class="form-control" name="description" value="{{bot_text.description}}"></th>
+            <th>{{bot_text.updated_at | format_date}}</th>
+            <th>{{bot_text.created_at | format_date}}</th>
+            </tr>
+            {% endfor %}
+           <tr>
+               <th></th>
+               <th></th>
+               <th></th>
+               <th></th>
+               <th></th>
+               <th><button type="submit" class="btn btn-success btn-sm">Update</button></th>
+           </tr> 
+           </form>
+        </tbody>
+    </table>
+</div>
+
+{% include 'include/pagination.html' %}
+
+{% endblock %}

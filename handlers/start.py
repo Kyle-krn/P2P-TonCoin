@@ -27,19 +27,14 @@ async def start(message: types.Message):
             await models.UserReferalBonus.create(user=parent_referal,
                                                  invited_user=user,
                                                  state="created")
-        text = "Добро пожаловать в официальный бот для p2p обмена Toncoin.\n"  \
-            "Выберите язык, на котором вам удобно работать:"
-        return await message.answer(text=text, reply_markup=await keyboards.language_keyboard())
+        text = await models.Lang.get(uuid="ecc46c6b-90d1-45c3-be85-a3eace3b93f2")
+        text = text.rus if user.lang == "ru" else text.eng
+        # text = "Добро пожаловать в официальный бот для p2p обмена Toncoin.\n Выберите язык, на котором вам удобно работать:"
+        return await message.answer(text=text, reply_markup=await keyboards.language_keyboard(user))
     else:
-        text = "Добро пожаловать!"
-        await message.answer(text=text, reply_markup=await main_keyboard())
+        text = await models.Lang.get(uuid="ecc46c6b-90d1-45c3-be85-a3eace3b93f2")
+        text = text.rus if user.lang == "ru" else text.eng
+        # text = "Добро пожаловать!"
 
+        await message.answer(text=text, reply_markup=await main_keyboard(user))
 
-@dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'lang')
-async def set_lang(call: types.CallbackQuery):
-    user = await models.User.get(telegram_id=call.message.chat.id)
-    lang = call.data.split(':')[1]
-    user.lang = lang
-    await user.save()
-    text = "Добро пожаловать!"
-    await call.message.answer(text=text, reply_markup=await main_keyboard())
