@@ -43,7 +43,8 @@ async def login(request: Request,
 
 
 @login_router.get("/auth/logout", response_class=HTMLResponse)
-def logout(request: Request):
+def logout(request: Request,
+           staff = Depends(manager)):
    response = RedirectResponse(url="/auth/login")
    response.delete_cookie("access_token")
    return response

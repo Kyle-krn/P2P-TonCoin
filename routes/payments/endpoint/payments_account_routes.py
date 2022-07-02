@@ -1,9 +1,4 @@
-import ast
-import asyncio
-from datetime import datetime
 import json
-from typing import Union
-from urllib.parse import urlencode
 from fastapi.responses import HTMLResponse, RedirectResponse
 from uuid import UUID
 from fastapi import APIRouter, Depends, Request, Form
@@ -157,30 +152,3 @@ async def user_payments_account(request: Request,
     return RedirectResponse(
         redirect_url + params, 
         status_code=status.HTTP_302_FOUND)  
-
-
-
-
-
-# @payment_account_router.get("/sort/user_payments_account/{column}/{user_uuid}", response_class=RedirectResponse)
-# @payment_account_router.get("/sort/payments_account/{column}", response_class=RedirectResponse)
-# async def sort_user(request: Request,
-#                     column: str,
-#                     user_uuid: UUID = None,
-#                     staff: models.Staff = Depends(manager)):
-#     params = request.query_params._dict
-#     if "order_by" not in params:
-#         if column[0] != "~":
-#             params['order_by'] = [column]
-#     else:
-#         params['order_by'] = ast.literal_eval(params['order_by'])
-#         column_name = column[1:] 
-        
-#         if column[0] == "~" and len([i for i in params["order_by"] if column_name == i[1:]]) > 0:
-#             params["order_by"] = [i for i in params["order_by"] if column_name != i[1:]]
-#         elif column[0] != "~":
-#             params["order_by"] = [i for i in params["order_by"] if column_name != i[1:]]
-#             params["order_by"].append(column)
-    
-#     redirect_url = f'/user_payments_account/{user_uuid}?' if user_uuid else "/payments_account?"
-#     return redirect_url + urlencode(params)

@@ -15,7 +15,7 @@ lang_bot_text_router = APIRouter()
 async def get_text_bot_lang(request: Request,
                             page: int = 1,
                             order_by: str = None):
-    lang = models.Lang.filter(target_table__isnull=True)
+    lang = models.Lang.filter(target_table__isnull=True, button=False)
     limit = 5
     offset, last_page, previous_page, next_page = pagination(limit=limit, page=page, count_model=await lang.count())
     order_by, order_by_args = order_by_utils(order_by)

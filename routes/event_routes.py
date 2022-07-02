@@ -3,10 +3,15 @@ from loader import dp, bot, db
 import asyncio
 from data.config import TORTOISE_ORM, WEBHOOK_URL
 from fastapi import APIRouter
-
+from starlette.responses import FileResponse
 
 
 event_router = APIRouter()
+    
+
+@event_router.get('/favicon.ico')
+async def favicon():
+    return FileResponse('static/favicon.ico')
 
 
 @event_router.on_event("startup")
@@ -17,9 +22,6 @@ async def on_startup():
             url=WEBHOOK_URL
         )
     await db.init(config=TORTOISE_ORM)
-    # await set_default_commands(dispatcher)
-    await db.init(config=TORTOISE_ORM)
-
 
 
 @event_router.post("/bot")
@@ -33,6 +35,3 @@ async def bot_webhook(update: dict):
 @event_router.on_event("shutdown")
 async def on_shutdown():
     await bot.delete_webhook(drop_pending_updates=True)
-    # await dp.storage.close()
-    # await dp.storage.wait_closed()
-    # await bot.session.close()

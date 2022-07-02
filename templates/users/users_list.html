@@ -19,8 +19,8 @@
                 <!-- form Username -->
                 <div class="col-md-4 mb-3">
                   <label for="zip">Username:</label>
-                  <input name="username" type="text" class="form-control" placeholder="Username:" 
-                         value={% if username != None %}{{username}}{% else %}""{% endif %}>
+                  <input name="tg_username__icontains" type="text" class="form-control" placeholder="Username:" 
+                  {% if username != None %}value="{{search.tg_username__icontains}}"{% endif %}>
                 </div>
                 <!-- endform Username -->
                 
@@ -28,11 +28,11 @@
                 <div class="col-md-4 mb-3">
                   <label for="zip">Balance:</label>
                   <div class="input-group mb-3">
-                    <input type="number" name="min_balance" class="form-control" placeholder="Min balance"  aria-label="Min balance" step="any"
-                           value={{min_balance}} required>
+                    <input type="number" name="balance__gte" class="form-control" placeholder="Min balance"  aria-label="Min balance" step="any"
+                           value={{search.balance__gte}}>
                     <span class="input-group-text">to</span>
-                    <input type="number" name="max_balance" class="form-control" placeholder="Max balance" aria-label="Max balance" step="any"
-                           value={{max_balance}} required>
+                    <input type="number" name="balance__lte" class="form-control" placeholder="Max balance" aria-label="Max balance" step="any"
+                           value={{search.balance__lte}}>
                   </div>
                 </div>
                 <!-- endform Balance -->
@@ -41,11 +41,11 @@
                 <div class="col-md-4 mb-3">
                   <label for="zip">Frozen balance:</label>
                   <div class="input-group mb-3">
-                    <input type="text" name="min_frozen_balance" class="form-control" placeholder="Min balance"  aria-label="Min balance"
-                           value={{min_frozen_balance}} required>
+                    <input type="number" name="frozen_balance__gte" class="form-control" placeholder="Min balance"  aria-label="Min balance"
+                           value={{search.frozen_balance__gte}}>
                     <span class="input-group-text">to</span>
-                    <input type="text" name="max_frozen_balance" class="form-control" placeholder="Max balance" aria-label="Max balance"
-                           value={{max_frozen_balance}} required>
+                    <input type="number" name="frozen_balance__lte" class="form-control" placeholder="Max balance" aria-label="Max balance"
+                           value={{search.frozen_balance__lte}}>
                   </div>
                 </div>
                 </div>
@@ -59,18 +59,18 @@
                   <label for="zip">Referal parent:</label>
                   <div class="input-group mb-3">
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="referal" id="inlineRadio1" value="False" 
-                                {% if referal == False %} checked {% endif %}>
+                        <input class="form-check-input" type="radio" name="referal_user_id__isnull" id="inlineRadio1" value="False" 
+                                {% if search.referal_user_id__isnull == False %} checked {% endif %}>
                         <label class="form-check-label" for="inlineRadio1">Yes</label>
                       </div>
                       <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="referal" id="inlineRadio2" value="True"
-                                {% if referal == True %} checked {% endif %}>
+                        <input class="form-check-input" type="radio" name="referal_user_id__isnull" id="inlineRadio2" value="True"
+                                {% if search.referal_user_id__isnull == True %} checked {% endif %}>
                         <label class="form-check-label" for="inlineRadio2">No</label>
                       </div>
                       <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="referal" id="inlineRadio3" value="None"
-                                {% if referal == None %} checked {% endif %}>
+                        <input class="form-check-input" type="radio" name="referal_user_id__isnull" id="inlineRadio3" value="None"
+                                {% if search.referal_user_id__isnull == None %} checked {% endif %}>
                         <label class="form-check-label" for="inlineRadio3">All</label>
                       </div>
                   </div>
@@ -83,17 +83,17 @@
                   <div class="input-group mb-3">
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" name="lang" type="radio" name="lang" id="inlineRadio1" value="en"
-                            {% if lang == "en" %} checked {% endif %}>
+                            {% if search.lang == "en" %} checked {% endif %}>
                         <label class="form-check-label" for="inlineRadio1">En</label>
                       </div>
                       <div class="form-check form-check-inline">
                         <input class="form-check-input" name="lang" type="radio" name="lang" id="inlineRadio2" value="ru"
-                            {% if lang == "ru" %} checked {% endif %}>
+                            {% if search.lang == "ru" %} checked {% endif %}>
                         <label class="form-check-label" for="inlineRadio2">Ru</label>
                       </div>
                       <div class="form-check form-check-inline">
-                        <input class="form-check-input" name="lang" type="radio" name="lang" id="inlineRadio3" value=""
-                            {% if lang == None %} checked {% endif %}>
+                        <input class="form-check-input" name="lang" type="radio" name="lang" id="inlineRadio3" value="None"
+                            {% if search.lang == None %} checked {% endif %}>
                         <label class="form-check-label" for="inlineRadio3">All</label>
                       </div>
                   </div>
@@ -105,13 +105,13 @@
                     <label for="basic-url" class="form-label">Created at</label>
                     <div class="input-group mb-3">
                     <span class="input-group-text" id="basic-addon3">From</span>
-                    <input type="datetime-local" name="min_created_at" class="form-control" id="basic-url" aria-describedby="basic-addon3" 
-                           value={{min_created_at}}>
+                    <input type="datetime-local" name="created_at__gte" class="form-control" id="basic-url" aria-describedby="basic-addon3" 
+                           value={{search.created_at__gte}}>
                     </div>
                     <div class="input-group mb-3">
                     <span class="input-group-text" id="basic-addon3">To</span>
-                    <input type="datetime-local" name="max_created_at" class="form-control" id="basic-url" aria-describedby="basic-addon3"
-                            value={{max_created_at}}>
+                    <input type="datetime-local" name="created_at__lte" class="form-control" id="basic-url" aria-describedby="basic-addon3"
+                            value={{search.created_at__lte}}>
                 </div>
                 </div>
                 <!-- endform created at -->

@@ -13,9 +13,8 @@ from starlette.middleware import Middleware
 from starlette.middleware.sessions import SessionMiddleware
 import typing
 from fastapi_login import LoginManager
-from models import models #Loginmanager Class
+from models import models
 from utils.exceptions import NotAuthenticatedException
-
 
 bot = Bot(token=config.BOT_TOKEN, parse_mode=types.ParseMode.HTML)
 storage = MemoryStorage()
@@ -23,12 +22,8 @@ dp = Dispatcher(bot, storage=storage)
 
 db = Tortoise()
 
-# app = FastAPI()
-middleware = [
- Middleware(SessionMiddleware, secret_key="sdg905tigkog5ku54opg34m54.f34.f34l;tk34op2kfopw3igjp;")
-]
+middleware = [Middleware(SessionMiddleware, secret_key="sdg905tigkog5ku54opg34m54.f34.f34l;tk34op2kfopw3igjp;")]
 app = FastAPI(middleware=middleware)
-
 
 SECRET = "secret-key"
 
@@ -40,7 +35,6 @@ manager = LoginManager(SECRET,
 manager.cookie_name = "access_token"
 
 templates = Jinja2Templates(directory="templates")
-
 
 @manager.user_loader
 async def load_user(username:str):

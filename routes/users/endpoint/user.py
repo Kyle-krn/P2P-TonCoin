@@ -1,18 +1,13 @@
-from typing import List, Optional, Union
-from datetime import datetime, timedelta
-from urllib import parse
+from typing import  Union
 from uuid import UUID
 from anyio import Any
-from tortoise.queryset import Q
 from fastapi import APIRouter
-from fastapi import Depends, Form, HTTPException, Request
+from fastapi import Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from models import models
 from loader import templates, flash, manager
-from urllib.parse import urlencode
-import ast
 import starlette.status as status
-from utils.exceptions import NotAuthenticatedException
+
 
 user_router = APIRouter()
 

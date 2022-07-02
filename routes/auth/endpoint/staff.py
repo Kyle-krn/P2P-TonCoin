@@ -1,9 +1,9 @@
 import hashlib
 from uuid import UUID
-from fastapi import APIRouter, Request, Form
+from fastapi import APIRouter, Depends, Request, Form
 from fastapi.responses import RedirectResponse,HTMLResponse
 from starlette import status
-from loader import flash, templates
+from loader import flash, templates, manager
 from models import models
 from utils.utils import str_bool
 from tortoise.queryset import Q
@@ -13,7 +13,8 @@ register_router = APIRouter()
 @register_router.get("/auth/register")
 async def get_staff(request: Request,
                    staff_uuid: UUID = None,
-                   login: str = None):
+                   login: str = None,
+                   staff = Depends(manager)):
     query = Q()
     if staff_uuid:
         query &= Q(uuid=staff_uuid)
@@ -28,7 +29,8 @@ async def get_staff(request: Request,
 async def create_staff(request: Request,
                   username: str = Form(),
                   password: str = Form(),
-                  superuser: bool = Form(False)):
+                  superuser: bool = Form(False),
+                  staff = Depends(manager)):
     hashed_pass = hashlib.sha256(password.encode('utf-8')).hexdigest()
     await models.Staff.create(login=username, password=hashed_pass, superuser=superuser)
     flash(request, "Success", "success")
@@ -38,7 +40,8 @@ async def create_staff(request: Request,
                             )  
 
 @register_router.post("/auth/update_staff")
-async def update_staff(request: Request):
+async def update_staff(request: Request,
+                       staff = Depends(manager)):
     form_list = (await request.form())._list
     print(form_list)
     for indx in range(0, len(form_list), 4):
