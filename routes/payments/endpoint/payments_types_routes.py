@@ -3,7 +3,7 @@ from typing import Union
 from fastapi.responses import HTMLResponse, RedirectResponse
 from uuid import UUID
 from fastapi import APIRouter, Depends, Request
-from loader import flash, templates
+from loader import flash, templates, manager
 from models import models
 from tortoise.queryset import Q
 import starlette.status as status
@@ -19,7 +19,8 @@ payments_type_router = APIRouter()
 @payments_type_router.get("/payments_account_type", response_class=HTMLResponse)
 async def payments_account_type(request: Request,
                                 search: PaymentsTypeSearch = Depends(PaymentsTypeSearch),
-                                order_by: str = None):
+                                order_by: str = None,
+                                staff: models.Staff = Depends(manager)):
     currencies = await models.Currency.exclude(name="TON")
     query = await query_filters(search)
     if search.data__json:
@@ -50,7 +51,8 @@ async def payments_account_type(request: Request,
 
 
 @payments_type_router.post("/update_payment_types", response_class=HTMLResponse)
-async def update_payment_types(request: Request):
+async def update_payment_types(request: Request,
+                               staff: models.Staff = Depends(manager)):
     form_list = (await request.form())._list
     for indx in range(0, len(form_list), 7):
         type_uuid = UUID(form_list[indx][1])

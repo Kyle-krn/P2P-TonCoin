@@ -32,11 +32,14 @@ manager = LoginManager(SECRET,
                        use_cookie=True, 
                        default_expiry=timedelta(hours=12),
                        custom_exception=NotAuthenticatedException)
+                       
 manager.cookie_name = "access_token"
+
+manager.useRequest(app)
 
 templates = Jinja2Templates(directory="templates")
 
-@manager.user_loader
+@manager.user_loader()
 async def load_user(username:str):
     user = await models.Staff.get_or_none(login=username)
     return user

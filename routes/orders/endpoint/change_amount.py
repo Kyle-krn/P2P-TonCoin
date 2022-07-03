@@ -14,7 +14,8 @@ change_amount_roter = APIRouter()
 @change_amount_roter.get("/change_amount_order/{uuid}")
 async def show_change_amount_order(request: Request,
                              uuid: UUID,
-                             page: int = 1):
+                             page: int = 1,
+                             staff: models.Staff = Depends(manager)):
     order = await models.Order.get(uuid=uuid).prefetch_related("seller", "customer", "currency", "children_order")
     change_amount_list = models.OrderAmountChange.filter(order=order)
     limit = 5

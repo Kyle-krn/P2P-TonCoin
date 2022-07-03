@@ -21,9 +21,11 @@
             <li class="nav-item">
               <a class="nav-link" aria-current="page" href="/users">List user</a>
             </li>
+            {% if request.state.user.superuser %}
             <li class="nav-item">
               <a class="nav-link" aria-current="page" href="/auth/register">Register staff</a>
             </li>
+            {% endif %}
             <li class="nav-item">
               <a class="nav-link" aria-current="page" href="/history_balance">History balance</a>
             </li>

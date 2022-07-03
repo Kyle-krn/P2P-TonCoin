@@ -13,7 +13,8 @@ change_state_roter = APIRouter()
 @change_state_roter.get("/change_state_order/{uuid}")
 async def show_change_state_order(request: Request,
                              uuid: UUID,
-                             page: int = 1):
+                             page: int = 1,
+                             staff: models.Staff = Depends(manager)):
     order = await models.Order.get(uuid=uuid).prefetch_related("seller", "customer", "currency", "children_order")
     change_state_list = models.OrderStateChange.filter(order=order)
     limit = 5
@@ -34,8 +35,8 @@ async def show_change_state_order(request: Request,
 
 @change_state_roter.post("/update_state_order/{uuid}")
 async def update_state_order(request: Request,
-                              uuid: UUID,
-                              staff = Depends(manager)):
+                             uuid: UUID,
+                             staff = Depends(manager)):
     order = await models.Order.get(uuid=uuid)
     form = UpdateOrderStateForm(request)
     await form.load_data()

@@ -25,7 +25,7 @@ class UsersSearch(BaseModel):
                "created_at__gte",
                "created_at__lte")
     def validate_str(cls, v):
-        if not v or v == 'None':
+        if v == "" or v == 'None':
             return None
         else:
             return v

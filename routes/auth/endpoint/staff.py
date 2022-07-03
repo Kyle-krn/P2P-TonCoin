@@ -14,7 +14,9 @@ register_router = APIRouter()
 async def get_staff(request: Request,
                    staff_uuid: UUID = None,
                    login: str = None,
-                   staff = Depends(manager)):
+                   staff: models.Staff = Depends(manager)):
+    if staff.superuser is False:
+        return RedirectResponse(request.url_for("users_list"))
     query = Q()
     if staff_uuid:
         query &= Q(uuid=staff_uuid)
@@ -30,7 +32,9 @@ async def create_staff(request: Request,
                   username: str = Form(),
                   password: str = Form(),
                   superuser: bool = Form(False),
-                  staff = Depends(manager)):
+                  staff: models.Staff = Depends(manager)):
+    if staff.superuser is False:
+        return RedirectResponse(request.url_for("users_list"))
     hashed_pass = hashlib.sha256(password.encode('utf-8')).hexdigest()
     await models.Staff.create(login=username, password=hashed_pass, superuser=superuser)
     flash(request, "Success", "success")
@@ -41,9 +45,10 @@ async def create_staff(request: Request,
 
 @register_router.post("/auth/update_staff")
 async def update_staff(request: Request,
-                       staff = Depends(manager)):
+                       staff: models.Staff = Depends(manager)):
+    if staff.superuser is False:
+        return RedirectResponse(request.url_for("users_list"))
     form_list = (await request.form())._list
-    print(form_list)
     for indx in range(0, len(form_list), 4):
         staff_uuid = form_list[indx][1]
         login = form_list[indx+1][1]

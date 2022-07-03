@@ -13,7 +13,8 @@ detail_order_roter = APIRouter()
 
 @detail_order_roter.get("/order/{uuid}")
 async def order_detail(request: Request,
-                       uuid: UUID = None):
+                       uuid: UUID = None,
+                       staff: models.Staff = Depends(manager)):
     order = await models.Order.get(uuid=uuid).prefetch_related("seller", "customer", "currency", "children_order")
     currencies = await models.Currency.exclude(name="TON")
     context = {"request": request,

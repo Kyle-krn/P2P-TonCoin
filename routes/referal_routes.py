@@ -19,7 +19,8 @@ async def create_referal_children(request: Request,
                                   redirect_uuid: UUID = Form(None),
                                   referal_parent_uuid: UUID = Form(),
                                   referal_children_uuid: Union[UUID, Any] = Form(),
-                                  amount: float = Form()):
+                                  amount: float = Form(),
+                                  staff: models.Staff = Depends(manager)):
     if isinstance(referal_children_uuid, UUID) is False:
         flash(request, f"Invalid UUID: {referal_children_uuid}", "danger")
     elif referal_parent_uuid == referal_children_uuid:
@@ -44,7 +45,8 @@ async def create_referal_children(request: Request,
         status_code=status.HTTP_302_FOUND)  
 
 @referal_router.post("/update_referal_children")
-async def update_referal_children(request: Request):
+async def update_referal_children(request: Request,
+                                  staff: models.Staff = Depends(manager)):
     form_list = (await request.form())._list
     user_uuid = form_list[0]
     if "user_uuid_hidden" in user_uuid:
@@ -58,29 +60,6 @@ async def update_referal_children(request: Request):
         state = form_list[indx+1][1] #if form_list[indx+2][1] != "" else None
         amount = form_list[indx+2][1]#if form_list[indx+3][1] != "" else None
         referal = await models.UserReferalBonus.get(uuid=uuid_referal)
-        # old_uuid_children = referal.invited_user_id
-        # new_uuid_children = form_list[indx+1][1]
-        # if not new_uuid_children:
-        #     flash(request, message="Empty children UUID", category="danger")
-        #     continue
-        # else:
-        #     try:
-        #         UUID(new_uuid_children)
-        #         new_children = await models.User.get_or_none(uuid=new_uuid_children)
-        #         if new_children is None:
-        #             flash(request, message=f"{new_uuid_children} not exists")
-        #             continue    
-        #     except ValueError:
-        #         flash(request, message=f"Invalid UUID - {new_uuid_children}")
-        #         continue
-        # if old_uuid_children != new_uuid_children:
-        #     old_children: models.User = await referal.invited_user
-        #     old_children.referal_user = None
-        #     await old_children.save()
-        #     new_children = await models.User.get(uuid=new_uuid_children)
-        #     new_children.referal_user_id = new_uuid_children
-        #     await new_children.save()
-        #     referal.invited_user_id = new_uuid_children
         referal.amount = amount
         if referal.state != state:
             parent = await referal.user
@@ -134,12 +113,6 @@ async def user_detail(request: Request,
         user = None
         query = Q()
 
-
-    # if order_by:
-    #     order_by = ast.literal_eval(order_by)
-    # else:
-    #     order_by = []
-
     search = {
         "invited_user_uuid": None,
         "state": None,
@@ -149,7 +122,6 @@ async def user_detail(request: Request,
         "max_created_at": None,
         "user_uuid": None
     }
-    # query = Q(user=user)
 
     if user_uuid:
         query = Q(user_id=user_uuid)
@@ -178,16 +150,6 @@ async def user_detail(request: Request,
         query = query & Q(created_at__lte=max_created_at)
         search['max_created_at'] = max_created_at
     send_referal = models.UserReferalBonus.filter(query) #.
-
-    # if len(order_by) == 0:
-    #     send_referal = send_referal.order_by("-created_at")
-    # else:
-    #     for item in order_by:
-    #         if item[0] == "+":
-    #             indx = order_by.index(item)
-    #             order_by = order_by[:indx] + [item[1:]] + order_by[indx+1:]
-    #     send_referal = send_referal.order_by(*order_by)
-
 
     limit = 5
     offset, last_page, previous_page, next_page = pagination(limit=limit, page=page, count_model=await send_referal.count())

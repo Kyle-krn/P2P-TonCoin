@@ -35,21 +35,21 @@
             <div class="row justify-content-start">
                 <div class="col-md-4 mb-3">
                     <label for="zip">Name:</label>
-                    <input type="text" name="name" class="form-control" placeholder="Enter name:"  aria-label="name"  value="{% if search.name %}{{search.name}}{% endif %}">
+                    <input type="text" name="name__icontains" class="form-control" placeholder="Enter name:"  aria-label="name"  {% if search.name__icontains %}value="{{search.name__icontains}}"{% endif %}>
                    
                     <!-- END INPUT AMOUNT -->
                   </div>
                 <div class="col-md-4 mb-3">
                     <label for="zip">Amount:</label>
                   <div class="input-group mb-3">
-                    <input type="number" name="min_rate" class="form-control" placeholder="Min amount"  aria-label="Min balance" step="any"
-                           value="{{search.min_rate}}"
+                    <input type="number" name="exchange_rate__gte" class="form-control" placeholder="Min amount"  aria-label="Min balance" step="any"
+                           value="{{search.exchange_rate__gte}}"
                            >
                     <span class="input-group-text">to</span>
-                    <input type="number" name="max_rate" class="form-control" 
+                    <input type="number" name="exchange_rate__lte" class="form-control" 
                     placeholder="Max amount" 
                     aria-label="Max balance" step="any"
-                           value="{{ search.max_rate }}"
+                           value="{{ search.exchange_rate__lte }}"
                            >
                     <!-- END INPUT AMOUNT -->
                   </div>
@@ -58,13 +58,13 @@
                     <label for="basic-url" class="form-label">Created at</label>
                     <div class="input-group mb-3">
                     <span class="input-group-text" id="basic-addon3">From</span>
-                    <input type="datetime-local" name="min_created_at" class="form-control" id="basic-url" aria-describedby="basic-addon3" 
-                           value={{search.min_created_at}}>
+                    <input type="datetime-local" name="created_at__gte" class="form-control" id="basic-url" aria-describedby="basic-addon3" 
+                           value={{search.created_at__gte}}>
                     </div>
                     <div class="input-group mb-3">
                     <span class="input-group-text" id="basic-addon3">To</span>
-                    <input type="datetime-local" name="max_created_at" class="form-control" id="basic-url" aria-describedby="basic-addon3"
-                            value={{search.max_created_at}}>
+                    <input type="datetime-local" name="created_at__lte" class="form-control" id="basic-url" aria-describedby="basic-addon3"
+                            value={{search.created_at__lte}}>
                 </div>
                 </div>
                 <div class="col-md-4 mb-3">
@@ -191,7 +191,8 @@
             <td></td>
             <td></td>
             <td></td>
-            <!-- <td></td> -->
+            <td></td>
+            <td></td>
             <td class="text-center"><button type="submit" class="btn btn-success btn-sm">Update</button></td>
         </form>
         </tr>

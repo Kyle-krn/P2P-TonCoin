@@ -1,9 +1,9 @@
 import json
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import RedirectResponse
 from uuid import UUID
 from fastapi import APIRouter, Depends, Request, Form
 from tortoise.exceptions import DoesNotExist
-from loader import flash, manager, templates
+from loader import flash, templates, manager
 from models import models
 from tortoise.queryset import Q
 import starlette.status as status
@@ -12,7 +12,6 @@ from utils.order_by import order_by_utils
 from utils.pagination import pagination
 from utils.search_db_json import rowsql_get_distinct_list_value
 from utils.utils import str_bool
-from pydantic import BaseModel, validator
 from ..pydantic_models import PaymentsAccountSearch
 
 
@@ -26,7 +25,8 @@ async def user_payment_account(request: Request,
                                user_uuid: UUID = None,
                                search: PaymentsAccountSearch = Depends(PaymentsAccountSearch),
                                order_by: str = None,
-                               page:int = 1):
+                               page:int = 1,
+                               staff: models.Staff = Depends(manager)):
     if user_uuid:
         user = await models.User.get(uuid=user_uuid).prefetch_related("referal_user")
         query = Q(user=user)
@@ -84,7 +84,8 @@ async def create_payments_account(request: Request,
                                   user_uuid: UUID = Form(),
                                   type_uuid: UUID = Form(),
                                   data: str = Form(),
-                                  is_active: bool = Form(False)):
+                                  is_active: bool = Form(False),
+                                  staff: models.Staff = Depends(manager)):
     try:
         user = await models.User.get(uuid=user_uuid)
         while "'" in data:
@@ -115,7 +116,8 @@ async def create_payments_account(request: Request,
 
 @payment_account_router.post('/update_payments_account')
 async def user_payments_account(request: Request,
-                                 user_uuid_hidden: UUID = Form(None)
+                                user_uuid_hidden: UUID = Form(None),
+                                staff: models.Staff = Depends(manager)
                                 ):
     form_list = (await request.form())._list
     user_uuid = form_list[0]

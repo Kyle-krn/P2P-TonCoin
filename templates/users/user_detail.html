@@ -55,12 +55,12 @@
                 {% if user.referal_user_id == None %}
                 <a class="btn btn-outline-secondary" href="#" type="button" id="button-addon1" role="button" disabled>Parent
                 </a>
-                <input name="referal_parent" type="text" class="form-control" placeholder="Referal Parent UUID" aria-label="Example text with button addon" aria-describedby="button-addon1">
+                <input name="referal_user_id" type="text" class="form-control" placeholder="Referal Parent UUID" aria-label="Example text with button addon" aria-describedby="button-addon1">
                 {% else %}
                 <a class="btn btn-outline-secondary" href="/user/{{user.referal_user_id}}" type="button" id="button-addon1" role="button">
                   {% if user.referal_user.tg_username %} {{ user.referal_user.tg_username }}{% else %}Parent{% endif %}
                 </a>
-                <input name="referal_parent" type="text" class="form-control" placeholder="Referal Parent UUID" aria-label="Example text with button addon" aria-describedby="button-addon1"
+                <input name="referal_user_id" type="text" class="form-control" placeholder="Referal Parent UUID" aria-label="Example text with button addon" aria-describedby="button-addon1"
                  value="{{user.referal_user_id}}">
                 {% endif %}
               </div>
