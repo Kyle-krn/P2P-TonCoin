@@ -148,9 +148,9 @@
               {% endif %}
             </button>
             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-              <li><a class="dropdown-item" href="/sort/users/~tg_username{{params}}">S</a></li>
-              <li><a class="dropdown-item" href="/sort/users/+tg_username{{params}}">⬆️</a></li>
-              <li><a class="dropdown-item" href="/sort/users/-tg_username{{params}}">⬇️</a></li>
+              <li><a class="dropdown-item" href="/sort/users/~tg_username{{ params|get_urlencode }}">S</a></li>
+              <li><a class="dropdown-item" href="/sort/users/+tg_username{{ params|get_urlencode }}">⬆️</a></li>
+              <li><a class="dropdown-item" href="/sort/users/-tg_username{{ params|get_urlencode }}">⬇️</a></li>
             </ul>
           </div>
         </div>
@@ -171,9 +171,9 @@
                 {% endif %}
               </button>
               <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                <li><a class="dropdown-item" href="/sort/users/~balance{{params}}">S</a></li>
-                <li><a class="dropdown-item" href="/sort/users/+balance{{params}}">⬆️</a></li>
-                <li><a class="dropdown-item" href="/sort/users/-balance{{params}}">⬇️</a></li>
+                <li><a class="dropdown-item" href="/sort/users/~balance{{ params|get_urlencode }}">S</a></li>
+                <li><a class="dropdown-item" href="/sort/users/+balance{{ params|get_urlencode }}">⬆️</a></li>
+                <li><a class="dropdown-item" href="/sort/users/-balance{{ params|get_urlencode }}">⬇️</a></li>
               </ul>
             </div>
           </div>
@@ -195,9 +195,9 @@
                 {% endif %}
               </button>
               <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                <li><a class="dropdown-item" href="/sort/users/~frozen_balance{{params}}">S</a></li>
-                <li><a class="dropdown-item" href="/sort/users/+frozen_balance{{params}}">⬆️</a></li>
-                <li><a class="dropdown-item" href="/sort/users/-frozen_balance{{params}}">⬇️</a></li>
+                <li><a class="dropdown-item" href="/sort/users/~frozen_balance{{ params|get_urlencode }}">S</a></li>
+                <li><a class="dropdown-item" href="/sort/users/+frozen_balance{{ params|get_urlencode }}">⬆️</a></li>
+                <li><a class="dropdown-item" href="/sort/users/-frozen_balance{{ params|get_urlencode }}">⬇️</a></li>
               </ul>
             </div>
           </div>
@@ -222,9 +222,9 @@
                 {% endif %}
               </button>
               <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                <li><a class="dropdown-item" href="/sort/users/~created_at{{params}}">S</a></li>
-                <li><a class="dropdown-item" href="/sort/users/+created_at{{params}}">⬆️</a></li>
-                <li><a class="dropdown-item" href="/sort/users/-created_at{{params}}">⬇️</a></li>
+                <li><a class="dropdown-item" href="/sort/users/~created_at{{ params|get_urlencode }}">S</a></li>
+                <li><a class="dropdown-item" href="/sort/users/+created_at{{ params|get_urlencode }}">⬆️</a></li>
+                <li><a class="dropdown-item" href="/sort/users/-created_at{{ params|get_urlencode }}">⬇️</a></li>
               </ul>
             </div>
           </div>
@@ -254,6 +254,6 @@
   </table>
 
 
- 
+ {% include "include/pagination.html" %}
 
 {% endblock %}

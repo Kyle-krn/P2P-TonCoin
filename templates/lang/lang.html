@@ -3,6 +3,65 @@
 {% block body %}
 <h3 class="text-center">Bot lang text</h3>
 
+<div class="accordion" id="accordionExample">
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingOne">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+        Text search
+      </button>
+    </h2>
+    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+      <div class="accordion-body">
+        <form action="">
+          <div class="row justify-content-start">
+              <div class="col-md-6 mb-3">
+                  <label for="zip">Rus:</label>
+                  <input type="text" name="rus__icontains" class="form-control" placeholder="Enter rus:"  aria-label="rus"  
+                  {% if search.rus__icontains %}value="{{search.rus__icontains}}"{% endif %}>
+              </div>
+              <div class="col-md-6 mb-3">
+                  <label for="zip">Eng:</label>
+                  <input type="text" name="eng__icontains" class="form-control" placeholder="Enter eng:"  aria-label="eng"  
+                  {% if search.eng__icontains %}value="{{search.eng__icontains}}"{% endif %}>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="basic-url" class="form-label">Updated at</label>
+                <div class="input-group mb-3">
+                <span class="input-group-text" id="basic-addon3">From</span>
+                <input type="datetime-local" name="updated_at__gte" class="form-control" id="basic-url" aria-describedby="basic-addon3" 
+                    value={{search.updated_at__gte}}>
+                </div>
+                <div class="input-group mb-3">
+                <span class="input-group-text" id="basic-addon3">To</span>
+                <input type="datetime-local" name="updated_at__lte" class="form-control" id="basic-url" aria-describedby="basic-addon3"
+                        value={{search.updated_at__lte}}>
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label for="basic-url" class="form-label">Created at</label>
+                        <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon3">From</span>
+                        <input type="datetime-local" name="created_at__gte" class="form-control" id="basic-url" aria-describedby="basic-addon3" 
+                            value={{search.created_at__gte}}>
+                        </div>
+                        <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon3">To</span>
+                        <input type="datetime-local" name="created_at__lte" class="form-control" id="basic-url" aria-describedby="basic-addon3"
+                                value={{search.created_at__lte}}>
+                    </div>
+            </div>
+          </div>
+              <div class="text-center">
+                  <button type="submit" class="btn btn-success">Search</button>
+                  <a class="btn btn-secondary" href="{{url}}" role="button">Default</a>
+              </div>
+          
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="table-responsive">
     <table class="table table-striped">
@@ -25,9 +84,9 @@
                         {% endif %}
                       </button>
                       <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                        <li><a class="dropdown-item" href="/sort/bot_text/~updated_at{{ params|get_urlencode }}">S</a></li>
-                        <li><a class="dropdown-item" href="/sort/bot_text/+updated_at{{ params|get_urlencode }}">⬆️</a></li>
-                        <li><a class="dropdown-item" href="/sort/bot_text/-updated_at{{ params|get_urlencode }}">⬇️</a></li>
+                        <li><a class="dropdown-item" href="/sort{{url}}/~updated_at{{ params|get_urlencode }}">S</a></li>
+                        <li><a class="dropdown-item" href="/sort{{url}}/+updated_at{{ params|get_urlencode }}">⬆️</a></li>
+                        <li><a class="dropdown-item" href="/sort{{url}}/-updated_at{{ params|get_urlencode }}">⬇️</a></li>
                       </ul>
                     </div>
                   </div> 
@@ -45,9 +104,9 @@
                         {% endif %}
                       </button>
                       <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                        <li><a class="dropdown-item" href="/sort/bot_text/~created_at{{ params|get_urlencode }}">S</a></li>
-                        <li><a class="dropdown-item" href="/sort/bot_text/+created_at{{ params|get_urlencode }}">⬆️</a></li>
-                        <li><a class="dropdown-item" href="/sort/bot_text/-created_at{{ params|get_urlencode }}">⬇️</a></li>
+                        <li><a class="dropdown-item" href="/sort{{url}}/~created_at{{ params|get_urlencode }}">S</a></li>
+                        <li><a class="dropdown-item" href="/sort{{url}}/+created_at{{ params|get_urlencode }}">⬆️</a></li>
+                        <li><a class="dropdown-item" href="/sort{{url}}/-created_at{{ params|get_urlencode }}">⬇️</a></li>
                       </ul>
                     </div>
                   </div>

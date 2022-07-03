@@ -1,22 +1,55 @@
+from datetime import datetime
+from typing import Union
 from uuid import UUID
 from fastapi import APIRouter, Request, Depends
+from pydantic import BaseModel, validator
 from models import models
 from loader import templates, manager
 from fastapi.responses import RedirectResponse
 from starlette import status
+from utils.models_utils import query_filters
 from utils.order_by import order_by_utils
 from utils.pagination import pagination
-
+from tortoise.queryset import Q
 
 lang_bot_text_router = APIRouter()
 
+class LangSearch(BaseModel):
+    rus__icontains: Union[str, None] = None
+    rus__icontains: Union[str, None] = None
+    updated_at__gte: Union[datetime, str] = None
+    updated_at__lte: Union[datetime, str] = None
+    created_at__gte: Union[datetime, str] = None
+    created_at__lte: Union[datetime, str] = None
+
+    @validator("rus__icontains", 
+               "rus__icontains", 
+               "updated_at__gte",
+               "updated_at__lte",
+               "created_at__gte",
+               "created_at__lte")
+    def validate_str(cls, v):
+        if v == "":
+            return None
+        else:
+            return v
+
 
 @lang_bot_text_router.get("/bot_text")
+@lang_bot_text_router.get("/bot_button")
 async def get_text_bot_lang(request: Request,
                             page: int = 1,
+                            search: LangSearch = Depends(LangSearch),
                             order_by: str = None,
                             staff: models.Staff = Depends(manager)):
-    lang = models.Lang.filter(target_table__isnull=True, button=False)
+    query = Q(target_table__isnull=True)
+    if request.url.path == "/bot_text":
+        query &= Q(button=False)
+    else:
+        query &= Q(button=True)
+    # print(search.rus__iconatins)
+    query &= await query_filters(search)
+    lang = models.Lang.filter(query)
     limit = 5
     offset, last_page, previous_page, next_page = pagination(limit=limit, page=page, count_model=await lang.count())
     order_by, order_by_args = order_by_utils(order_by)
@@ -30,7 +63,9 @@ async def get_text_bot_lang(request: Request,
                "page": page,
                "last_page": last_page,
                "previous_page": previous_page,
-               "next_page": next_page}
+               "next_page": next_page,
+               "url": request.url.path,
+               "search": search}
 
     return templates.TemplateResponse('lang/lang.html', context)
 
