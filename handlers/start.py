@@ -32,7 +32,7 @@ async def start(message: types.Message):
         # text = "Добро пожаловать в официальный бот для p2p обмена Toncoin.\n Выберите язык, на котором вам удобно работать:"
         return await message.answer(text=text, reply_markup=await keyboards.language_keyboard(user))
     else:
-        text = await models.Lang.get(uuid="ecc46c6b-90d1-45c3-be85-a3eace3b93f2")
+        text = await models.Lang.get(uuid="f82068f9-63c5-4c36-96b7-c5c5aa781a09")
         text = text.rus if user.lang == "ru" else text.eng
         # text = "Добро пожаловать!"
 
