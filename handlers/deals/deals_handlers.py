@@ -23,11 +23,11 @@ async def my_deals_handler(message: Union[types.Message, types.CallbackQuery]):
     orders = models.Order.filter(query_filter).exclude(query_exclude)
     limit = 5
     offset = (page - 1) * limit
-    count_users = await orders.count()
-    last_page = count_users/limit
-    if count_users % limit == 0:
+    count_deals = await orders.count()
+    last_page = count_deals/limit
+    if count_deals % limit == 0:
         last_page = int(last_page)
-    elif count_users % limit != 0:
+    elif count_deals % limit != 0:
         last_page = int(last_page + 1)
 
     orders = await orders.offset(offset).limit(limit).order_by("-created_at")
@@ -36,10 +36,14 @@ async def my_deals_handler(message: Union[types.Message, types.CallbackQuery]):
     text = await models.Lang.get(uuid="f11ebe57-866f-4bd3-8550-690fa288dd9f")
     text = text.rus if user.lang == "ru" else text.eng
     # text = "Выберите заказ:"
-    await message.answer(text=text, reply_markup=await deals_keyboards.show_deals_keyboard(orders=orders, 
-                                                                                           page=page, 
-                                                                                           last_page=last_page,
-                                                                                           user=user))
+    if count_deals == 0:
+        keyboard = None
+    else:
+        keyboard = await deals_keyboards.show_deals_keyboard(orders=orders, 
+                                                  page=page, 
+                                                  last_page=last_page,
+                                                  user=user)
+    await message.answer(text=text, reply_markup=keyboard)
 
 
 @dp.callback_query_handler(lambda call: call.data.split(":")[0] == "view_order")
