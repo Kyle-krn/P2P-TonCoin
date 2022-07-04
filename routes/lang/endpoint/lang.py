@@ -47,7 +47,6 @@ async def get_text_bot_lang(request: Request,
         query &= Q(button=False)
     else:
         query &= Q(button=True)
-    # print(search.rus__iconatins)
     query &= await query_filters(search)
     lang = models.Lang.filter(query)
     limit = 5

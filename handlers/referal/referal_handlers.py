@@ -11,4 +11,4 @@ async def referal_handler(message: types.Message):
     text = text.format(link=f"https://t.me/TonCoinTestBot?start={user.uuid}")
 #     text = f"Пришлите ссылку на этот бот своему другу, и, если он зарегестрируется с "  \
 #             "вашим реферальным кодов {{ uuid текущего User }}, то вы получите 1 Toncoin на ваш счет"
-    await message.answer(text=text, reply_markup=referal_keyboards.referal_keyboard(user))
+    await message.answer(text=text, reply_markup=await referal_keyboards.referal_keyboard(user))

@@ -1,3 +1,4 @@
+from handlers.lang.lang_handers import change_lang_handler
 from loader import dp
 from aiogram import types
 from aiogram.dispatcher import FSMContext
@@ -17,15 +18,17 @@ async def cancel_state_handler(call: types.CallbackQuery, state: FSMContext):
 
 async def cancel_state_message(message: types.Message, state: FSMContext):
     await state.finish()
-    if message.text == "Кошелек":
+    if message.text in ("Кошелек", "Wallet"):
         return await main_wallet_handler(message)
-    elif message.text == "Продать Ton":
+    elif message.text in ("Продать Ton", "Sell Ton"):
         return await sell_ton_handler(message)
-    elif message.text == "Мои счета":
+    elif message.text in ("Мои счета", "My bank account"):
         return await payment_account_message_handler(message)
-    elif message.text == "Купить Ton":
+    elif message.text in ("Купить Ton", "Buy Ton"):
         return await buy_coin_hanlder(message)
-    elif message.text == "Мои активные заказы":
+    elif message.text in ("Мои активные заказы", "My active deals"):
         return await my_deals_handler(message)
-    elif message.text == "Реферальная система":
+    elif message.text in ("Реферальная система", "Referal system"):
         return await referal_handler(message)
+    elif message.text in ("Язык: ru", "Language: eng"):
+        return await change_lang_handler(message)

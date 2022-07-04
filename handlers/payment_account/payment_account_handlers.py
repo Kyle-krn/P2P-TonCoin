@@ -16,6 +16,7 @@ class PaymentAccountState(StatesGroup):
     data = State()
 
 @dp.message_handler(regexp="^(Мои счета)$")
+@dp.message_handler(regexp="^(My bank account)$")
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'back_my_pay_account')
 async def payment_account_message_handler(message: Union[types.Message, types.CallbackQuery]):
     if isinstance(message, types.CallbackQuery):

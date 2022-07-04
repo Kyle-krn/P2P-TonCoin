@@ -88,7 +88,7 @@ async def fee_state(message: types.Message, state:FSMContext):
     text = await models.Lang.get(uuid="10efd114-3a48-4bd4-986b-ac8f5ff207b9")
     text = text.rus if user.lang == "ru" else text.eng
     # text = "Выберите валюту, в которой вы хотите продать TonCoin:"
-    reply_markup = await currency_keyboards.currency_keyboard(callback="sell_coin_currency")
+    reply_markup = await currency_keyboards.currency_keyboard(callback="sell_coin_currency", user=user)
     message = await message.answer(text=text, reply_markup=reply_markup)
     await state.update_data(message=message)
 

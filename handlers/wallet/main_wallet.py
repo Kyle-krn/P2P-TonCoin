@@ -21,7 +21,7 @@ async def main_wallet_handler(message: types.Message):
     # text = "Кошелёк\n\n" \
     #        f"Баланс Toncoin: {user.balance} TON\n"  \
     #        f"Заморожено в заказах на продажу Toncoin: {user.frozen_balance} TON"
-    await message.answer(text=text, reply_markup=await wallet_keyboards.main_wallet_keyboard())
+    await message.answer(text=text, reply_markup=await wallet_keyboards.main_wallet_keyboard(user))
 
 
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'top_up')
