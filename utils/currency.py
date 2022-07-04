@@ -10,7 +10,6 @@ async def get_api_currency(currency: List[str]):
         async with session.get(url=url, params=params) as resp:
             res = await resp.json()
     res = res['data']
-    print(res)
     success_cur_list = []
     error_cur_list = []
     for cur in currency:

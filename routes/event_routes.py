@@ -5,6 +5,8 @@ from data.config import TORTOISE_ORM, WEBHOOK_URL
 from fastapi import APIRouter
 from starlette.responses import FileResponse
 
+from tasks import scheduler
+
 
 event_router = APIRouter()
     
@@ -22,6 +24,7 @@ async def on_startup():
             url=WEBHOOK_URL
         )
     await db.init(config=TORTOISE_ORM)
+    asyncio.create_task(scheduler())
 
 
 @event_router.post("/bot")
