@@ -19,7 +19,7 @@ async def add_pay_account_keyboard(user_payment_accounts: List[models.UserPaymen
         keyboard.add(types.InlineKeyboardButton(text=select_all_text.rus if user.lang == 'ru' else select_all_text.eng, 
                                                 callback_data="sell_coin_choice_pay_acc:all"))    
     
-    append_payments_text = await models.Lang.get(uuid="2b2ade30-9570-4f42-a955-e21ff25ae5b2")
+    append_payments_text = await models.Lang.get(uuid="953216e7-3945-490e-bd71-8aab610857f6")
     keyboard.add(types.InlineKeyboardButton(text=append_payments_text.rus if user.lang == 'ru' else append_payments_text.eng, 
                                             callback_data="sell_coin_add_pay_acc"))
     
