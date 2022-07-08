@@ -2,7 +2,8 @@ import asyncio
 import aiohttp
 import aioschedule
 from models import models
-from utils.currency import get_api_currency
+import utils.currency as currency_utils
+# from utils.currency import get_api_currency
 
 async def update_currency_ton():
     url = "https://api.coingecko.com/api/v3/simple/price"
@@ -19,7 +20,7 @@ async def update_currency_ton():
 async def update_rate_currency():
     rate_list = await models.Currency.exclude(name="TON").values("name")
     rate_list = [i['name'] for i in rate_list]
-    new_rate, _ = await get_api_currency(rate_list)
+    new_rate, _ = await currency_utils.get_all_currency(rate_list)
     for rate in new_rate:
         cur = await models.Currency.get(name=rate['code'])
         cur.exchange_rate = rate['value']

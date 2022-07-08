@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Request, Depends
 from loader import manager, templates
 from models import models
-from utils.models_utils import query_filters
-from utils.order_by import order_by_utils
-from utils.pagination import pagination
+# from utils.models_utils import query_filters
+# from utils.order_by import order_by_utils
+# from utils.pagination import pagination
+from utils import orm_utils
 from ..pydantic_models import SearchOrders
 from tortoise.queryset import Q
 
@@ -17,12 +18,12 @@ async def list_orders(request: Request,
                       staff = Depends(manager),
                       order_by: str = None,
                       page: int = 1):
-    query = await query_filters(search_orders)
+    query = await orm_utils.query_filters(search_orders)
     orders = models.Order.filter(query)
     limit = 30
-    offset, last_page, previous_page, next_page = pagination(limit=limit, page=page, count_model=await orders.count())
+    offset, last_page, previous_page, next_page = orm_utils.pagination(limit=limit, page=page, count_model=await orders.count())
     orders = orders.offset(offset).limit(limit)
-    order_by, order_by_args = order_by_utils(order_by)
+    order_by, order_by_args = orm_utils.order_by_utils(order_by)
     orders = orders.order_by(*order_by_args)
     orders = await orders.prefetch_related("seller", "customer", "parent", "currency")
     currencies = await models.Currency.exclude(name="TON")

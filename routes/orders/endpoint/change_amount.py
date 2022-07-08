@@ -6,7 +6,7 @@ from models import models
 from fastapi.responses import RedirectResponse
 from starlette import status
 from ..forms import UpdateOrderAmountForm
-from utils.pagination import pagination
+from utils import orm_utils
 
 change_amount_roter = APIRouter()
 
@@ -19,7 +19,7 @@ async def show_change_amount_order(request: Request,
     order = await models.Order.get(uuid=uuid).prefetch_related("seller", "customer", "currency", "children_order")
     change_amount_list = models.OrderAmountChange.filter(order=order)
     limit = 30
-    offset, last_page, previous_page, next_page = pagination(limit=limit, page=page, count_model=await change_amount_list.count())
+    offset, last_page, previous_page, next_page = orm_utils.pagination(limit=limit, page=page, count_model=await change_amount_list.count())
     change_amount_list = await change_amount_list.offset(offset).limit(limit).order_by("-created_at").prefetch_related("staff", "target_order")
     context = {'request': request,
                'params': request.query_params._dict,

@@ -10,15 +10,12 @@ async def validate_wallet(wallet_address):
             return res
 
 
-async def get_currency_ton():
-    # ?ids=the-open-network&vs_currencies=usd
-    url = "https://api.coingecko.com/api/v3/simple/price"
-    params = {'ids': "the-open-network", "vs_currencies": "usd"}
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url=url, params=params) as resp:
-            res = await resp.json()
-            return res['the-open-network']['usd']
+# async def get_currency_ton():
+#     # ?ids=the-open-network&vs_currencies=usd
+#     url = "https://api.coingecko.com/api/v3/simple/price"
+#     params = {'ids': "the-open-network", "vs_currencies": "usd"}
+#     async with aiohttp.ClientSession() as session:
+#         async with session.get(url=url, params=params) as resp:
+#             res = await resp.json()
+#             return res['the-open-network']['usd']
 
-
-if __name__ == '__main__':
-    print(asyncio.run(get_currency_ton()))

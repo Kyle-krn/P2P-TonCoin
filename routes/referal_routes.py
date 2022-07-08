@@ -8,9 +8,9 @@ from loader import flash, manager, templates
 from models import models
 from tortoise.queryset import Q
 import starlette.status as status
-from utils.order_by import order_by_utils
-
-from utils.pagination import pagination
+# from utils.order_by import order_by_utils
+from utils import orm_utils
+# from utils.pagination import pagination
 
 referal_router = APIRouter()
 
@@ -152,8 +152,8 @@ async def user_detail(request: Request,
     send_referal = models.UserReferalBonus.filter(query) #.
 
     limit = 30
-    offset, last_page, previous_page, next_page = pagination(limit=limit, page=page, count_model=await send_referal.count())
-    order_by, order_by_args = order_by_utils(order_by)
+    offset, last_page, previous_page, next_page = orm_utils.pagination(limit=limit, page=page, count_model=await send_referal.count())
+    order_by, order_by_args = orm_utils.order_by_utils(order_by)
     send_referal = send_referal.order_by(*order_by_args).offset(offset).limit(limit)
 
     send_referal = await send_referal.offset(offset).limit(limit).prefetch_related("invited_user", "user")

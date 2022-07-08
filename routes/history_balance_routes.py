@@ -9,9 +9,9 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 import starlette.status as status
 from loader import templates, flash, manager
 from tortoise.queryset import Q
-from utils.order_by import order_by_utils
+from utils import orm_utils
 
-from utils.pagination import pagination
+# from utils.pagination import pagination
 
 history_balance_router = APIRouter()
 
@@ -103,8 +103,8 @@ async def user_detail(request: Request,
     history_balance = models.UserBalanceChange.filter(query)
 
     limit = 30
-    offset, last_page, previous_page, next_page = pagination(limit=limit, page=page, count_model=await history_balance.count())
-    order_by, order_by_args = order_by_utils(order_by)
+    offset, last_page, previous_page, next_page = orm_utils.pagination(limit=limit, page=page, count_model=await history_balance.count())
+    order_by, order_by_args = orm_utils.order_by_utils(order_by)
     history_balance = history_balance.order_by(*order_by_args).offset(offset).limit(limit)
     
     

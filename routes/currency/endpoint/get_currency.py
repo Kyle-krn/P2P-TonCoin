@@ -2,9 +2,10 @@ from fastapi.responses import HTMLResponse
 from fastapi import APIRouter, Depends, Request
 from loader import templates, manager
 from models import models
-from utils.models_utils import query_filters
-from utils.order_by import order_by_utils
-from utils.pagination import pagination
+# from utils.models_utils import query_filters
+# from utils.order_by import order_by_utils
+# from utils.pagination import pagination
+from utils import orm_utils
 from ..pydantic_models import CurrencySearch
 
 get_currency_router = APIRouter()
@@ -17,11 +18,11 @@ async def get_currency(request: Request,
                        page: int = 1
                         ):
     ton_currency = await models.Currency.get(name="TON")
-    query = await query_filters(search)
+    query = await orm_utils.query_filters(search)
     currencies = models.Currency.filter(query).exclude(name="TON")
     limit = 30
-    offset, last_page, previous_page, next_page = pagination(limit=limit, page=page, count_model=await currencies.count())
-    order_by, order_by_args = order_by_utils(order_by)
+    offset, last_page, previous_page, next_page = orm_utils.pagination(limit=limit, page=page, count_model=await currencies.count())
+    order_by, order_by_args = orm_utils.order_by_utils(order_by)
 
     currencies = currencies.order_by(*order_by_args).offset(offset).limit(limit)
     

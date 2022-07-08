@@ -6,7 +6,8 @@ from models import models
 from fastapi.responses import RedirectResponse
 from starlette import status
 from ..forms import UpdateOrderStateForm
-from utils.pagination import pagination
+# from utils.pagination import pagination
+from utils import orm_utils
 
 change_state_roter = APIRouter()
 
@@ -18,7 +19,7 @@ async def show_change_state_order(request: Request,
     order = await models.Order.get(uuid=uuid).prefetch_related("seller", "customer", "currency", "children_order")
     change_state_list = models.OrderStateChange.filter(order=order)
     limit = 30
-    offset, last_page, previous_page, next_page = pagination(limit=limit, page=page, count_model=await change_state_list.count())
+    offset, last_page, previous_page, next_page = orm_utils.pagination(limit=limit, page=page, count_model=await change_state_list.count())
     change_state_list = await change_state_list.offset(offset).limit(limit).order_by("-created_at").prefetch_related("staff")
     context = {'request': request,
                'params': request.query_params._dict,

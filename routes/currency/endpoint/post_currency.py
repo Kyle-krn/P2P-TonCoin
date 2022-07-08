@@ -1,11 +1,13 @@
 
+from locale import currency
 from uuid import UUID
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
 from loader import flash, manager
 from models import models
 from starlette import status
-from utils.currency import get_api_currency
+import utils.currency as currency_utils
+# from utils.currency import get_api_currency
 from utils.utils import str_bool
 from tortoise.exceptions import DoesNotExist
 import utils.exceptions as custom_exc
@@ -79,7 +81,7 @@ async def update_currency(request: Request,
         if cur in exsists_currency:
             error_exsists.append(cur)
     cur_list = [i for i in cur_list if i not in error_exsists]
-    success_cur_list, error_cur_list = await get_api_currency(currency=cur_list)
+    success_cur_list, error_cur_list = await currency_utils.get_all_currency(currency=cur_list)
     if len(error_exsists) > 0:
         flash(request, f"Already exsists: {', '.join(error_exsists)}", "danger")
     if len(error_cur_list) > 0:

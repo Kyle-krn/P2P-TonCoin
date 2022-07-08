@@ -7,9 +7,10 @@ from models import models
 from loader import templates, manager
 from fastapi.responses import RedirectResponse
 from starlette import status
-from utils.models_utils import query_filters
-from utils.order_by import order_by_utils
-from utils.pagination import pagination
+# from utils.models_utils import query_filters
+# from utils.order_by import order_by_utils
+# from utils.pagination import pagination
+from utils import orm_utils
 from tortoise.queryset import Q
 
 lang_bot_text_router = APIRouter()
@@ -47,11 +48,11 @@ async def get_text_bot_lang(request: Request,
         query &= Q(button=False)
     else:
         query &= Q(button=True)
-    query &= await query_filters(search)
+    query &= await orm_utils.query_filters(search)
     lang = models.Lang.filter(query)
     limit = 30
-    offset, last_page, previous_page, next_page = pagination(limit=limit, page=page, count_model=await lang.count())
-    order_by, order_by_args = order_by_utils(order_by)
+    offset, last_page, previous_page, next_page = orm_utils.pagination(limit=limit, page=page, count_model=await lang.count())
+    order_by, order_by_args = orm_utils.order_by_utils(order_by)
 
     lang = lang.order_by(*order_by_args).offset(offset).limit(limit)
 

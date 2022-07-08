@@ -3,9 +3,10 @@ from fastapi import Depends, Request
 from fastapi.responses import HTMLResponse
 from models import models
 from loader import templates, manager
-from utils.models_utils import query_filters
-from utils.order_by import order_by_utils
-from utils.pagination import pagination
+from utils import orm_utils
+# from utils.models_utils import query_filters
+# from utils.order_by import order_by_utils
+# from utils.pagination import pagination
 from ..pydantic_models import UsersSearch
 
 
@@ -20,12 +21,12 @@ async def users_list(request: Request,
                      page: int = 1
                     ):
     print(page)
-    query = await query_filters(search)
+    query = await orm_utils.query_filters(search)
     users = models.User.filter(query)
     limit = 30
-    offset, last_page, previous_page, next_page = pagination(limit=limit, page=page, count_model=await users.count())
+    offset, last_page, previous_page, next_page = orm_utils.pagination(limit=limit, page=page, count_model=await users.count())
     users = users.offset(offset).limit(limit)
-    order_by, order_by_args = order_by_utils(order_by)
+    order_by, order_by_args = orm_utils.order_by_utils(order_by)
     users = await users.order_by(*order_by_args)
     context = {"request": request, 
                "users": users,

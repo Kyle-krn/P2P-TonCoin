@@ -8,9 +8,10 @@ from models import models
 from tortoise.queryset import Q
 from tortoise.exceptions import DoesNotExist
 import starlette.status as status
-from utils.models_utils import query_filters
-from utils.order_by import order_by_utils
-from utils.search_db_json import rowsql_get_distinct_list_value
+from utils import orm_utils
+# from utils.models_utils import query_filters
+# from utils.order_by import order_by_utils
+# from utils.search_db_json import rowsql_get_distinct_list_value
 from utils.utils import str_bool
 from tortoise.exceptions import DoesNotExist
 from ..forms import CreatePaymentsTypeForm
@@ -26,9 +27,9 @@ async def payments_account_type(request: Request,
                                 order_by: str = None,
                                 staff: models.Staff = Depends(manager)):
     currencies = await models.Currency.exclude(name="TON")
-    query = await query_filters(search)
+    query = await orm_utils.query_filters(search)
     if search.data__json:
-        uuid_list = await rowsql_get_distinct_list_value(search.data__json, table="user_payment_account_type")
+        uuid_list = await orm_utils.rowsql_get_distinct_list_value(search.data__json, table="user_payment_account_type")
         uuid_list = [i['uuid'] for i in uuid_list]
         query &= Q(uuid__in=uuid_list)
 
