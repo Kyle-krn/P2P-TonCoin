@@ -16,7 +16,7 @@ from utils.utils import str_bool
 from tortoise.exceptions import DoesNotExist
 from ..forms import CreatePaymentsTypeForm
 from ..pydantic_models import PaymentsTypeSearch
-import utils.exceptions as custom_exc
+from utils import custom_exc, orm_utils 
 
 payments_type_router = APIRouter()
 
@@ -34,7 +34,7 @@ async def payments_account_type(request: Request,
         query &= Q(uuid__in=uuid_list)
 
     payment_types = models.UserPaymentAccountType.filter(query)
-    order_by, order_by_args = order_by_utils(order_by)
+    order_by, order_by_args = orm_utils.order_by_utils(order_by)
     payment_types = payment_types.order_by(*order_by_args)
 
     payment_types = await payment_types.prefetch_related("currency")
