@@ -19,7 +19,7 @@ async def get_currency(request: Request,
     ton_currency = await models.Currency.get(name="TON")
     query = await query_filters(search)
     currencies = models.Currency.filter(query).exclude(name="TON")
-    limit = 5
+    limit = 30
     offset, last_page, previous_page, next_page = pagination(limit=limit, page=page, count_model=await currencies.count())
     order_by, order_by_args = order_by_utils(order_by)
 

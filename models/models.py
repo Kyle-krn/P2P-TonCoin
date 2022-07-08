@@ -102,7 +102,9 @@ class UserPaymentAccountType(Model):
     data = fields.JSONField()
     is_active: bool = fields.BooleanField()
     created_at: datetime = fields.DatetimeField(auto_now_add=True)
+
     payments_account: fields.ReverseRelation['UserPaymentAccount']
+    customer_pay_type: fields.ReverseRelation['Order']
 
     class Meta:
         table = "user_payment_account_type"
@@ -168,6 +170,7 @@ class Order(Model):
     order_user_payment_account: fields.ReverseRelation["OrderUserPaymentAccount"]
     children_order: fields.ReverseRelation["Order"]
     payment_operation: fields.ReverseRelation["PaymentOperation"]
+    proof_problem_order: fields.ReverseRelation['ProblemOrderProof']
     
     class Meta:
         table = "order"

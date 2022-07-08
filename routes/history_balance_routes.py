@@ -102,7 +102,7 @@ async def user_detail(request: Request,
     
     history_balance = models.UserBalanceChange.filter(query)
 
-    limit = 5
+    limit = 30
     offset, last_page, previous_page, next_page = pagination(limit=limit, page=page, count_model=await history_balance.count())
     order_by, order_by_args = order_by_utils(order_by)
     history_balance = history_balance.order_by(*order_by_args).offset(offset).limit(limit)

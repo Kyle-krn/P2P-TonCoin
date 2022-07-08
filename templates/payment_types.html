@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% block body %}
-<h3 class="text-center">Payments types:</h3>
+<h3 class="text-center">Payments types:
+    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#exampleModal">
+        ➕
+    </button>
+</h3>
 <div class="accordion" id="accordionExample">
     <div class="accordion-item">
       <h2 class="accordion-header" id="headingOne">
@@ -164,10 +168,12 @@
                 </select>
             </td>
             <td>{{ payment_type.created_at | format_date }}</td>
+            <td><a class="btn btn-danger" href="/delete_payments_account_type/{{payment_type.uuid}}{{ params|get_urlencode }}" role="button">Delete</a></td>
 
             </tr>
             {% endfor %}
             <tr>
+                <td></td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -182,4 +188,60 @@
         </tbody>
     </table>
     </div>
+
+
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              
+              <form action="/create_payments_account_type{{ params|get_urlencode }}" method="post">
+                <label for="" class="form-label">Name:</label>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" name="name" required>
+                </div>
+                
+                <label for="" class="form-label">Rus:</label>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" name="rus">
+                </div>
+                
+                <label for="" class="form-label">Eng:</label>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" name="eng">
+                </div>
+
+                <label for="" class="form-label">Data:</label>
+                <textarea name="data" class="form-control" id="" 
+                    cols="30" rows="3" required></textarea>
+                
+                <label for="" class="form-label">Currency:</label>
+                <select name="currency_id" class="form-select">
+                    {% for currency in currencies %} 
+                        <option value="{{currency.uuid}}">{{currency.name}}</option>
+                    {% endfor %}
+                </select>
+
+
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="is_active" value=True>
+                    <label class="form-check-label" for="flexCheckDefault">
+                        Is active
+                    </label>
+                    </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-success">Create</button>
+            </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    
+
 {% endblock %}

@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 .idea/*
 # .env
+static/problem_order

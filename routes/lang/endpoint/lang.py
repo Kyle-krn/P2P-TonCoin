@@ -49,7 +49,7 @@ async def get_text_bot_lang(request: Request,
         query &= Q(button=True)
     query &= await query_filters(search)
     lang = models.Lang.filter(query)
-    limit = 5
+    limit = 30
     offset, last_page, previous_page, next_page = pagination(limit=limit, page=page, count_model=await lang.count())
     order_by, order_by_args = order_by_utils(order_by)
 

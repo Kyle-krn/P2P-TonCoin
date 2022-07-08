@@ -18,12 +18,13 @@ async def show_change_amount_order(request: Request,
                              staff: models.Staff = Depends(manager)):
     order = await models.Order.get(uuid=uuid).prefetch_related("seller", "customer", "currency", "children_order")
     change_amount_list = models.OrderAmountChange.filter(order=order)
-    limit = 5
+    limit = 30
     offset, last_page, previous_page, next_page = pagination(limit=limit, page=page, count_model=await change_amount_list.count())
     change_amount_list = await change_amount_list.offset(offset).limit(limit).order_by("-created_at").prefetch_related("staff", "target_order")
     context = {'request': request,
                'params': request.query_params._dict,
                "order": order,
+               "proof": await order.proof_problem_order.all().first(),
                "order_change_amount": change_amount_list,
                "page": page,
                "last_page": last_page,

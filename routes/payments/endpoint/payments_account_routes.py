@@ -7,16 +7,17 @@ from loader import flash, templates, manager
 from models import models
 from tortoise.queryset import Q
 import starlette.status as status
+from ..forms import CreatePaymentsAccountForm
 from utils.models_utils import query_filters
 from utils.order_by import order_by_utils
 from utils.pagination import pagination
 from utils.search_db_json import rowsql_get_distinct_list_value
 from utils.utils import str_bool
 from ..pydantic_models import PaymentsAccountSearch
+from ..exceptions import OrderPaymentsAccountNotEmpty
 
 
 payment_account_router = APIRouter()
-
     
 
 @payment_account_router.get('/user_payments_account/{user_uuid}')
@@ -45,7 +46,7 @@ async def user_payment_account(request: Request,
 
     payments_account = payments_account.filter(query)
 
-    limit = 5
+    limit = 30
     offset, last_page, previous_page, next_page = pagination(limit=limit, page=page, count_model=await payments_account.count())
     payments_account = payments_account.offset(offset).limit(limit)
     
@@ -81,28 +82,18 @@ async def user_payment_account(request: Request,
 @payment_account_router.post('/create_payments_account')
 async def create_payments_account(request: Request,
                                   redirect_uuid: UUID = Form(None),
-                                  user_uuid: UUID = Form(),
-                                  type_uuid: UUID = Form(),
-                                  data: str = Form(),
-                                  is_active: bool = Form(False),
                                   staff: models.Staff = Depends(manager)):
-    try:
-        user = await models.User.get(uuid=user_uuid)
-        while "'" in data:
-            data = data.replace("'", '"')
-        json_data = json.loads(data)
-    except (json.decoder.JSONDecodeError, DoesNotExist) as exc:
-        if isinstance(exc,json.decoder.JSONDecodeError):
-            flash(request, f"Invalid JSON: {data}", 'danger')
-        else:
-            flash(request, f"Not found user: {user_uuid}", 'danger')
+    form = CreatePaymentsAccountForm(request)
+    await form.load_data()
+    if await form.is_valid():
+        await models.UserPaymentAccount.create(user_id=form.user_uuid,
+                                                   type_id=form.type_uuid,
+                                                   data=form.data,
+                                                   is_active=form.is_active)
+        flash(request, "Success created", "success")
     else:
-        await models.UserPaymentAccount.create(user=user, 
-                                               type_id=type_uuid, 
-                                               data=data, 
-                                               is_active=is_active)
-        flash(request, "Success", 'success')
-    
+        form.flash_error()
+   
     params = request.query_params
     if params != "":
         params = "?" + str(params)
@@ -111,8 +102,6 @@ async def create_payments_account(request: Request,
         redirect_url + params, 
         status_code=status.HTTP_302_FOUND)  
 
-
-        
 
 @payment_account_router.post('/update_payments_account')
 async def user_payments_account(request: Request,
@@ -154,3 +143,29 @@ async def user_payments_account(request: Request,
     return RedirectResponse(
         redirect_url + params, 
         status_code=status.HTTP_302_FOUND)  
+
+
+
+@payment_account_router.get('/delete_payments_account/{payments_account_uuid}')
+async def delete_payments_account(request: Request,
+                                 payments_account_uuid: UUID,
+                                 staff: models.Staff = Depends(manager)):
+    try:
+        payments_account = await models.UserPaymentAccount.get(uuid=payments_account_uuid)
+        order_user_payment_account = await payments_account.order_user_payment_account.all()
+        if len(order_user_payment_account) > 0:
+            raise OrderPaymentsAccountNotEmpty
+       
+        await payments_account.delete()
+
+    except (OrderPaymentsAccountNotEmpty, DoesNotExist) as exc:
+        if isinstance(exc, OrderPaymentsAccountNotEmpty):
+            flash(request, "Платежный аккаунт имеет заказы", "danger")
+        if isinstance(exc, DoesNotExist):
+            flash(request, "Аккаунт не найден", "danger")
+    params = request.query_params
+    if params != "":
+        params = "?" + str(params)
+    return RedirectResponse(
+        request.url_for('user_payment_account') + params, 
+        status_code=status.HTTP_302_FOUND) 

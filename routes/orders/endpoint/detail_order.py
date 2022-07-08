@@ -20,7 +20,8 @@ async def order_detail(request: Request,
     context = {"request": request,
                "order": order,
                "params": request.query_params._dict,
-               "currencies": currencies}
+               "currencies": currencies,
+               "proof": await order.proof_problem_order.all().first()}
     return templates.TemplateResponse("orders/detail_order.html", context)
 
 

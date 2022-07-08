@@ -19,7 +19,7 @@ async def list_orders(request: Request,
                       page: int = 1):
     query = await query_filters(search_orders)
     orders = models.Order.filter(query)
-    limit = 5
+    limit = 30
     offset, last_page, previous_page, next_page = pagination(limit=limit, page=page, count_model=await orders.count())
     orders = orders.offset(offset).limit(limit)
     order_by, order_by_args = order_by_utils(order_by)

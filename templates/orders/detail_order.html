@@ -130,6 +130,16 @@
         <td class="text-center"><button type="submit" class="btn btn-success btn-sm">Update</button></td>
       </form>
       </tr>
+      {% if proof != None %}
+      <tr>
+        <td class="text-center"><b>Proof:</b></td>
+        <td class="text-center">
+          <a class="btn btn-primary btn-sm" href="{{proof.file_path}}" role="button" download>Download proof</a>
+
+      </td>
+      </form>
+      </tr>
+      {% endif %}
       </tbody>
 </table>
 
@@ -192,5 +202,8 @@
 
 {% block order_relation %}
 {% endblock %}
+
+
+
 
 {% endblock %}

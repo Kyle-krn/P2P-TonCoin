@@ -6,12 +6,16 @@ from fastapi import APIRouter, Depends, Request
 from loader import flash, templates, manager
 from models import models
 from tortoise.queryset import Q
+from tortoise.exceptions import DoesNotExist
 import starlette.status as status
 from utils.models_utils import query_filters
 from utils.order_by import order_by_utils
 from utils.search_db_json import rowsql_get_distinct_list_value
 from utils.utils import str_bool
+from tortoise.exceptions import DoesNotExist
+from ..forms import CreatePaymentsTypeForm
 from ..pydantic_models import PaymentsTypeSearch
+from ..exceptions import OrderNotEmpty, PaymentsAccountNotEmpty
 
 payments_type_router = APIRouter()
 
@@ -118,24 +122,55 @@ async def update_payment_types(request: Request,
 
 
 
+@payments_type_router.post('/create_payments_account_type')
+async def create_payments_account_type(request: Request,
+                                  staff: models.Staff = Depends(manager)):
+    form = CreatePaymentsTypeForm(request)
+    await form.load_data()
+    if await form.is_valid():
+        type = await models.UserPaymentAccountType.create(name=form.name, 
+                                                   data=form.data, 
+                                                   is_active=form.is_active,
+                                                   currency_id=form.currency_id)
+        if form.rus and form.eng:
+            await models.Lang.create(target_table="user_payment_account_type", target_uuid=type.uuid)
+        flash(request, "Success create", "success")
+    else:
+        form.flash_error()
+    params = request.query_params
+    
+    if params != "":
+        params = "?" + str(params)
+    return RedirectResponse(
+        request.url_for('payments_account_type') + params, 
+        status_code=status.HTTP_302_FOUND) 
 
-# @payments_type_router.get("/sort/payments_account_type/{column}", response_class=RedirectResponse)
-# async def sort_user(request: Request,
-#                     column: str,
-#                     user_uuid: UUID = None,
-#                     staff: models.Staff = Depends(manager)):
-#     params = request.query_params._dict
-#     if "order_by" not in params:
-#         if column[0] != "~":
-#             params['order_by'] = [column]
-#     else:
-#         params['order_by'] = ast.literal_eval(params['order_by'])
-#         column_name = column[1:] 
-        
-#         if column[0] == "~" and len([i for i in params["order_by"] if column_name == i[1:]]) > 0:
-#             params["order_by"] = [i for i in params["order_by"] if column_name != i[1:]]
-#         elif column[0] != "~":
-#             params["order_by"] = [i for i in params["order_by"] if column_name != i[1:]]
-#             params["order_by"].append(column)
-#     redirect_url = request.url.path.split('/')[2]
-#     return f'/{redirect_url}?' + urlencode(params)
+
+
+
+@payments_type_router.get('/delete_payments_account_type/{type_uuid}')
+async def delete_payments_account_type(request: Request,
+                                       type_uuid: UUID,
+                                       staff: models.Staff = Depends(manager)):
+    try:
+        type = await models.UserPaymentAccountType.get(uuid=type_uuid)
+        payments_account = await type.payments_account.all()
+        if len(payments_account) > 0:
+            raise PaymentsAccountNotEmpty
+        orders = await type.customer_pay_type.all()
+        if len(orders) > 0:
+            raise OrderNotEmpty
+        await type.delete()
+    except (PaymentsAccountNotEmpty, OrderNotEmpty, DoesNotExist) as exc:
+        if isinstance(exc, PaymentsAccountNotEmpty):
+            flash(request, "Тип имеет платежные аккаунты", "danger")
+        if isinstance(exc, OrderNotEmpty):
+            flash(request, "Тип имеет заказы", "danger")
+        if isinstance(exc, DoesNotExist):
+            flash(request, "Тип не найден", "danger")
+    params = request.query_params
+    if params != "":
+        params = "?" + str(params)
+    return RedirectResponse(
+        request.url_for('payments_account_type') + params, 
+        status_code=status.HTTP_302_FOUND) 

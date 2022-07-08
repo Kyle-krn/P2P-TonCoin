@@ -22,7 +22,7 @@ async def users_list(request: Request,
     print(page)
     query = await query_filters(search)
     users = models.User.filter(query)
-    limit = 5
+    limit = 30
     offset, last_page, previous_page, next_page = pagination(limit=limit, page=page, count_model=await users.count())
     users = users.offset(offset).limit(limit)
     order_by, order_by_args = order_by_utils(order_by)

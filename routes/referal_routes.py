@@ -151,7 +151,7 @@ async def user_detail(request: Request,
         search['max_created_at'] = max_created_at
     send_referal = models.UserReferalBonus.filter(query) #.
 
-    limit = 5
+    limit = 30
     offset, last_page, previous_page, next_page = pagination(limit=limit, page=page, count_model=await send_referal.count())
     order_by, order_by_args = order_by_utils(order_by)
     send_referal = send_referal.order_by(*order_by_args).offset(offset).limit(limit)

@@ -44,7 +44,6 @@ async def seller_approved_funds_handler(call: types.CallbackQuery):
     await bot.send_message(seller.telegram_id, text=seller_text)
     await bot.send_message(customer.telegram_id, text=customer_text)
 
-
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'problem_seller_no_funds')
 async def problem_seller_no_funds_handler(call: types.CallbackQuery):
     '''Продавец сообщает о том что средства не поступили'''

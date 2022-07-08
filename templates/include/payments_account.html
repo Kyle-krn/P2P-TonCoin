@@ -220,6 +220,8 @@
     </td>
     <td>{{account.updated_at | format_date}}</td>
     <td>{{account.created_at | format_date}}</td>
+    <td><a class="btn btn-danger" href="/delete_payments_account/{{account.uuid}}{{ params|get_urlencode }}" role="button">Delete</a></td>
+
     </tr>   
     {% else %} 
     <tr>
@@ -234,6 +236,7 @@
     </tr>
     {% endfor %}
     <tr>
+        <td></td>
         <td></td>
         <td></td>
         <td></td>
@@ -284,7 +287,7 @@
             </div>
               <label for="" class="form-label">Data:</label>
               <textarea name="data" class="form-control" id="" 
-                  cols="30" rows="3"></textarea>
+                  cols="30" rows="3" required></textarea>
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" name="is_active" id="flexCheckDefault">
                     <label class="form-check-label" for="flexCheckDefault">

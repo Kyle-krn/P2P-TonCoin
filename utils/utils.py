@@ -5,3 +5,4 @@ def str_bool(str_bool: str):
         return False
     if str_bool == 'None':
         return None
+    
