@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import imp
 from urllib.parse import urlencode
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -14,7 +15,7 @@ from starlette.middleware.sessions import SessionMiddleware
 import typing
 from fastapi_login import LoginManager
 from models import models
-from utils.exceptions import NotAuthenticatedException
+import utils.exceptions as custom_exc 
 
 bot = Bot(token=config.BOT_TOKEN, parse_mode=types.ParseMode.HTML)
 storage = MemoryStorage()
@@ -31,7 +32,7 @@ manager = LoginManager(SECRET,
                        token_url="/auth/login",
                        use_cookie=True, 
                        default_expiry=timedelta(hours=12),
-                       custom_exception=NotAuthenticatedException)
+                       custom_exception=custom_exc.NotAuthenticatedException)
                        
 manager.cookie_name = "access_token"
 

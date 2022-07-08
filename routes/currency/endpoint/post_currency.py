@@ -7,7 +7,8 @@ from models import models
 from starlette import status
 from utils.currency import get_api_currency
 from utils.utils import str_bool
-
+from tortoise.exceptions import DoesNotExist
+import utils.exceptions as custom_exc
 
 post_currency_router = APIRouter()
 
@@ -93,5 +94,41 @@ async def update_currency(request: Request,
     return RedirectResponse(
         request.url_for('get_currency'), 
         status_code=status.HTTP_302_FOUND)
+
+
+
+@post_currency_router.get('/delete_currency/{currency_uuid}', response_class=RedirectResponse)
+async def delete_currency(request: Request,
+                          currency_uuid: UUID,
+                          ):
+    try:
+        currency = await models.Currency.get(uuid=currency_uuid)
+        if currency.name == "TON":
+            raise custom_exc.CurrencyTonDelete
+        payments_account = await currency.user_payment_account_type.all()
+        if len(payments_account) > 0:
+            raise custom_exc.PaymentsAccountNotEmpty
+        orders = await currency.orders.all()
+        if len(orders) > 0:
+            raise custom_exc.OrderNotEmpty 
+        
+        flash(request, f"{currency.name} deleted", "success")
+        await currency.delete()
+        
+    except (DoesNotExist, custom_exc.PaymentsAccountNotEmpty) as exc:
+        if isinstance(exc, DoesNotExist):
+            flash(request, "Currency not found", "danger")
+        elif isinstance(exc, custom_exc.PaymentsAccountNotEmpty):
+            flash(request, "У валюты существуют платежные аккаунты", "danger")
+        elif isinstance(exc, custom_exc.OrderNotEmpty):
+            flash(request, "У валюты существуют заказы", "danger")
+    
+    return RedirectResponse(
+        request.url_for('get_currency'), 
+        status_code=status.HTTP_302_FOUND)
+
+        
+
+
 
 

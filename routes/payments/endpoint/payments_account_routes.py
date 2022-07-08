@@ -1,3 +1,4 @@
+import imp
 import json
 from fastapi.responses import RedirectResponse
 from uuid import UUID
@@ -14,7 +15,9 @@ from utils.pagination import pagination
 from utils.search_db_json import rowsql_get_distinct_list_value
 from utils.utils import str_bool
 from ..pydantic_models import PaymentsAccountSearch
-from ..exceptions import OrderPaymentsAccountNotEmpty
+import utils.exceptions as custom_exc 
+
+
 
 
 payment_account_router = APIRouter()
@@ -154,12 +157,12 @@ async def delete_payments_account(request: Request,
         payments_account = await models.UserPaymentAccount.get(uuid=payments_account_uuid)
         order_user_payment_account = await payments_account.order_user_payment_account.all()
         if len(order_user_payment_account) > 0:
-            raise OrderPaymentsAccountNotEmpty
+            raise custom_exc.OrderPaymentsAccountNotEmpty
        
         await payments_account.delete()
 
-    except (OrderPaymentsAccountNotEmpty, DoesNotExist) as exc:
-        if isinstance(exc, OrderPaymentsAccountNotEmpty):
+    except (custom_exc.OrderPaymentsAccountNotEmpty, DoesNotExist) as exc:
+        if isinstance(exc, custom_exc.OrderPaymentsAccountNotEmpty):
             flash(request, "Платежный аккаунт имеет заказы", "danger")
         if isinstance(exc, DoesNotExist):
             flash(request, "Аккаунт не найден", "danger")

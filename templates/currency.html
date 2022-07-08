@@ -178,6 +178,7 @@
             </select>
         </td>
         <td>{{ currency.created_at | format_date }}</td>
+        <td><a class="btn btn-danger btn-sm" href="/delete_currency/{{currency.uuid}}" role="button">Delete</a></td>
         <!-- <td>
             <select name="delete" class="form-select" aria-label="Is active">
                 <option value="True">Yes</option>
@@ -187,6 +188,7 @@
         </tr>
         {% endfor %}
         <tr>
+            <td></td>
             <td></td>
             <td></td>
             <td></td>

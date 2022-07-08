@@ -15,7 +15,7 @@ from utils.utils import str_bool
 from tortoise.exceptions import DoesNotExist
 from ..forms import CreatePaymentsTypeForm
 from ..pydantic_models import PaymentsTypeSearch
-from ..exceptions import OrderNotEmpty, PaymentsAccountNotEmpty
+import utils.exceptions as custom_exc
 
 payments_type_router = APIRouter()
 
@@ -156,15 +156,15 @@ async def delete_payments_account_type(request: Request,
         type = await models.UserPaymentAccountType.get(uuid=type_uuid)
         payments_account = await type.payments_account.all()
         if len(payments_account) > 0:
-            raise PaymentsAccountNotEmpty
+            raise custom_exc.PaymentsAccountNotEmpty
         orders = await type.customer_pay_type.all()
         if len(orders) > 0:
-            raise OrderNotEmpty
+            raise custom_exc.OrderNotEmpty
         await type.delete()
-    except (PaymentsAccountNotEmpty, OrderNotEmpty, DoesNotExist) as exc:
-        if isinstance(exc, PaymentsAccountNotEmpty):
+    except (custom_exc.PaymentsAccountNotEmpty, custom_exc.OrderNotEmpty, DoesNotExist) as exc:
+        if isinstance(exc, custom_exc.PaymentsAccountNotEmpty):
             flash(request, "Тип имеет платежные аккаунты", "danger")
-        if isinstance(exc, OrderNotEmpty):
+        if isinstance(exc, custom_exc.OrderNotEmpty):
             flash(request, "Тип имеет заказы", "danger")
         if isinstance(exc, DoesNotExist):
             flash(request, "Тип не найден", "danger")

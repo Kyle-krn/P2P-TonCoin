@@ -88,7 +88,9 @@ class Currency(Model):
     exchange_rate: Decimal = fields.DecimalField(max_digits=1000, decimal_places=2)
     is_active: bool = fields.BooleanField()
     created_at: datetime = fields.DatetimeField(auto_now_add=True)
+
     user_payment_account_type: fields.ReverseRelation["UserPaymentAccountType"]
+    orders: fields.ReverseRelation['Order']
     class Meta:
         table = "currency"
 
