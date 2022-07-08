@@ -10,8 +10,7 @@ from tortoise.queryset import Q
 import starlette.status as status
 from ..forms import CreatePaymentsAccountForm
 from ..pydantic_models import PaymentsAccountSearch
-import utils.exceptions as custom_ex 
-
+from utils import orm_utils, utils, custom_exc
 
 
 
@@ -35,9 +34,9 @@ async def user_payment_account(request: Request,
         user = None
         query = Q()
 
-    query &= await query_filters(search)
+    query &= await orm_utils.query_filters(search)
     if search.data__json:
-        uuid_list = await rowsql_get_distinct_list_value(search.data__json, table="user_payment_account")
+        uuid_list = await orm_utils.rowsql_get_distinct_list_value(search.data__json, table="user_payment_account")
         uuid_list = [i['uuid'] for i in uuid_list]
         query &= Q(uuid__in=uuid_list)
 
@@ -47,13 +46,13 @@ async def user_payment_account(request: Request,
     payments_account = payments_account.filter(query)
 
     limit = 30
-    offset, last_page, previous_page, next_page = pagination(limit=limit, page=page, count_model=await payments_account.count())
+    offset, last_page, previous_page, next_page = orm_utils.pagination(limit=limit, page=page, count_model=await payments_account.count())
     payments_account = payments_account.offset(offset).limit(limit)
     
     currency = await models.Currency.exclude(name="TON")
     payments_type = await models.UserPaymentAccountType.filter().prefetch_related("currency")
 
-    order_by, order_by_args = order_by_utils(order_by)
+    order_by, order_by_args = orm_utils.order_by_utils(order_by)
     payments_account = payments_account.order_by(*order_by_args)
 
     payments_account = await payments_account.prefetch_related("type__currency", "user")
@@ -127,7 +126,7 @@ async def user_payments_account(request: Request,
         except json.decoder.JSONDecodeError:
             json_data = payment_account.data
             flash(request, f"Invalid JSON - {data}", "danger")
-        is_active = str_bool(form_list[indx+4][1])
+        is_active = utils.str_bool(form_list[indx+4][1])
         payment_account.update_from_dict({'user_id': user_uuid,
                                         'data': json_data,
                                         'type_id': type_uuid,
