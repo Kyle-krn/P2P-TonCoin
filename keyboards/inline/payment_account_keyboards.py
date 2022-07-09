@@ -23,9 +23,11 @@ async def list_payment_account_keyboard(user: models.User):
     return keyboard
 
 
-async def choice_payment_keyboard(callback: str, currency: models.Currency, user: models.User):
+async def choice_payment_keyboard(callback: str, 
+                                  currency: models.Currency, 
+                                  user: models.User):
     keyboard = types.InlineKeyboardMarkup()
-    currency_type_payments = await models.UserPaymentAccountType.filter(currency=currency)
+    currency_type_payments = await models.UserPaymentAccountType.filter(Q(currency=currency) & Q(is_active=True))
     back_text = await models.Lang.get(uuid="eef933b0-e3bc-46ed-8461-8226fd5f090f")
     for type_payment in currency_type_payments:
         name = type_payment.name

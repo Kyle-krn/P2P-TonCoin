@@ -30,19 +30,18 @@ async def my_deals_handler(message: Union[types.Message, types.CallbackQuery]):
         last_page = int(last_page)
     elif count_deals % limit != 0:
         last_page = int(last_page + 1)
-
     orders = await orders.offset(offset).limit(limit).order_by("-created_at")
-
-    text = await lang_text(lang_uuid="f11ebe57-866f-4bd3-8550-690fa288dd9f",
-                           user=user)
-    # text = "Выберите заказ:"
     if count_deals == 0:
+        text = await lang_text(lang_uuid="8b158613-f1dc-4aa0-bbf0-3a4cbfce692c",        # text = "Нет активных заказов" 
+                               user=user)
         keyboard = None
     else:
+        text = await lang_text(lang_uuid="f11ebe57-866f-4bd3-8550-690fa288dd9f",        # text = "Выберите заказ:" 
+                               user=user)
         keyboard = await deals_keyboards.show_deals_keyboard(orders=orders, 
-                                                  page=page, 
-                                                  last_page=last_page,
-                                                  user=user)
+                                                             page=page, 
+                                                             last_page=last_page,
+                                                             user=user)
     await message.answer(text=text, reply_markup=keyboard)
 
 
@@ -64,12 +63,9 @@ async def view_order_handler(call: types.CallbackQuery):
         keyboard = await buy_keyboards.keyboard_for_seller(order_uuid=order.uuid, 
                                                            no_funds_button=False,
                                                            user=user)
-
     user_currency = await order.currency
-
     cur_name = await lang_currency(currency=user_currency,
                                    user=user)
-    
     ton_cur = await models.Currency.get(name='TON')
     price_one_coin = (float(user_currency.exchange_rate) * float(ton_cur.exchange_rate)) * (1+(order.margin/100))
     allowed_sum_coin = order.amount-order.commission
@@ -140,5 +136,4 @@ async def add_pay_acc_in_created_handler(call: types.CallbackQuery):
     await SellTonState.pay_acc_data.set()
     state = dp.get_current().current_state()
     await state.update_data(curreny_name=currency.name, order_uuid=order.uuid)
-    return await choice_pay_acc_sell_ton_hanlder(call.message, state)     
-
+    return await choice_pay_acc_sell_ton_hanlder(call.message, state)
