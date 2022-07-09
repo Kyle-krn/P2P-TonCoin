@@ -31,11 +31,19 @@ async def buy_coin_hanlder(message: Union[types.Message, types.CallbackQuery]):
 
     text = await lang_text(lang_uuid="3a47043e-ce4b-4a0e-a83b-53143f5dda55",
                            user=user)
-    # text = "Выберите валюту, в которой вы хотите купить Toncoin:"
-    keyboard = await buy_keyboards.currency_keyboard(user=user)
+    
+    curency_list_count = await models.Currency.filter(orders__state="ready_for_sale").exclude(orders__seller=user).count()
+    if curency_list_count > 0:
+        text = await lang_text(lang_uuid="3a47043e-ce4b-4a0e-a83b-53143f5dda55",        # text = "К сожалению в данный момент нет объявлений о продаже"
+                               user=user)
+        keyboard = await buy_keyboards.currency_keyboard(user=user)
+    else:                                   
+        text = await lang_text(lang_uuid="b620cad0-5c97-4752-9d44-20ff6d622b10",        # text = "Выберите валюту, в которой вы хотите купить Toncoin:"
+                               user=user)
+        keyboard = None
     await message.answer(text=text, reply_markup=keyboard)
 
-    
+
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'choice_currency_buy_coin')
 async def choice_currency_buy_coin_handler(call: types.CallbackQuery):
     '''Покупатель выбирал валюту'''
