@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-import imp
 from urllib.parse import urlencode
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage

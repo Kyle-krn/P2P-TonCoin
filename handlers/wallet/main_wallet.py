@@ -6,7 +6,7 @@ from aiogram.dispatcher import FSMContext
 from utils.lang import lang_text
 from utils.validate_ton_address import validate_wallet
 from .state import WithdrawState
-from utils.generate_code import generate_code
+from utils.utils import generate_code
 
 
 

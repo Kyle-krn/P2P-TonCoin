@@ -1,19 +1,16 @@
-import ast
 from typing import Any, Union
-from urllib.parse import urlencode
 from uuid import UUID
-from fastapi import APIRouter, Depends, Form, Request
-from loader import flash
+from fastapi import APIRouter, Depends, Request
 from models import models
-from fastapi.responses import HTMLResponse, RedirectResponse
-import starlette.status as status
+from fastapi.responses import HTMLResponse
 from loader import templates, flash, manager
 from tortoise.queryset import Q
 from utils import orm_utils
 
-# from utils.pagination import pagination
-
 history_balance_router = APIRouter()
+
+
+
 
 
 @history_balance_router.get("/user_history_balance/{uuid}", response_class=HTMLResponse)
@@ -58,19 +55,10 @@ async def user_detail(request: Request,
         "user_uuid": None
     }
 
-    # if order_by:
-    #     order_by = ast.literal_eval(order_by)
-    # else:
-    #     order_by = []
-
     if user_uuid:
         query = Q(user_id=user_uuid)
         search['user_uuid'] = user_uuid
-    # else:
-    #     query = Q()
-    # filter_dict = [
-    #                 {"type": type, }
-    # ]
+
     if type:
         query &= Q(type=type)
         search["type"] = type
@@ -107,17 +95,7 @@ async def user_detail(request: Request,
     order_by, order_by_args = orm_utils.order_by_utils(order_by)
     history_balance = history_balance.order_by(*order_by_args).offset(offset).limit(limit)
     
-    
-    # if len(order_by) == 0:
-    #     history_balance = history_balance.order_by("-created_at")
-    # else:
-    #     for item in order_by:
-    #         if item[0] == "+":
-    #             indx = order_by.index(item)
-    #             order_by = order_by[:indx] + [item[1:]] + order_by[indx+1:]
-    #     history_balance = history_balance.order_by(*order_by)
-    
-   
+
     
     prefetch_related = "user" if not user else None
     if prefetch_related:

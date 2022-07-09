@@ -8,9 +8,7 @@ from loader import flash, manager, templates
 from models import models
 from tortoise.queryset import Q
 import starlette.status as status
-# from utils.order_by import order_by_utils
 from utils import orm_utils
-# from utils.pagination import pagination
 
 referal_router = APIRouter()
 

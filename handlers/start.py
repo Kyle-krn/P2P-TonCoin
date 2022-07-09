@@ -1,4 +1,3 @@
-import uuid
 from loader import dp
 from aiogram import types
 from models import models

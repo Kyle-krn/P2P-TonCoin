@@ -1,7 +1,5 @@
-import imp
 from keyboards.inline import buy_keyboards
 from models import models
-from aiogram import types
 from tortoise.queryset import Q
 
 
