@@ -11,6 +11,13 @@ ENG_MAIN_BUTTON = ("Wallet", "Sell Ton", "My bank account", "Buy Ton", "My activ
 class CancelStateMiddleware(BaseMiddleware):
     async def on_process_message(self, message: types.Message, data: dict):
         # print(await data['state'].get_state())
+        print("message")
         if (message.text in RU_MAIN_BUTTON or message.text in ENG_MAIN_BUTTON) and await data['state'].get_state() is not None:
             await cancel_state_message(message, data['state'])
             raise CancelHandler()
+
+    async def on_process_callback_query(self, call: types.CallbackQuery, data: dict):
+        print("call")
+        # if (message.text in RU_MAIN_BUTTON or message.text in ENG_MAIN_BUTTON) and await data['state'].get_state() is not None:
+        #     await cancel_state_message(message, data['state'])
+        #     raise CancelHandler()

@@ -10,8 +10,8 @@ async def delete_pay_account_hanlder(call: types.CallbackQuery):
     pay_account = await models.UserPaymentAccount.get(serial_int=pay_acc_serial_int)
     pay_account.is_active = False
     await pay_account.save()
-    user = await models.User.get(tg_id=call.message.chat.id)
+    user = await models.User.get(telegram_id=call.message.chat.id)
     edit_text = await lang.lang_text(lang_uuid="f4059557-00c3-45fe-81d8-8d132dc16698",
-                                user=user)
+                                     user=user)
     await call.message.edit_text(edit_text)
     return await payment_account_message_handler(call.message)

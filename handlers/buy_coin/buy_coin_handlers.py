@@ -261,13 +261,17 @@ async def buy_amount_state(message: types.Message, state: FSMContext):
 async def view_buy_order_handler(message: Union[types.Message, types.CallbackQuery], 
                                  order: models.Order = None,
                                  ):
+    
     if order is None:
         order = await models.Order.get(uuid=message.data.split(':')[1])
         message = message.message
+        user = await models.User.get(telegram_id=message.chat.id)
         edit_text = await lang_text(lang_uuid="4ed8b02d-8577-42f3-8a85-67939b608fc6",
                                     user=user)
         await message.edit_text(edit_text)
-    user = await models.User.get(telegram_id=message.chat.id)
+    else:
+        user = await models.User.get(telegram_id=message.chat.id)
+    
     if order.parent:
         parent_order = await order.parent
         pay_account = await parent_order.order_user_payment_account.filter(account__type__uuid=order.customer_pay_type_id)
