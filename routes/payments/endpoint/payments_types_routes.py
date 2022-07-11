@@ -134,7 +134,7 @@ async def create_payments_account_type(request: Request,
                                                    is_active=form.is_active,
                                                    currency_id=form.currency_id)
         if form.rus and form.eng:
-            await models.Lang.create(target_table="user_payment_account_type", target_uuid=type.uuid)
+            await models.Lang.create(target_table="user_payment_account_type", target_uuid=type.uuid, rus=form.rus, eng=form.eng)
         flash(request, "Success create", "success")
     else:
         form.flash_error()

@@ -9,7 +9,9 @@ from models import models
 from tortoise.queryset import Q
 import starlette.status as status
 from utils import orm_utils
-
+from loader import bot
+from utils.lang import lang_text
+from aiogram.utils.exceptions import ChatNotFound, BotBlocked
 referal_router = APIRouter()
 
 @referal_router.post("/create_referal")
@@ -63,6 +65,14 @@ async def update_referal_children(request: Request,
             parent = await referal.user
             if (referal.state == 'created' or referal.state == 'cancelled') and state == "done":
                 parent.balance += float(referal.amount)
+                try:
+                    text = await lang_text(lang_uuid="743374c9-84e8-4336-a8e9-49b1e70b7b68",
+                                           user=parent,
+                                           format={"amount": float(referal.amount)})
+                    await bot.send_message(chat_id=parent.telegram_id, 
+                                           text=text)
+                except (ChatNotFound, BotBlocked):
+                    pass
                 referal.state = state
                 await parent.save()
             elif referal.state == 'done' and state == "cancelled":
