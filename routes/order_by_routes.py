@@ -28,6 +28,7 @@ order_by_router = APIRouter()
 @order_by_router.get("/sort/orders/{column}", response_class=RedirectResponse)
 
 @order_by_router.get("/sort/bot_text/{column}", response_class=RedirectResponse)
+@order_by_router.get("/sort/bot_button/{column}", response_class=RedirectResponse)
 
 async def sort(request: Request,
                     column: str,

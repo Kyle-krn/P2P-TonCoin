@@ -54,7 +54,7 @@
           </div>
               <div class="text-center">
                   <button type="submit" class="btn btn-success">Search</button>
-                  <a class="btn btn-secondary" href="{{url}}" role="button">Default</a>
+                  <a class="btn btn-secondary" href="/{{url}}" role="button">Default</a>
               </div>
           
         </form>
@@ -84,9 +84,9 @@
                         {% endif %}
                       </button>
                       <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                        <li><a class="dropdown-item" href="/sort{{url}}/~updated_at{{ params|get_urlencode }}">S</a></li>
-                        <li><a class="dropdown-item" href="/sort{{url}}/+updated_at{{ params|get_urlencode }}">⬆️</a></li>
-                        <li><a class="dropdown-item" href="/sort{{url}}/-updated_at{{ params|get_urlencode }}">⬇️</a></li>
+                        <li><a class="dropdown-item" href="/sort/{{url}}/~updated_at{{ params|get_urlencode }}">S</a></li>
+                        <li><a class="dropdown-item" href="/sort/{{url}}/+updated_at{{ params|get_urlencode }}">⬆️</a></li>
+                        <li><a class="dropdown-item" href="/sort/{{url}}/-updated_at{{ params|get_urlencode }}">⬇️</a></li>
                       </ul>
                     </div>
                   </div> 
@@ -104,9 +104,9 @@
                         {% endif %}
                       </button>
                       <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                        <li><a class="dropdown-item" href="/sort{{url}}/~created_at{{ params|get_urlencode }}">S</a></li>
-                        <li><a class="dropdown-item" href="/sort{{url}}/+created_at{{ params|get_urlencode }}">⬆️</a></li>
-                        <li><a class="dropdown-item" href="/sort{{url}}/-created_at{{ params|get_urlencode }}">⬇️</a></li>
+                        <li><a class="dropdown-item" href="/sort/{{url}}/~created_at{{ params|get_urlencode }}">S</a></li>
+                        <li><a class="dropdown-item" href="/sort/{{url}}/+created_at{{ params|get_urlencode }}">⬆️</a></li>
+                        <li><a class="dropdown-item" href="/sort/{{url}}/-created_at{{ params|get_urlencode }}">⬇️</a></li>
                       </ul>
                     </div>
                   </div>
@@ -114,7 +114,7 @@
         </tr>
         </thead>
         <tbody>
-            <form method="post" action="/update_bot_text">
+            <form method="post" action="/update_{{url}}">
             {% for bot_text in lang %}
             <tr class="text-center">
             <input type="hidden" name="uuid" value="{{bot_text.uuid}}">

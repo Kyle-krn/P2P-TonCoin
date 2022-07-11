@@ -55,7 +55,7 @@ async def get_text_bot_lang(request: Request,
     order_by, order_by_args = orm_utils.order_by_utils(order_by)
 
     lang = lang.order_by(*order_by_args).offset(offset).limit(limit)
-
+    print(request.url.path[1:])
     context = {"request": request,
                "lang": await lang,
                'params': request.query_params._dict,
@@ -64,7 +64,7 @@ async def get_text_bot_lang(request: Request,
                "last_page": last_page,
                "previous_page": previous_page,
                "next_page": next_page,
-               "url": request.url.path,
+               "url": request.url.path[1:],
                "search": search}
 
     return templates.TemplateResponse('lang/lang.html', context)
@@ -93,6 +93,10 @@ async def update_bot_text(request: Request,
             save = True
         if save:
             await lang.save()
+    if request.url.path == "/update_bot_text":
+        redirect_url = "/bot_text"
+    else:
+        redirect_url = "/bot_button"
     return RedirectResponse(
-        request.url_for("get_text_bot_lang"), 
+        redirect_url, 
         status_code=status.HTTP_302_FOUND)
