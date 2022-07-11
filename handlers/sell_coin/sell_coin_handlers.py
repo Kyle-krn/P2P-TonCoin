@@ -144,7 +144,7 @@ async def  min_buy_sum_state(message: types.Message, state: FSMContext):
     try:
         min_buy_sum = float(min_buy_sum)
         min_buy_sum = float("%.2f" % min_buy_sum)
-        if (0.01 < min_buy_sum < user_data['max_price']) is False:
+        if (0.01 <= min_buy_sum <= user_data['max_price']) is False:
             raise ValueError
     except (ValueError, TypeError):
 

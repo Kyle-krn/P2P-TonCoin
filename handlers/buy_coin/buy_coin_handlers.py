@@ -87,7 +87,9 @@ async def choice_pay_acc_buy_coin_handler(call: types.CallbackQuery):
     orders_list = await models.Order.filter(query).order_by('margin', 'created_at')
     ton_cur = await models.Currency.get(name='TON')
     for order in orders_list:
-        price_one_coin = (float(user_currency.exchange_rate) * float(ton_cur.exchange_rate)) * (1+(order.margin/100))
+        price_one_coin = (float(user_currency.exchange_rate)  \
+                        * float(ton_cur.exchange_rate))   \
+                        * (1+(order.margin/100))
         allowed_sum_coin = order.amount-order.commission
         min_buy_sum = order.min_buy_sum   \
                    if order.min_buy_sum < (order.amount - order.commission) * float(ton_cur.exchange_rate)* float(user_currency.exchange_rate)   \
@@ -146,7 +148,7 @@ async def buy_order_hanlder(call: types.CallbackQuery):
     text = await lang_text(lang_uuid="efeb95c8-46b0-485e-bd44-d27a4b0d633d",
                            user=user,
                            format={
-                                "min_buy_sum":min_buy_sum,
+                                "min_buy_sum":"%.5f" % min_buy_sum,
                                 "full_price":"%.2f" % (price_one_coin * (order.amount-order.commission)),
                                 "currency":cur_name        
                            })
