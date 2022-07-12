@@ -30,5 +30,4 @@ def auth_exception_handler(request: Request, exc: NotAuthenticatedException):
 
 @app.exception_handler(StarletteHTTPException)
 async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
-    # print(request.auth)
     return RedirectResponse("/users")

@@ -17,8 +17,8 @@ async def main_wallet_handler(message: types.Message):
     text = await lang_text(lang_uuid="de220ffc-1210-4433-a681-76c30a829ca7", 
                            user=user, 
                            format={
-                                    "balance": "%.4f" % user.balance,
-                                    "frozen_balance": "%.4f" % user.frozen_balance
+                                    "balance": str(user.balance),
+                                    "frozen_balance": str(user.frozen_balance)
                                   })
     # text = "Кошелёк\n\n" \
     #        f"Баланс Toncoin: {user.balance} TON\n"  \
@@ -118,13 +118,8 @@ async def ton_wallet_state(message: types.Message, state: FSMContext):
     user.balance = user.balance - user_data['withdraw_amount']
     await user.save()
     await state.finish()
-    text = await lang_text(lang_uuid="ad436ce0-a56a-4022-9222-9fc309b23c82",
-                           user=user,
-                           format={
-                                "amount":user_data['withdraw_amount'],
-                                "balance":user.balance    
-                           })
+    text = await lang_text(lang_uuid="f77f9194-9387-443c-82b4-9755648ef91f",
+                           user=user)
     #     Вывод средств на сумму {{ amount }} TON успешно выполнен! 
         # Ваш баланс: {{ balance }} TON
     await message.answer(text)
-

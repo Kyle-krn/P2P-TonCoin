@@ -25,11 +25,11 @@ async def update_rate_currency():
         cur = await models.Currency.get(name=rate['code'])
         cur.exchange_rate = rate['value']
         await cur.save()
-    print("currency update")
 
 async def scheduler():
-    aioschedule.every().day.at("00:01").do(update_currency_ton)
-    aioschedule.every().day.at("00:00").do(update_rate_currency)
+    # aioschedule.every().day.at("00:01").do(update_currency_ton)
+    aioschedule.every().minute.do(update_currency_ton)
+    aioschedule.every().hour.do(update_rate_currency)
     # aioschedule.do(update_likes)
     while True:
         await aioschedule.run_pending() 

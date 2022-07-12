@@ -10,6 +10,7 @@ from aiogram.dispatcher import FSMContext
 from .state import BuyState
 from .utils import check_unfinished_deal
 from utils.lang import lang_currency, lang_payment_type, lang_text
+from utils.utils import trim_float
 
 @dp.message_handler(regexp="^(Купить Ton)$")
 @dp.message_handler(regexp="^(Buy Ton)$")
@@ -98,11 +99,11 @@ async def choice_pay_acc_buy_coin_handler(call: types.CallbackQuery):
         text = await lang_text(lang_uuid="fbddd2d5-a3cd-4a70-95a3-e0128da7c9b7",
                                user=user,
                                format={
-                                        "price_one_coin":price_one_coin,
+                                        "price_one_coin": trim_float(price_one_coin),
                                         "currency":cur_name,
                                         "allowed_sum_coin":allowed_sum_coin,
-                                        "min_buy_sum": '%.2f' % min_buy_sum,
-                                        "full_price":'%.2f' % (price_one_coin * allowed_sum_coin),
+                                        "min_buy_sum": trim_float(min_buy_sum),
+                                        "full_price":trim_float(price_one_coin * allowed_sum_coin),
                                         "allowed_pay_type":', '.join([(await i.type).name for i in orders_payments_type])
                                })
         # text = f"Цена 1 монеты {price_one_coin}\n"  \
@@ -148,8 +149,8 @@ async def buy_order_hanlder(call: types.CallbackQuery):
     text = await lang_text(lang_uuid="efeb95c8-46b0-485e-bd44-d27a4b0d633d",
                            user=user,
                            format={
-                                "min_buy_sum":"%.5f" % min_buy_sum,
-                                "full_price":"%.2f" % (price_one_coin * (order.amount-order.commission)),
+                                "min_buy_sum":trim_float(min_buy_sum),
+                                "full_price":trim_float(price_one_coin * (order.amount-order.commission)),
                                 "currency":cur_name        
                            })
     # text = f"Введите количество Toncoin, которое вы хотите купить"  \
@@ -180,8 +181,9 @@ async def buy_amount_state(message: types.Message, state: FSMContext):
         pass
 
     try:
+        message.text = message.text.replace(",", ".")
         buy_amount = float(message.text)
-        if (user_data['min_buy_sum'] <= buy_amount < (user_data['price_one_coin'] * (order.amount-order.commission))) is False:
+        if (user_data['min_buy_sum'] <= buy_amount <= (user_data['price_one_coin'] * (order.amount-order.commission))) is False:
             raise ValueError
     except (ValueError, TypeError):
 
@@ -193,8 +195,8 @@ async def buy_amount_state(message: types.Message, state: FSMContext):
         text = await lang_text(lang_uuid="efeb95c8-46b0-485e-bd44-d27a4b0d633d",
                                user=user,
                                format={
-                                   "min_buy_sum":user_data['min_buy_sum'],
-                                   "full_price":"%.2f" % (user_data['price_one_coin'] * (order.amount-order.commission)),
+                                   "min_buy_sum": trim_float(user_data['min_buy_sum']),
+                                   "full_price": trim_float(user_data['price_one_coin'] * (order.amount-order.commission)),
                                    "currency":cur_name
                                })
         # text = f"Введите количество Toncoin, которое вы хотите купить"  \
@@ -361,10 +363,16 @@ async def send_money_order_handler(call: types.CallbackQuery):
     currency = await order.currency
     cur_name = await lang_currency(currency=currency,
                                    user=seller)
+    
+    order_id = order.serial_int
+    if order.parent_id:
+        parent_order = await order.parent
+        order_id = parent_order.serial_int
+
     text_for_seller = await lang_text(lang_uuid="f1defc4d-e4cc-4afa-be24-5f911a4508bf",
                                       user=seller,
                                       format={
-                                            "uuid":order.serial_int, 
+                                            "uuid":order_id, 
                                             "currency":cur_name,
                                             "final_price":float(order.final_price)
                                       })

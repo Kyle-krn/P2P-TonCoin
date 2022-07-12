@@ -172,6 +172,7 @@
             </div>
           </div>
         </th>
+        <th scope="col">Update</th>
         <!-- <th scope="col">Update</th> -->
     </thead>
     <tbody>
@@ -206,8 +207,18 @@
     <td>{{history_balance.state}}</td>
     <!-- END STATE -->
     <td>{{ history_balance.created_at | format_date }}</td>
-    
-    </tr>  
+    <td>
+    {% if history_balance.type == "withdraw" and history_balance.state == "created" %}
+    <div class="btn-group" role="group" aria-label="Basic example">
+    <a class="btn btn-primary btn-sm" href={% if user %}"/approve_withdraw/{{user.uuid}}/{{history_balance.uuid}}"{% else %}"/approve_withdraw/{{history_balance.uuid}}"{% endif %} role="button">Approve</a>
+    <a class="btn btn-danger btn-sm" href={% if user %}"/reject_withdraw/{{user.uuid}}/{{history_balance.uuid}}"{% else %}"/reject_withdraw/{{history_balance.uuid}}"{% endif %} role="button">Reject</a>
+  </div>
+      <!-- <button type="button" class="btn btn-secondary">Left</button>
+      <button type="button" class="btn btn-secondary">Middle</button>
+      <button type="button" class="btn btn-secondary">Right</button>
+    </div> -->
+    {% endif %}</td>
+    </tr>
     {% else %} 
     <tr>
         <td class="text-center">---</td>

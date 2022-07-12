@@ -2,6 +2,7 @@
 from tortoise.queryset import Q
 import tortoise
 import ast
+from models import models
 
 def pagination(limit: int, page: int, count_model: int):
     # limit = 5
@@ -58,3 +59,25 @@ async def query_filters(model) -> Q:
         if v is not None and k.split('__')[-1] != "json":
             q &= Q(**{k:v})
     return q
+
+
+
+async def set_active_token_currency():
+    list_key = await models.CurrencyApiKey.all().order_by("created_at")
+    set_next_key = False
+    for key in list_key:
+        if key.is_active:
+            set_next_key = True
+            key.is_active = False
+            await key.save()
+            continue
+        
+        if set_next_key is True:
+            key.is_active = True
+            await key.save()
+            break
+
+    if (await models.CurrencyApiKey.get_or_none(is_active=True)) is None:
+        first_key = list_key[0]
+        first_key.is_active = True
+        await first_key.save()

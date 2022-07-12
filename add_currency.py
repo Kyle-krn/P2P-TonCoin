@@ -4,7 +4,7 @@ from models import models
 from tortoise import Tortoise, run_async
 from data import config
 from tortoise.queryset import Q
-from utils.validate_ton_address import get_currency_ton
+from utils.currency import get_currency_ton
 
 async def get_currency(currency_name: str):
     url = "https://api.currencyapi.com/v3/latest"
@@ -71,9 +71,14 @@ async def test_json_field():
     payment = await models.UserPaymentAccountType.filter(Q(data__icontains="email"))
     print(payment)
 
+async def test_api_key():
+    await Tortoise.init(config.TORTOISE_ORM)
+    p = await models.CurrencyApiKey.get(is_active=True)
+    print(p.is_active)
+
 if __name__ == '__main__':
     # test()
-    run_async(test_json_field())
+    run_async(test_api_key())
     # run_async(lang_currency("EUR", "Евро", "Euro"))
     # run_async(add_currency("UAH"))
     # run_async(add_payment_type(pay_name="СберБанк", cur_name="RUB", pay_dict={"Номер ЛК": "", "email": "", "Номер телефона": ""}))

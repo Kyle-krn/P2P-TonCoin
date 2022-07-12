@@ -26,7 +26,7 @@ async def sell_ton_handler(message: types.Message):
     text = await lang_text(lang_uuid="c060e220-26d5-4138-ac3d-edda436a659a", 
                            user=user, 
                            format={
-                                    "balance": "%.4f" % user.balance,
+                                    "balance": str(user.balance),
                                   })
     # text = f"Введите количество TON, которое вы хотите продать (число от 0.1 до {user.balance})"
     message = await message.answer(text, reply_markup=await stop_state_keyboard(user))
@@ -51,7 +51,7 @@ async def sell_ton_state(message: types.Message, state: FSMContext):
         text = await lang_text(lang_uuid="82daaee6-9971-449e-99af-0513ccccf5cc", 
                                user=user, 
                                format={
-                                        "balance": "%.4f" % user.balance,
+                                        "balance": str(user.balance),
                                       })
         # text = f"Неверный формат ввода. Введите число от 0.1 до {user.balance}"
         message = await message.answer(text, reply_markup=await stop_state_keyboard(user))
@@ -100,8 +100,11 @@ async def fee_state(message: types.Message, state:FSMContext):
 
 
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'sell_coin_currency', state=SellTonState.currency)
-async def choice_currency_state(call: types.CallbackQuery, state: FSMContext):
+@dp.message_handler(state=SellTonState.currency)
+async def choice_currency_state(call: Union[types.Message, types.CallbackQuery], state: FSMContext):
     '''Продавец выбирает валюту'''
+    if isinstance(call, types.Message):
+        return
     await SellTonState.next()
     user = await models.User.get(telegram_id=call.message.chat.id)
     ton_cur = await models.Currency.get(name='TON')
@@ -262,7 +265,7 @@ async def sell_coin_choice_pay_acc_handler(call: types.CallbackQuery, state: FSM
                            user=user,
                            format={
                                     "order_uuid":order.serial_int, 
-                                    "order_amount":order.amount - order.commission        
+                                    "order_amount":str(order.amount - order.commission )       
                            })
     # text =f"Ваш заказ № {order.uuid} успешно опубликован.\n"  \
     #        "Комиссия за продажу равна 1% в TonCoin\n"  \

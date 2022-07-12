@@ -132,7 +132,7 @@ async def user_payments_account(request: Request,
                                         'is_active': is_active
                                         })
         await payment_account.save()
-        flash(request, "Success", "success")
+    flash(request, "Success", "success")
     params = request.query_params
     if params != "":
         params = "?" + str(params)

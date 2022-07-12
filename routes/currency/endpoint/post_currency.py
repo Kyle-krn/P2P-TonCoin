@@ -1,5 +1,4 @@
 
-from locale import currency
 from uuid import UUID
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
@@ -7,7 +6,6 @@ from loader import flash, manager
 from models import models
 from starlette import status
 import utils.currency as currency_utils
-# from utils.currency import get_api_currency
 from utils.utils import str_bool
 from tortoise.exceptions import DoesNotExist
 import utils.exceptions as custom_exc
@@ -92,7 +90,7 @@ async def update_currency(request: Request,
                                     exchange_rate=cur['value'],
                                     is_active=False)
     if len(success_cur_list) > 0:
-        flash(request, f"Success: {', '.join(success_cur_list)}", "success")
+        flash(request, f"Success: {', '.join([i['code'] for i in success_cur_list])}", "success") # Здесь исправить
     return RedirectResponse(
         request.url_for('get_currency'), 
         status_code=status.HTTP_302_FOUND)

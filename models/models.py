@@ -242,3 +242,15 @@ class ProblemOrderProof(Model):
 
     class Meta:
         table = "order_proof"
+
+
+class CurrencyApiKey(Model):
+    uuid: UUID = fields.UUIDField(pk=True)
+    key: str = fields.CharField(max_length=255)
+    email: str = fields.CharField(max_length=255)
+    password: str = fields.CharField(max_length=255)
+    created_at: datetime = fields.DatetimeField(auto_now_add=True)
+    is_active: bool = fields.BooleanField(default=False)
+
+    class Meta:
+        table = "currency_key"

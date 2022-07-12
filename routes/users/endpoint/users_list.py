@@ -20,7 +20,6 @@ async def users_list(request: Request,
                      order_by: str = None,
                      page: int = 1
                     ):
-    print(page)
     query = await orm_utils.query_filters(search)
     users = models.User.filter(query)
     limit = 30

@@ -17,3 +17,13 @@ def random_string():
 async def generate_code():
     return f"{random_string()}-{random_string()}-{random_string()}-{random_string()}"
 
+
+
+def trim_float(digit: float):
+    digit_split = str(digit).split(".")
+    if len(digit_split[1]) > 2:
+        digit_split[1] = digit_split[1][:len(digit_split[1]) - (len(digit_split[1]) - 2)]
+
+    if digit_split[1] == "0":
+        return int(digit_split[0])
+    return float(".".join(digit_split))

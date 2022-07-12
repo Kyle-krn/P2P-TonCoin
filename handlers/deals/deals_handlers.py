@@ -6,6 +6,7 @@ from tortoise.queryset import Q
 from keyboards.inline import buy_keyboards, deals_keyboards
 from handlers.sell_coin.sell_coin_handlers import SellTonState, choice_pay_acc_sell_ton_hanlder
 from utils.lang import lang_currency, lang_text
+from utils.utils import trim_float
 
 
 @dp.message_handler(regexp="^(Мои активные заказы)$")
@@ -83,8 +84,8 @@ async def view_order_handler(call: types.CallbackQuery):
                                     "price_one_coin":"%.5f" % price_one_coin,
                                     "currency":cur_name,
                                     "allowed_sum_coin":allowed_sum_coin,
-                                    "min_buy_sum": '%.2f' % min_buy_sum,
-                                    "full_price":'%.2f' % (price_one_coin * allowed_sum_coin),
+                                    "min_buy_sum": trim_float(min_buy_sum),
+                                    "full_price": trim_float(price_one_coin * allowed_sum_coin),
                                     "allowed_pay_type":', '.join([(await i.type).name for i in orders_payments_type])        
                            })
     # text = f"Цена 1 монеты {price_one_coin}\n"  \
