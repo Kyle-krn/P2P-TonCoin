@@ -62,7 +62,7 @@ async def update_currency(request: Request,
         
         if save:
             await currency.save()
-        
+    
     return RedirectResponse(
         request.url_for('get_currency'), 
         status_code=status.HTTP_302_FOUND)
@@ -113,6 +113,9 @@ async def delete_currency(request: Request,
             raise custom_exc.OrderNotEmpty 
         
         flash(request, f"{currency.name} deleted", "success")
+        lang = await models.Lang.get_or_none(target_table="currency", target_id=currency.uuid)
+        if lang:
+            await lang.delete()
         await currency.delete()
         
     except (DoesNotExist, custom_exc.PaymentsAccountNotEmpty) as exc:

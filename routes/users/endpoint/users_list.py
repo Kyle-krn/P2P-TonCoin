@@ -4,9 +4,6 @@ from fastapi.responses import HTMLResponse
 from models import models
 from loader import templates, manager
 from utils import orm_utils
-# from utils.models_utils import query_filters
-# from utils.order_by import order_by_utils
-# from utils.pagination import pagination
 from ..pydantic_models import UsersSearch
 
 

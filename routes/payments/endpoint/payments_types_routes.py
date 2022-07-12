@@ -130,11 +130,11 @@ async def create_payments_account_type(request: Request,
     await form.load_data()
     if await form.is_valid():
         type = await models.UserPaymentAccountType.create(name=form.name, 
-                                                   data=form.data, 
-                                                   is_active=form.is_active,
-                                                   currency_id=form.currency_id)
+                                                          data=form.data, 
+                                                          is_active=form.is_active,
+                                                          currency_id=form.currency_id)
         if form.rus and form.eng:
-            await models.Lang.create(target_table="user_payment_account_type", target_uuid=type.uuid, rus=form.rus, eng=form.eng)
+            await models.Lang.create(target_table="user_payment_account_type", target_id=type.uuid, rus=form.rus, eng=form.eng)
         flash(request, "Success create", "success")
     else:
         form.flash_error()
@@ -161,6 +161,10 @@ async def delete_payments_account_type(request: Request,
         orders = await type.customer_pay_type.all()
         if len(orders) > 0:
             raise custom_exc.OrderNotEmpty
+        
+        lang = await models.Lang.get_or_none(target_table="user_payment_account_type", target_id=type.uuid)
+        if lang:
+            await lang.delete()
         await type.delete()
     except (custom_exc.PaymentsAccountNotEmpty, custom_exc.OrderNotEmpty, DoesNotExist) as exc:
         if isinstance(exc, custom_exc.PaymentsAccountNotEmpty):
