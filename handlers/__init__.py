@@ -8,4 +8,6 @@ from . import referal
 
 from . import lang
 from . import cancel_state_handlers
+from . import scheme_of_work
+
 from . import customer_proof_handler

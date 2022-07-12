@@ -1,4 +1,5 @@
 from handlers.lang.lang_handers import change_lang_handler
+from handlers.scheme_of_work.scheme_of_work_handlers import scheme_of_work_handler
 from loader import dp
 from aiogram import types
 from aiogram.dispatcher import FSMContext
@@ -32,3 +33,5 @@ async def cancel_state_message(message: types.Message, state: FSMContext):
         return await referal_handler(message)
     elif message.text in ("Язык: ru", "Language: eng"):
         return await change_lang_handler(message)
+    elif message.text in ("Схема работы", "Scheme of work"):
+        return await scheme_of_work_handler(message)
