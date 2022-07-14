@@ -2,15 +2,14 @@ from uuid import UUID
 from aiogram import types
 from models import models
 from tortoise.queryset import Q
+from utils import lang
 
 async def currency_keyboard(user: models.User):
     keyboard = types.InlineKeyboardMarkup()
     curency_list = await models.Currency.filter(orders__state="ready_for_sale").exclude(orders__seller=user)
     for currency in set(curency_list):
-        cur_name = currency.name
-        lang_cur = await models.Lang.get_or_none(target_table="currency", target_id=currency.uuid)
-        if lang_cur:
-            cur_name = lang_cur.rus if user.lang == 'ru' else lang_cur.eng
+        cur_name = await lang.lang_currency(currency=currency,
+                                            user=user)
         keyboard.add(types.InlineKeyboardButton(text=cur_name, callback_data=f"choice_currency_buy_coin:{currency.uuid}"))
     return keyboard
 
@@ -20,13 +19,11 @@ async def payment_type_keyboard(user: models.User, currency_uuid: UUID):
     query = Q(payments_account__order_user_payment_account__order__state="ready_for_sale") & Q(payments_account__order_user_payment_account__order__currency__uuid=currency_uuid)
     payments_type_list = await models.UserPaymentAccountType.filter(query).exclude(payments_account__order_user_payment_account__order__seller=user)
     for payment_type in set(payments_type_list):
-        name = payment_type.name
-        lang_type = await models.Lang.get_or_none(target_table="user_payment_account_type", target_id=payment_type.uuid)
-        if lang_type:
-            name = lang_type.rus if user.lang == 'ru' else lang_type.eng
-        keyboard.add(types.InlineKeyboardButton(text=name, callback_data=f"choice_pay_acc_buy_coin:{payment_type.uuid}"))
-    back_text = await models.Lang.get(uuid="eef933b0-e3bc-46ed-8461-8226fd5f090f")
-    keyboard.add(types.InlineKeyboardButton(text=back_text.rus if user.lang == 'ru' else back_text.eng, 
+        pay_name = await lang.lang_payment_type(payment_type=payment_type,
+                                                user=user)
+        keyboard.add(types.InlineKeyboardButton(text=pay_name, callback_data=f"choice_pay_acc_buy_coin:{payment_type.uuid}"))
+    keyboard.add(types.InlineKeyboardButton(text=await lang.lang_text(lang_uuid="eef933b0-e3bc-46ed-8461-8226fd5f090f",     # Назад
+                                                                      user=user), 
                                             callback_data="back_choice_currency_buy_coin"))
     return keyboard
 
@@ -35,8 +32,8 @@ async def choice_order_keboard(pay_type_serial_int: int,
                                order_uuid: UUID,
                                user: models.User):
     keyboard = types.InlineKeyboardMarkup()
-    buy_text = await models.Lang.get(uuid="60a740c2-88f9-488a-8579-cb1fa2b1451a")
-    keyboard.add(types.InlineKeyboardButton(text=buy_text.rus if user.lang == 'ru' else buy_text.eng, 
+    keyboard.add(types.InlineKeyboardButton(text=await lang.lang_text(lang_uuid="60a740c2-88f9-488a-8579-cb1fa2b1451a",     # Купить
+                                                                      user=user), 
                                             callback_data=f"buy_order:{pay_type_serial_int}:{order_uuid}"))
     return keyboard
 

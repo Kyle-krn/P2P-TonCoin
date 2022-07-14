@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, File, UploadFile, Form
 from fastapi.responses import RedirectResponse
 from starlette import status
 import shutil
-from loader import flash
+from jinja_func import flash
 
 pdf_router = APIRouter()
 

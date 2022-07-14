@@ -3,7 +3,8 @@ from fastapi.responses import RedirectResponse
 from uuid import UUID
 from fastapi import APIRouter, Depends, Request, Form
 from tortoise.exceptions import DoesNotExist
-from loader import flash, templates, manager
+from loader import templates, manager
+from jinja_func import flash
 from models import models
 from tortoise.queryset import Q
 import starlette.status as status

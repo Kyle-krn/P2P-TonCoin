@@ -19,9 +19,9 @@
               {% else %}
             <div class="col-md-4 mb-3"> 
             <label for="state">User UUID:</label>
-            <input type="text" name="user_uuid" class="form-control" placeholder="Enter user UUID"  aria-label="User UUID"
-                           {% if history_balance_search.user_uuid %}
-                           value="{{history_balance_search.user_uuid}}"
+            <input type="text" name="user_id" class="form-control" placeholder="Enter user UUID"  aria-label="User UUID"
+                           {% if history_balance_search.user_id %}
+                           value="{{history_balance_search.user_id}}"
                            {% endif %}>
                           </div>
             {% endif %}
@@ -39,17 +39,17 @@
                   <!-- INPUT AMOUNT -->
                   <label for="zip">Amount:</label>
                   <div class="input-group mb-3">
-                    <input type="number" name="min_amount" class="form-control" placeholder="0"  aria-label="Min balance" step="any"
-                           {% if history_balance_search.min_amount %}
-                           value="{{history_balance_search.min_amount}}"
+                    <input type="number" name="amount__gte" class="form-control" placeholder="0"  aria-label="Min balance" step="any"
+                           {% if history_balance_search.amount__gte %}
+                           value="{{history_balance_search.amount__gte}}"
                            {% endif %}
                            >
                     <span class="input-group-text">to</span>
-                    <input type="number" name="max_amount" class="form-control" 
-                    placeholder={% if history_balance_search.max_amount_show %}"{{history_balance_search.max_amount_show}}"{% else %}0{% endif %} 
+                    <input type="number" name="amount__lte" class="form-control" 
+                    placeholder="Max balance"
                     aria-label="Max balance" step="any"
-                           {% if history_balance_search.max_amount %}
-                           value="{{ history_balance_search.max_amount }}"
+                           {% if history_balance_search.amount__lte %}
+                           value="{{ history_balance_search.amount__lte }}"
                            {% endif %}
                            >
                     <!-- END INPUT AMOUNT -->
@@ -98,13 +98,13 @@
                   <label for="basic-url" class="form-label">Created at</label>
                   <div class="input-group mb-3">
                   <span class="input-group-text" id="basic-addon3">From</span>
-                  <input type="datetime-local" name="min_created_at" class="form-control" id="basic-url" aria-describedby="basic-addon3" 
-                         value={{history_balance_search.min_created_at}}>
+                  <input type="datetime-local" name="created_at__gte" class="form-control" id="basic-url" aria-describedby="basic-addon3" 
+                         value={{history_balance_search.created_at__gte}}>
                   </div>
                   <div class="input-group mb-3">
                   <span class="input-group-text" id="basic-addon3">To</span>
-                  <input type="datetime-local" name="max_created_at" class="form-control" id="basic-url" aria-describedby="basic-addon3"
-                          value={{history_balance_search.max_created_at}}>
+                  <input type="datetime-local" name="created_at__lte" class="form-control" id="basic-url" aria-describedby="basic-addon3"
+                          value={{history_balance_search.created_at__lte}}>
               </div>
               </div>
               <div class="text-center">

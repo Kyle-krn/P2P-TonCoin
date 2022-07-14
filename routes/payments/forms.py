@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import Request
 import data
 from tortoise.exceptions import DoesNotExist
-from loader import flash
+from jinja_func import flash
 from models import models
 
 

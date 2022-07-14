@@ -1,93 +1,37 @@
-from typing import Any, Union
 from uuid import UUID
 from fastapi import APIRouter, Depends, Request
 from models import models
 from fastapi.responses import HTMLResponse, RedirectResponse
-from loader import templates, flash, manager, bot
+from loader import templates, manager, bot
+from jinja_func import flash
 from aiogram.utils.exceptions import BotBlocked, ChatNotFound
 from tortoise.queryset import Q
 from utils import orm_utils
 from utils.lang import lang_text
 from starlette import status
+from ..pydantic_models import HistoryBalanceSearch
 
 history_balance_router = APIRouter()
 
 
 @history_balance_router.get("/user_history_balance/{uuid}", response_class=HTMLResponse)
 @history_balance_router.get("/history_balance", response_class=HTMLResponse)
-async def user_detail(request: Request, 
+async def get_history_balance(request: Request, 
                       uuid: UUID = None,
-                      user_uuid: Union[UUID, Any] = None,
+                      search: HistoryBalanceSearch = Depends(HistoryBalanceSearch),
                       staff: models.Staff = Depends(manager),
-                      type: str = None,
-                      min_amount: Union[float, str] = None,
-                      max_amount: Union[float, str] = None,
-                      hash: str = None,
-                      wallet: str = None,
-                      state: str = None,
-                      page: int = 1,
-                      code: str = None,
-                      min_created_at: str = None,
-                      max_created_at: str = None,
-                      order_by: str = None):
-    if isinstance(user_uuid, UUID) is False:
-        user_uuid = None
+                      order_by: str = None,
+                      page: int = 1):
+
     if uuid:
         user = await models.User.get(uuid=uuid).prefetch_related("referal_user")
         query = Q(user=user)
     else:
         user = None
         query = Q()
-        
-    history_balance_show = await models.UserBalanceChange.filter(query & Q(amount__isnull=False)).order_by('-amount').first().values("amount")
-    search = {
-        "type": None,
-        "min_amount": 0,
-        "max_amount_show": history_balance_show['amount'] if history_balance_show else None,
-        "min_amount": None,
-        "max_amount": None,
-        "hash": None,
-        "wallet": None,
-        "code": None,
-        "state": None,
-        "min_created_at": None,
-        "max_created_at": None,
-        "user_uuid": None
-    }
-
-    if user_uuid:
-        query = Q(user_id=user_uuid)
-        search['user_uuid'] = user_uuid
-
-    if type:
-        query &= Q(type=type)
-        search["type"] = type
-    if min_amount:
-        query &= Q(amount__gte=min_amount)
-        search["min_amount"] = min_amount
-    if max_amount:
-        query &= Q(amount__lte=max_amount)
-        search["max_amount"] = max_amount
-    if hash:
-        query &= Q(hash__icontains=hash)
-        search["hash"] = hash
-    if wallet:
-        query &= Q(wallet__icontains=wallet)
-        search["wallet"] = wallet
-    if code:
-        query &= Q(code__icontains=code)
-        search["code"] = code
-    if state:
-        query &= Q(state=state)
-        search["state"] = state
-
-    if min_created_at:
-        query = query & Q(created_at__gte=min_created_at)
-        search["min_created_at"] = min_created_at
-    if max_created_at:
-        query = query & Q(created_at__lte=max_created_at)
-        search["max_created_at"] = max_created_at
     
+    query &= await orm_utils.query_filters(search)
+
     history_balance = models.UserBalanceChange.filter(query)
 
     limit = 30

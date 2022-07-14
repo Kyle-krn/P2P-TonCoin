@@ -2,7 +2,8 @@
 from typing import List
 from uuid import UUID
 from fastapi import APIRouter, Depends, Request
-from loader import flash, templates, manager
+from loader import templates, manager
+from jinja_func import flash
 from models import models
 from fastapi.responses import RedirectResponse
 from starlette import status

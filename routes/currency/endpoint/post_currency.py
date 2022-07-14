@@ -2,7 +2,8 @@
 from uuid import UUID
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
-from loader import flash, manager
+from loader import manager
+from jinja_func import flash
 from models import models
 from starlette import status
 import utils.currency as currency_utils

@@ -3,7 +3,8 @@ from typing import Union
 from fastapi.responses import HTMLResponse, RedirectResponse
 from uuid import UUID
 from fastapi import APIRouter, Depends, Request
-from loader import flash, templates, manager
+from loader import templates, manager
+from jinja_func import flash
 from models import models
 from tortoise.queryset import Q
 from tortoise.exceptions import DoesNotExist

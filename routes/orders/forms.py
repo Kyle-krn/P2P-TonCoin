@@ -2,7 +2,7 @@ from typing import List
 from uuid import UUID
 from fastapi import Request
 from tortoise.exceptions import DoesNotExist
-from loader import flash
+from jinja_func import flash
 from models import models
 
 # class Form:

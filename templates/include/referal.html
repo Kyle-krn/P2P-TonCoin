@@ -18,13 +18,13 @@
             
             <div class="row justify-content-start">
               {% if user %}
-                <input type="hidden" name="user_uuid" value="{{user.uuid}}">
+                <input type="hidden" name="user_id" value="{{user.uuid}}">
                 {% else %}
                 <div class="col-md-4 mb-3"> 
                 <label for="state">User UUID:</label>
-                <input type="text" name="user_uuid" class="form-control" placeholder="Enter user UUID"  aria-label="User UUID"
-                              {% if search.user_uuid %}
-                              value="{{search.user_uuid}}"
+                <input type="text" name="user_id" class="form-control" placeholder="Enter user UUID"  aria-label="User UUID"
+                              {% if search.user_id %}
+                              value="{{search.user_id}}"
                               {% endif %}>
                               </div>
                 {% endif %}
@@ -32,7 +32,7 @@
                     <!-- INPUT INVITED UUID -->
                     <label for="zip">Invited user UUID:</label>
                     <div class="input-group mb-3">
-                      <textarea name="invited_user_uuid" class="form-control" id="" cols="15" rows="1">{% if search.invited_user_uuid %}{{search.invited_user_uuid}}{% endif %}</textarea>
+                      <input name="invited_user_id" class="form-control" {% if search.invited_user_id %}value="{{search.invited_user_id}}"{% endif %}>
                       <!-- END INPUT HASH -->
                     </div>
                 </div>
@@ -50,17 +50,17 @@
                 <div class="col-md-4 mb-3">
                     <label for="zip">Amount:</label>
                     <div class="input-group mb-3">
-                    <input type="number" name="min_amount" class="form-control" placeholder="0"  aria-label="Min amount" step="any"
-                           {% if search.min_amount %}
-                           value="{{search.min_amount}}"
+                    <input type="number" name="amount__gte" class="form-control" placeholder="0"  aria-label="Min amount" step="any"
+                           {% if search.amount__gte %}
+                           value="{{search.amount__gte}}"
                            {% endif %}
                            >
                     <span class="input-group-text">to</span>
-                    <input type="number" name="max_amount" class="form-control" 
+                    <input type="number" name="amount__lte" class="form-control" 
                     placeholder="Max amount" 
                     aria-label="Max balance" step="any"
-                           {% if search.max_amount %}
-                           value="{{ search.max_amount }}"
+                           {% if search.amount__lte %}
+                           value="{{ search.amount__lte }}"
                            {% endif %}
                            >
                     </div>
@@ -69,13 +69,13 @@
                     <label for="basic-url" class="form-label">Created at</label>
                     <div class="input-group mb-3">
                     <span class="input-group-text" id="basic-addon3">From</span>
-                    <input type="datetime-local" name="min_created_at" class="form-control" id="basic-url" aria-describedby="basic-addon3" 
-                           value={{search.min_created_at}}>
+                    <input type="datetime-local" name="created_at__gte" class="form-control" id="basic-url" aria-describedby="basic-addon3" 
+                           value={{search.created_at__gte}}>
                     </div>
                     <div class="input-group mb-3">
                     <span class="input-group-text" id="basic-addon3">To</span>
-                    <input type="datetime-local" name="max_created_at" class="form-control" id="basic-url" aria-describedby="basic-addon3"
-                            value={{search.max_created_at}}>
+                    <input type="datetime-local" name="created_at__lte" class="form-control" id="basic-url" aria-describedby="basic-addon3"
+                            value={{search.created_at__lte}}>
                 </div>
                 </div>
               </div>
@@ -227,15 +227,15 @@
         <form action="/create_referal{{ params|get_urlencode }}" method="post">
           {% if user %}
           <input type="hidden" name="redirect_uuid"  value="{{user.uuid}}">
-          <input type="hidden" name="referal_parent_uuid"  value="{{user.uuid}}">
+          <input type="hidden" name="user_id"  value="{{user.uuid}}">
           {% else %}
           <label for="" class="form-label">Parent UUID:</label>
-          <input name="referal_parent_uuid" 
+          <input name="user_id" 
                 type="text" class="form-control" placeholder="Enter referal parent UUID" 
                 aria-label="Example text with button addon" aria-describedby="button-addon1" required>
           {% endif %}
           <label for="" class="form-label">Children UUID:</label>
-          <input name="referal_children_uuid" 
+          <input name="invited_user_id" 
                 type="text" class="form-control" placeholder="Enter referal children UUID" 
                 aria-label="Example text with button addon" aria-describedby="button-addon1" required>
           <label for="" class="form-label">Amount:</label>

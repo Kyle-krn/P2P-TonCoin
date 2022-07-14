@@ -3,16 +3,14 @@ from fastapi import APIRouter
 from fastapi import Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from models import models
-from loader import templates, flash, manager
+from loader import templates, manager
+from jinja_func import flash
 from ..forms import UserUpdateForm
 import starlette.status as status
 
 
 user_router = APIRouter()
 
-
-class NewChildrenExc(Exception):
-    pass
 
 @user_router.get("/user/{uuid}", response_class=HTMLResponse)
 async def user_detail(request: Request, 
@@ -46,64 +44,6 @@ async def update_user(request: Request,
             await user.save()
     else:
         form.flash_error()
-    # try:
-    #     if referal_parent != user.referal_user_id:
-    #         new_parent = None
-    #         if referal_parent and isinstance(referal_parent, UUID):
-    #             new_parent = await models.User.get_or_none(uuid=referal_parent)
-    #             if new_parent is None or user == new_parent:
-    #                 raise NewChildrenExc()
-    #         old_referal = None
-    #         if user.referal_user_id:
-    #             old_referal = await models.UserReferalBonus.get_or_none(user_id=user.referal_user_id,
-    #                                                             invited_user_id=user.uuid)
-    #         if old_referal and new_parent is None:
-    #             old_referal.state = "cancelled"
-    #             user.referal_user = None
-    #             await user.save()
-    #             await old_referal.save()
-    #         if old_referal is None and new_parent:
-    #             new_referal = await models.UserReferalBonus.get_or_none(user_id=new_parent.uuid,
-    #                                                                     invited_user_id=user.uuid)
-    #             if not new_referal:
-    #                 pass
-    #                 new_referal = await models.UserReferalBonus.create(user_id=new_parent.uuid,
-    #                                                        invited_user_id=user.uuid,
-    #                                                        amount=1,
-    #                                                        state="created")
-    #             else:
-    #                 new_referal.state = "created"
-    #                 await new_referal.save()
-                
-    #             user.referal_user = new_parent
-    #             await user.save()
-            
-    #         elif old_referal and new_parent:
-    #             old_referal.state = "cancelled"
-    #             await old_referal.save()
-    #             new_referal = await models.UserReferalBonus.get_or_none(user_id=new_parent.uuid,
-    #                                                                     invited_user_id=user.uuid)
-    #             if not new_referal:
-    #                 pass
-    #                 new_referal = await models.UserReferalBonus.create(user_id=new_parent.uuid,
-    #                                                        invited_user_id=user.uuid,
-    #                                                        amount=1,
-    #                                                        state="created")
-    #             else:
-    #                 new_referal.state = "created"
-    #                 await new_referal.save()
-                
-    #             user.referal_user = new_parent
-    #             await user.save()
-
-            
-    # except NewChildrenExc:
-    #     flash(request, "Invalid UUID")
-
-  
-    # await user.update_from_dict({"wallet": wallet, "balance": balance, "frozen_balance": frozen_balance})
-    # await user.save()
-    # flash(request, "Success", category="success")
     params = request.query_params
     if params != "":
         params = "?" + str(params)

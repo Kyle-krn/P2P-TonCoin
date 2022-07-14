@@ -10,28 +10,11 @@ from models import models
 order_by_router = APIRouter()
 
 
-@order_by_router.get("/sort/payments_account_type/{column}", response_class=RedirectResponse)
-
-@order_by_router.get("/sort/user_payments_account/{column}/{user_uuid}", response_class=RedirectResponse)
-@order_by_router.get("/sort/payments_account/{column}", response_class=RedirectResponse)
-
-@order_by_router.get("/sort/users/{column}", response_class=RedirectResponse)
-
-@order_by_router.get("/sort/currency/{column}", response_class=RedirectResponse)
-
-@order_by_router.get("/sort/user_history_balance/{column}/{user_uuid}", response_class=RedirectResponse)
-@order_by_router.get("/sort/history_balance/{column}", response_class=RedirectResponse)
-
-@order_by_router.get("/sort/user_referal_children/{column}/{user_uuid}", response_class=RedirectResponse)
-@order_by_router.get("/sort/referal_children/{column}", response_class=RedirectResponse)
-
-@order_by_router.get("/sort/orders/{column}", response_class=RedirectResponse)
-
-@order_by_router.get("/sort/bot_text/{column}", response_class=RedirectResponse)
-@order_by_router.get("/sort/bot_button/{column}", response_class=RedirectResponse)
-
+@order_by_router.get("/sort/{redirect}/{column}/{user_uuid}", response_class=RedirectResponse)
+@order_by_router.get("/sort/{redirect}/{column}", response_class=RedirectResponse)
 async def sort(request: Request,
                     column: str,
+                    redirect: str,
                     user_uuid: UUID = None,
                     staff: models.Staff = Depends(manager)):
     params = request.query_params._dict
@@ -47,6 +30,5 @@ async def sort(request: Request,
         elif column[0] != "~":
             params["order_by"] = [i for i in params["order_by"] if column_name != i[1:]]
             params["order_by"].append(column)
-    redirect_url = request.url.path.split('/')[2]
-    redirect_url = f'/{redirect_url}/{user_uuid}?' if user_uuid else f"/{redirect_url}?"
+    redirect_url = f'/{redirect}/{user_uuid}?' if user_uuid else f"/{redirect}?"
     return redirect_url + urlencode(params)

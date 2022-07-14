@@ -3,7 +3,6 @@ import aiohttp
 import aioschedule
 from models import models
 import utils.currency as currency_utils
-# from utils.currency import get_api_currency
 
 async def update_currency_ton():
     url = "https://api.coingecko.com/api/v3/simple/price"
@@ -27,10 +26,8 @@ async def update_rate_currency():
         await cur.save()
 
 async def scheduler():
-    # aioschedule.every().day.at("00:01").do(update_currency_ton)
     aioschedule.every().minute.do(update_currency_ton)
     aioschedule.every().hour.do(update_rate_currency)
-    # aioschedule.do(update_likes)
     while True:
         await aioschedule.run_pending() 
         await asyncio.sleep(1)

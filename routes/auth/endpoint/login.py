@@ -3,7 +3,8 @@ from fastapi import Form, Request, APIRouter
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import Request
-from loader import flash, load_user, manager, templates
+from loader import load_user, manager, templates
+from jinja_func import flash
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_login.exceptions import InvalidCredentialsException #Exception class
 from fastapi import Depends,status

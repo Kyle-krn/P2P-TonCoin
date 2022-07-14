@@ -1,10 +1,8 @@
-import ast
-from typing import Any, Union
-from urllib.parse import urlencode
 from fastapi.responses import HTMLResponse, RedirectResponse
 from uuid import UUID
-from fastapi import APIRouter, Depends, Request, Form
-from loader import flash, manager, templates
+from fastapi import APIRouter, Depends, Request
+from loader import manager, templates
+from jinja_func import flash
 from models import models
 from tortoise.queryset import Q
 import starlette.status as status
@@ -12,37 +10,34 @@ from utils import orm_utils
 from loader import bot
 from utils.lang import lang_text
 from aiogram.utils.exceptions import ChatNotFound, BotBlocked
+from ..pydantic_models import ReferalSearch
+from ..forms import CreateReferalForm
+
 referal_router = APIRouter()
+
 
 @referal_router.post("/create_referal")
 async def create_referal_children(request: Request,
-                                  redirect_uuid: UUID = Form(None),
-                                  referal_parent_uuid: UUID = Form(),
-                                  referal_children_uuid: Union[UUID, Any] = Form(),
-                                  amount: float = Form(),
                                   staff: models.Staff = Depends(manager)):
-    if isinstance(referal_children_uuid, UUID) is False:
-        flash(request, f"Invalid UUID: {referal_children_uuid}", "danger")
-    elif referal_parent_uuid == referal_children_uuid:
-        flash(request, f"Invalid UUID: {referal_children_uuid}", "danger")
-    else: 
-        referal = await models.UserReferalBonus.filter(user_id=referal_parent_uuid,
-                                                            invited_user_id=referal_children_uuid)
-        if len(referal) > 0:
-            flash(request, f"Referal bonus already exists", "info")
-        else:
-            await models.UserReferalBonus.create(user_id=referal_parent_uuid,
-                                                invited_user_id=referal_children_uuid,
-                                                amount=amount,
-                                                state="created")
+    form = CreateReferalForm(request)
+    await form.load_data()
+    if await form.is_valid():
+        await models.UserReferalBonus.create(user_id=form.user_id,
+                                             invited_user_id=form.invited_user_id,
+                                             amount=form.amount,
+                                             state="created")
+        flash(request, "Success", "success")
+    else:
+        form.flash_error()
     params = request.query_params
     if params != "":
         params = "?" + str(params)
-    
-    redirect_url = f'/user_referal_children/{redirect_uuid}' if redirect_uuid else "/referal_children"
+    redirect_url = f'/user_referal_children/{form.redirect_uuid}' if form.redirect_uuid else "/referal_children"
     return RedirectResponse(
         redirect_url + params, 
         status_code=status.HTTP_302_FOUND)  
+
+
 
 @referal_router.post("/update_referal_children")
 async def update_referal_children(request: Request,
@@ -93,26 +88,16 @@ async def update_referal_children(request: Request,
         status_code=status.HTTP_302_FOUND)  
 
 
+
 @referal_router.get("/user_referal_children/{uuid}", response_class=HTMLResponse)
 @referal_router.get("/referal_children", response_class=HTMLResponse)
 async def user_detail(request: Request, 
                       uuid: UUID = None,
                       staff: models.Staff = Depends(manager),
-                      user_uuid: Union[UUID, str] = None,
-                      invited_user_uuid: Union[UUID, str] = None,
-                      state: str = None,
-                      min_amount: Union[float, str] = None,
-                      max_amount: Union[float, str] = None,
-                      min_created_at: str = None,
-                      max_created_at: str = None,
+                      search: ReferalSearch = Depends(ReferalSearch),
                       order_by: str = None,
                       page: int = 1
                       ):
-
-
-    if user_uuid is not None and (isinstance(user_uuid, UUID) is False or (await models.User.get_or_none(uuid=user_uuid)) is None):
-        user_uuid = None
-        flash(request, "Error Parent UUID")
 
     if uuid:
         user = await models.User.get(uuid=uuid).prefetch_related("referal_user")
@@ -120,44 +105,9 @@ async def user_detail(request: Request,
     else:
         user = None
         query = Q()
-
-    search = {
-        "invited_user_uuid": None,
-        "state": None,
-        "min_amount": None,
-        "max_amount": None,
-        "min_created_at": None,
-        "max_created_at": None,
-        "user_uuid": None
-    }
-
-    if user_uuid:
-        query = Q(user_id=user_uuid)
-        search['user_uuid'] = user_uuid
-
-    if invited_user_uuid:
-        if isinstance(invited_user_uuid, UUID) is False or (await models.User.get_or_none(uuid=invited_user_uuid)) is None:
-            flash(request, "Error children UUID")
-        else:
-            query &= Q(invited_user_id=invited_user_uuid)
-            search["invited_user_uuid"] = invited_user_uuid
-    if state:
-        query &= Q(state=state)
-        search['state'] = state
-    
-    if min_amount:
-        query = query & Q(amount__gte=min_amount)
-        search['min_amount'] = min_amount
-    if max_amount:
-        query = query & Q(amount__lte=min_amount)
-        search['max_amount'] = max_amount
-    if min_created_at:
-        query = query & Q(created_at__gte=min_created_at)
-        search['min_created_at'] = min_created_at
-    if max_created_at:
-        query = query & Q(created_at__lte=max_created_at)
-        search['max_created_at'] = max_created_at
-    send_referal = models.UserReferalBonus.filter(query) #.
+        
+    query &= await orm_utils.query_filters(search)
+    send_referal = models.UserReferalBonus.filter(query) 
 
     limit = 30
     offset, last_page, previous_page, next_page = orm_utils.pagination(limit=limit, page=page, count_model=await send_referal.count())
