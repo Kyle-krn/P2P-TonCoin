@@ -1,9 +1,10 @@
 import asyncio
 import aiohttp
 import aioschedule
+from handlers.buy_coin.buy_coin_handlers import cancel_buy_order_handler
 from models import models
 import utils.currency as currency_utils
-
+from datetime import datetime, timedelta
 async def update_currency_ton():
     url = "https://api.coingecko.com/api/v3/simple/price"
     params = {'ids': "the-open-network", "vs_currencies": "usd"}
@@ -25,8 +26,16 @@ async def update_rate_currency():
         cur.exchange_rate = rate['value']
         await cur.save()
 
+
+async def wait_buyer_send_funds_order_check():
+    orders = await models.Order.filter(state="wait_buyer_send_funds")
+    for order in orders:
+        if (order.updated_at + timedelta(minutes=15)).replace(tzinfo=None) < datetime.utcnow():
+            await cancel_buy_order_handler(order_uuid=order.uuid)
+
 async def scheduler():
     aioschedule.every().minute.do(update_currency_ton)
+    aioschedule.every().minute.do(wait_buyer_send_funds_order_check)
     aioschedule.every().hour.do(update_rate_currency)
     while True:
         await aioschedule.run_pending() 

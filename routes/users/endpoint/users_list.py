@@ -17,6 +17,7 @@ async def users_list(request: Request,
                      order_by: str = None,
                      page: int = 1
                     ):
+    print(search.created_at__gte, type(search.created_at__gte))
     query = await orm_utils.query_filters(search)
     users = models.User.filter(query)
     limit = 30

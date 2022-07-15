@@ -45,7 +45,7 @@ async def update_order(request: Request,
             await order.save()
     else:
         form.flash_error()
-    return RedirectResponse(request.url_for('detail_order', uuid=order.uuid), status_code=status.HTTP_302_FOUND)
+    return RedirectResponse(request.url_for('order_detail', uuid=order.uuid), status_code=status.HTTP_302_FOUND)
 
 
 

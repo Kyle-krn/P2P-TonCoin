@@ -1,4 +1,5 @@
 from typing import Union
+from uuid import UUID
 import aiogram
 from keyboards.inline.keyboards import stop_state_keyboard
 from loader import dp, bot
@@ -11,6 +12,7 @@ from .state import BuyState
 from .utils import check_unfinished_deal
 from utils.lang import lang_currency, lang_payment_type, lang_text
 from utils.utils import trim_float
+from aiogram.utils.exceptions import ChatNotFound, BotBlocked
 
 @dp.message_handler(regexp="^(Купить Ton)$")
 @dp.message_handler(regexp="^(Buy Ton)$")
@@ -309,9 +311,14 @@ async def view_buy_order_handler(message: Union[types.Message, types.CallbackQue
 
 
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'cancel_buy_order')
-async def cancel_buy_order_handler(call :types.CallbackQuery):
+async def cancel_buy_order_handler(call :types.CallbackQuery = None, 
+                                   order_uuid: UUID = None):
     '''Покупатель отменяет сделку'''
-    order = await models.Order.get(uuid=call.data.split(':')[1])
+    order_uuid = call.data.split(':')[1] if call else order_uuid
+    order = await models.Order.get(uuid=order_uuid)
+    if order.state != "wait_buyer_send_funds":
+        return
+    customer = await order.customer
     if order.parent:
         order_parent = await order.parent
         order_parent.amount += order.amount
@@ -335,16 +342,28 @@ async def cancel_buy_order_handler(call :types.CallbackQuery):
         await order.save()
 
     # text = "Заказ отменен."
-    user = await models.User.get(telegram_id=call.message.chat.id)
-    text = await lang_text(lang_uuid="1235401b-7b99-4798-9ea2-82f94e1f46b4",
-                           user=user)
-    await call.message.edit_text(text=text)
+    if call:
+        user = await models.User.get(telegram_id=call.message.chat.id)
+        text = await lang_text(lang_uuid="1235401b-7b99-4798-9ea2-82f94e1f46b4",
+                            user=user)
+        return await call.message.edit_text(text=text)
+    else:
+        # 
+        text = await lang_text(lang_uuid="0098f880-d6cc-472b-ad64-6454fb18f689",
+                            user=customer,
+                            format={"order_id": order.serial_int})
+        try:
+            return await bot.send_message(chat_id=customer.telegram_id, text= text)
+        except (ChatNotFound, BotBlocked):
+            pass
 
 
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'send_money_order')
 async def send_money_order_handler(call: types.CallbackQuery):
     '''Покупатель отправил деньги'''
     order = await models.Order.get(uuid=call.data.split(":")[1])
+    if order.state != "wait_buyer_send_funds":
+        return await call.message.edit_text("Этот заказ больше недоступен.")
     if order.parent:
         parent_order = await order.parent
         pay_account = await parent_order.order_user_payment_account.filter(account__type__uuid=order.customer_pay_type_id)

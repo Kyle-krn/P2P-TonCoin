@@ -80,6 +80,15 @@
         </td>
       </tr>
       <tr>
+        <td class="text-center"><b>Amount:</b></td>
+        <td class="text-center">
+            <div class="input-group flex-nowrap">
+            <input name="amount" type="number" class="form-control text-center" placeholder="amount" value="{{order.amount | format_float }}" aria-label="Amount" step="any" required>
+            <span class="input-group-text" id="addon-wrapping">TON</span>
+            </div>
+        </td>
+      </tr>
+      <tr>
         <td class="text-center"><b>Commission:</b></td>
         <td class="text-center">
             <div class="input-group flex-nowrap">
@@ -139,6 +148,16 @@
       </td>
       </form>
       </tr>
+      {% if order.state == "need_admin_resolution" %}
+      <tr>
+        <td class="text-center"><b>Need admin resolution:</b></td>
+        <td class="text-center">
+          <a class="btn btn-primary btn-sm" href="/order_admin_resolution/approve/{{order.uuid}}" role="button">Approve</a>
+          <a class="btn btn-danger btn-sm" href="/order_admin_resolution/reject/{{order.uuid}}" role="button">Reject</a>
+      </td>
+      </form>
+      </tr>
+      {% endif %}
       {% endif %}
       </tbody>
 </table>

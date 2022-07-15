@@ -23,6 +23,7 @@ class UpdateOrderForm:
         self.customer_id: UUID = None
         self.currency_id: UUID = None
         self.origin_amount: float = None
+        self.amount: float = None
         self.commission: float = None
         self.margin: float = None
         self.min_buy_sum: float = None
@@ -36,6 +37,7 @@ class UpdateOrderForm:
         self.customer_id = form.get("customer_id") if form.get("cutomer_id") else None
         self.currency_id = form.get("currency_id") if form.get("currency_id") else None
         self.origin_amount = form.get("origin_amount") if form.get("origin_amount") else None 
+        self.amount = form.get("amount") if form.get("amount") else None 
         self.commission = form.get("commission") if form.get("commission") else None
         self.margin = form.get("margin") if form.get("margin") else None
         self.min_buy_sum = form.get("min_buy_sum") if form.get("min_buy_sum") else None
@@ -93,6 +95,16 @@ class UpdateOrderForm:
                 self.errors.append("Origin amount is not digit")
         else:
             self.errors.append("Origin amount is required")
+        print(self.amount)
+        if self.amount:
+            try:
+                self.amount = float(self.amount)
+                if self.amount < 0:
+                    self.errors.append("Error amount value")
+            except ValueError:
+                self.errors.append("amount is not digit")
+        else:
+            self.errors.append("amount is required")
         
 
         if self.commission:

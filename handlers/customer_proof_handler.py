@@ -38,5 +38,11 @@ async def pruf_handler(message: types.Message):
                                          new_state="need_admin_resolution")
     problem_order.state = "need_admin_resolution"
     await problem_order.save()
-    await models.Order.filter(Q(seller=await problem_order.seller) & Q(state="ready_for_sale")).update(state="suspended")
+    orders = await models.Order.filter(Q(seller=await problem_order.seller) & Q(state="ready_for_sale"))
+    for order in orders:
+        await models.OrderStateChange.create(order=order, 
+                                             old_state=order.state, 
+                                             new_state="suspended")
+        order.state = "suspended"
+        await order.save()
 
