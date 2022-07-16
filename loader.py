@@ -15,6 +15,7 @@ import typing
 from fastapi_login import LoginManager
 from models import models
 import utils.exceptions as custom_exc 
+from utils.misc import logging
 
 bot = Bot(token=config.BOT_TOKEN, parse_mode=types.ParseMode.HTML)
 storage = MemoryStorage()

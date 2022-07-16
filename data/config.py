@@ -6,6 +6,9 @@ env.read_env()
 
 BOT_TOKEN = env.str("BOT_TOKEN")  # Забираем значение типа str
 
+
+LOGGER_CHANEL_ID = env.int("LOGGER_CHANEL_ID")
+
 USER = env.str('USER_DB')
 PASSWORD = env.str('PASSWORD')
 HOST = env.str('HOST')

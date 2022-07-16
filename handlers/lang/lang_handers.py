@@ -7,6 +7,12 @@ from models import models
 from utils.lang import lang_text
 
 
+
+import requests
+from data import config
+import logging
+import urllib.parse
+
 @dp.message_handler(regexp="^(Язык: ru)$")
 @dp.message_handler(regexp="^(Language: eng)$")
 async def change_lang_handler(message: types.Message):
@@ -16,8 +22,6 @@ async def change_lang_handler(message: types.Message):
     # text = "Добро пожаловать!"
     return await message.answer(text=text, reply_markup=await keyboards.language_keyboard(user))
     # await message.answer(text=text, reply_markup=await main_keyboard(user))
-
-
 
 
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'lang')
