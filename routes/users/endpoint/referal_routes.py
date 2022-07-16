@@ -89,18 +89,18 @@ async def update_referal_children(request: Request,
 
 
 
-@referal_router.get("/user_referal_children/{uuid}", response_class=HTMLResponse)
+@referal_router.get("/user_referal_children/{user_uuid}", response_class=HTMLResponse)
 @referal_router.get("/referal_children", response_class=HTMLResponse)
 async def user_detail(request: Request, 
-                      uuid: UUID = None,
+                      user_uuid: UUID = None,
                       staff: models.Staff = Depends(manager),
                       search: ReferalSearch = Depends(ReferalSearch),
                       order_by: str = None,
                       page: int = 1
                       ):
 
-    if uuid:
-        user = await models.User.get(uuid=uuid).prefetch_related("referal_user")
+    if user_uuid:
+        user = await models.User.get(uuid=user_uuid).prefetch_related("referal_user")
         query = Q(user=user)
     else:
         user = None

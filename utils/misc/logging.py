@@ -29,7 +29,7 @@ class TgLoggerHandler(logging.Handler):
 tg_handler = TgLoggerHandler()
 tg_handler.setLevel(logging.ERROR)
 stream_handler = logging.StreamHandler()
-stream_handler.setLevel(logging.DEBUG)
+stream_handler.setLevel(logging.INFO)
 
 
 logging.basicConfig(format=u'%(filename)s [LINE:%(lineno)d] #%(levelname)-8s [%(asctime)s]  %(message)s',

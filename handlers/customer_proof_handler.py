@@ -4,6 +4,8 @@ from aiogram import types
 from models import models
 from tortoise.queryset import Q
 
+from utils.notification_telegram import notification_problem_order
+
 ALLOWED_TYPES = ("pdf" , "xls" , "xcls" , "jpg" , "pdf" ,"gif")
 
 @dp.message_handler(content_types=['photo', 'document'])
@@ -12,7 +14,6 @@ async def pruf_handler(message: types.Message):
     problem_order = await models.Order.get_or_none(customer=user, state="problem_seller_no_funds")
     if not problem_order:
         return
-    
     problem_order_dir_path = "/static/problem_order/"
     if os.path.exists(BASE_DIR + problem_order_dir_path) is False:
         os.mkdir(BASE_DIR + problem_order_dir_path)
@@ -38,6 +39,7 @@ async def pruf_handler(message: types.Message):
                                          new_state="need_admin_resolution")
     problem_order.state = "need_admin_resolution"
     await problem_order.save()
+    await notification_problem_order(problem_order)
     orders = await models.Order.filter(Q(seller=await problem_order.seller) & Q(state="ready_for_sale"))
     for order in orders:
         await models.OrderStateChange.create(order=order, 

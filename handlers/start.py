@@ -1,8 +1,9 @@
-from loader import dp
+from loader import dp, bot
 from aiogram import types
 from models import models
 from keyboards.inline import keyboards
 from keyboards.reply.keyboards import main_keyboard
+from utils.notification_telegram import broadcaster, notification_new_user
 
 
 @dp.message_handler(commands=['start'])
@@ -22,6 +23,7 @@ async def start(message: types.Message):
             if parent_referal:
                 user_kwargs["referal_user_id"] = parent_referal.uuid
         user = await models.User.create(**user_kwargs)
+        await notification_new_user(user)
         if parent_referal:
             await models.UserReferalBonus.create(user=parent_referal,
                                                  invited_user=user,

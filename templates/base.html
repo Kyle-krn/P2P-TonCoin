@@ -51,10 +51,14 @@
               <a class="nav-link" aria-current="page" href="/bot_button">Bot button</a>
             </li>
             <li class="nav-item">
-              <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#PDFModal">
+              <button type="button" class="btn btn-primary mr-2" data-bs-toggle="modal" data-bs-target="#PDFModal">
                 Change PDF scheme of work
             </button>
+            <button type="button" class="btn btn-primary mr-2" data-bs-toggle="modal" data-bs-target="#BroadcastModal">
+              Broadcast
+          </button>
             </li>
+            
           </ul>
           <a class="nav-link" aria-current="page" href="/auth/logout">Logout</a>
         </div>
@@ -79,7 +83,7 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="PDFModalLabel">Modal title</h5>
+            <h5 class="modal-title" id="PDFModalLabel">PDF</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
@@ -93,6 +97,34 @@
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             <button type="submit" class="btn btn-success">Update</button>
+          </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <div class="modal fade" id="BroadcastModal" tabindex="-1" aria-labelledby="BroadcastModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="BroadcastModalLabel">Broadcast</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form action="/broadcast" method="post">
+              <input type="hidden" name="redirect_url" value="{{request.url.path}}">
+              <div class="mb-3">
+                <label for="formFile" class="form-label">Rus text:</label>
+                <textarea class="form-control" name="rus_text" type="text" cols="30" rows="3" required></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="formFile" class="form-label">Eng text:</label>
+                <textarea class="form-control" name="eng_text" type="text" cols="30" rows="3"  required></textarea>
+              </div>
+              </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-success">Send</button>
           </form>
           </div>
         </div>

@@ -8,6 +8,7 @@ BOT_TOKEN = env.str("BOT_TOKEN")  # Забираем значение типа s
 
 
 LOGGER_CHANEL_ID = env.int("LOGGER_CHANEL_ID")
+NOTIFICATION_GROUP_ID = env.int("NOTIFICATION_GROUP_ID")
 
 USER = env.str('USER_DB')
 PASSWORD = env.str('PASSWORD')

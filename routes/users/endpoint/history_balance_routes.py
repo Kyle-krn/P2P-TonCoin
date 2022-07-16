@@ -14,17 +14,17 @@ from ..pydantic_models import HistoryBalanceSearch
 history_balance_router = APIRouter()
 
 
-@history_balance_router.get("/user_history_balance/{uuid}", response_class=HTMLResponse)
+@history_balance_router.get("/user_history_balance/{user_uuid}", response_class=HTMLResponse)
 @history_balance_router.get("/history_balance", response_class=HTMLResponse)
 async def get_history_balance(request: Request, 
-                      uuid: UUID = None,
+                      user_uuid: UUID = None,
                       search: HistoryBalanceSearch = Depends(HistoryBalanceSearch),
                       staff: models.Staff = Depends(manager),
                       order_by: str = None,
                       page: int = 1):
 
-    if uuid:
-        user = await models.User.get(uuid=uuid).prefetch_related("referal_user")
+    if user_uuid:
+        user = await models.User.get(uuid=user_uuid).prefetch_related("referal_user")
         query = Q(user=user)
     else:
         user = None

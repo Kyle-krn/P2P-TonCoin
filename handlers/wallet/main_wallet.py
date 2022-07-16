@@ -4,6 +4,7 @@ from models import models
 from keyboards.inline import wallet_keyboards
 from aiogram.dispatcher import FSMContext
 from utils.lang import lang_text
+from utils.notification_telegram import notification_withdraw
 from utils.validate_ton_address import validate_wallet
 from .state import WithdrawState
 from utils.utils import generate_code
@@ -110,16 +111,15 @@ async def ton_wallet_state(message: types.Message, state: FSMContext):
         # text = f"Введите номер кошелька, на который вы хотите вывести {user_data['withdraw_amount']} TON"
         return await message.answer(text=text)
     
-    await models.UserBalanceChange.create(user=user,
+    withdraw = await models.UserBalanceChange.create(user=user,
                                           type="withdraw",
                                           amount=user_data['withdraw_amount'], 
                                           wallet=wallet,
                                           state="created")
+    await notification_withdraw(withdraw)
     user.balance = user.balance - user_data['withdraw_amount']
     await user.save()
     await state.finish()
     text = await lang_text(lang_uuid="f77f9194-9387-443c-82b4-9755648ef91f",
                            user=user)
-    #     Вывод средств на сумму {{ amount }} TON успешно выполнен! 
-        # Ваш баланс: {{ balance }} TON
     await message.answer(text)

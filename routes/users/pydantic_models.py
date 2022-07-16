@@ -32,6 +32,7 @@ class UsersSearch(BaseModel):
 
 
 class ReferalSearch(BaseModel):
+    uuid: UUID = None
     user_id: Union[UUID,str] = None
     invited_user_id: Union[UUID,str] = None
     state: str = None
@@ -61,6 +62,7 @@ class ReferalSearch(BaseModel):
 
 
 class HistoryBalanceSearch(BaseModel):
+    uuid: UUID = None
     user_id: Union[UUID,str] = None
     type: str = None
     amount__gte: Union[float, str] = None
