@@ -316,7 +316,7 @@ async def cancel_buy_order_handler(call :types.CallbackQuery = None,
     '''Покупатель отменяет сделку'''
     order_uuid = call.data.split(':')[1] if call else order_uuid
     order = await models.Order.get(uuid=order_uuid)
-    if order.state != "wait_buyer_send_funds":
+    if order.state != "wait_buyer_send_funds" or order.state != "problem_seller_no_funds":
         return
     customer = await order.customer
     if order.parent:
