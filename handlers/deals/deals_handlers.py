@@ -7,7 +7,8 @@ from keyboards.inline import buy_keyboards, deals_keyboards
 from handlers.sell_coin.sell_coin_handlers import SellTonState, choice_pay_acc_sell_ton_hanlder
 from utils.lang import lang_currency, lang_text
 from utils.utils import trim_float
-
+from tortoise.exceptions import DoesNotExist
+from handlers.start import start
 
 @dp.message_handler(regexp="^(Мои активные заказы)$")
 @dp.message_handler(regexp="^(My active deals)$")
@@ -19,7 +20,10 @@ async def my_deals_handler(message: Union[types.Message, types.CallbackQuery]):
         page = int(message.data.split(':')[1])
         await message.message.delete()
         message = message.message
-    user = await models.User.get(telegram_id=message.chat.id)
+    try:
+        user = await models.User.get(telegram_id=message.chat.id)
+    except DoesNotExist:
+        return start(message)
     query_filter = Q(seller=user)
     query_exclude = Q(state="done") | Q(state="cancelled_by_seller") | Q(state="cancelled_by_customer")
     orders = models.Order.filter(query_filter).exclude(query_exclude)

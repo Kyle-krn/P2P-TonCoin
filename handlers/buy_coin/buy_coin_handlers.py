@@ -13,7 +13,8 @@ from .utils import check_unfinished_deal
 from utils.lang import lang_currency, lang_payment_type, lang_text
 from utils.utils import trim_float
 from aiogram.utils.exceptions import ChatNotFound, BotBlocked
-
+from tortoise.exceptions import DoesNotExist
+from handlers.start import start
 @dp.message_handler(regexp="^(Купить Ton)$")
 @dp.message_handler(regexp="^(Buy Ton)$")
 @dp.callback_query_handler(lambda call: call.data == 'back_choice_currency_buy_coin')
@@ -26,8 +27,10 @@ async def buy_coin_hanlder(message: Union[types.Message, types.CallbackQuery]):
                                     user=user)
         await message.edit_text(edit_text)
     else:
-        user = await models.User.get(telegram_id=message.chat.id)
-
+        try:
+            user = await models.User.get(telegram_id=message.chat.id)
+        except DoesNotExist:
+            return await start(message)
     unfinished_deal, keyboard = await check_unfinished_deal(user) # Проверяем есть ли у юзера незаконченные сделки
     if unfinished_deal is True:
         return await message.answer(text="Вы имеете не завершенную сделку.", reply_markup=keyboard)

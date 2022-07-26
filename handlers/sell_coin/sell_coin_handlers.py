@@ -10,12 +10,16 @@ from utils.lang import lang_currency, lang_payment_type, lang_text
 from keyboards.inline import sell_keyboards
 from .state import SellTonState
 import aiogram
-
+from tortoise.exceptions import DoesNotExist
+from handlers.start import start
 
 @dp.message_handler(regexp="^(Продать Ton)$")
 @dp.message_handler(regexp="^(Sell Ton)$")
 async def sell_ton_handler(message: types.Message):
-    user = await models.User.get(telegram_id=message.chat.id)
+    try:
+        user = await models.User.get(telegram_id=message.chat.id)
+    except DoesNotExist:
+        return await start(message)
     if user.balance < 0.1:
         # text = "Пополните баланс для создания заказа на продажу TonCoin"
         text = await lang_text(lang_uuid="aa66b9f2-8bf6-4d1b-9e8c-207ef6787935", 

@@ -3,12 +3,16 @@ from aiogram import types
 from models import models
 from keyboards.inline import referal_keyboards
 from utils.lang import lang_text
+from tortoise.exceptions import DoesNotExist
+from handlers.start import start
 
 @dp.message_handler(regexp="^(Реферальная система)$")
 @dp.message_handler(regexp="^(Referal system)$")
 async def referal_handler(message: types.Message):
-    user = await models.User.get(telegram_id=message.chat.id)
-
+    try:
+        user = await models.User.get(telegram_id=message.chat.id)
+    except DoesNotExist:
+        return await start(message)
     text = await lang_text(lang_uuid="3765be5b-239f-4299-960a-369fd34fef96",
                            user=user,
                            format={

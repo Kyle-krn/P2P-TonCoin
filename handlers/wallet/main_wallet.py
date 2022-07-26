@@ -1,3 +1,4 @@
+from handlers.start import start
 from loader import dp
 from aiogram import types
 from models import models
@@ -8,13 +9,16 @@ from utils.notification_telegram import notification_withdraw
 from utils.validate_ton_address import validate_wallet
 from .state import WithdrawState
 from utils.utils import generate_code
-
+from tortoise.exceptions import DoesNotExist
 
 
 @dp.message_handler(regexp=f"^(Кошелек)$")
 @dp.message_handler(regexp=f"^(Wallet)$")
 async def main_wallet_handler(message: types.Message):
-    user = await models.User.get(telegram_id=message.chat.id)
+    try:
+        user = await models.User.get(telegram_id=message.chat.id)
+    except DoesNotExist:
+        return await start(message)
     text = await lang_text(lang_uuid="de220ffc-1210-4433-a681-76c30a829ca7", 
                            user=user, 
                            format={

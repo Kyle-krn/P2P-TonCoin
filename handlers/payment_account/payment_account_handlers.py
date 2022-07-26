@@ -4,7 +4,8 @@ from aiogram import types
 from models import models
 from keyboards.inline import payment_account_keyboards
 from utils.lang import lang_text 
-
+from tortoise.exceptions import DoesNotExist
+from handlers.start import start
 
 @dp.message_handler(regexp="^(Мои счета)$")
 @dp.message_handler(regexp="^(My bank account)$")
@@ -17,7 +18,10 @@ async def payment_account_message_handler(message: Union[types.Message, types.Ca
                                     user=user)
         await message.edit_text(edit_text)
     else:
-        user = await models.User.get(telegram_id=message.chat.id)
+        try:
+            user = await models.User.get(telegram_id=message.chat.id)
+        except DoesNotExist:
+            return await start(message)
     text = await lang_text(lang_uuid="38cf9afe-083a-4e90-a29c-a743cc6895fa",
                            user=user)
     # text = "Выберите ваш способ оплаты для изменения или добавьте новый"

@@ -5,12 +5,16 @@ from aiogram import types
 
 from models import models
 from utils.lang import lang_text
-
+from tortoise.exceptions import DoesNotExist
+from handlers.start import start
 
 @dp.message_handler(regexp="^(Язык: ru)$")
 @dp.message_handler(regexp="^(Language: eng)$")
 async def change_lang_handler(message: types.Message):
-    user = await models.User.get(telegram_id=message.chat.id)
+    try:
+        user = await models.User.get(telegram_id=message.chat.id)
+    except DoesNotExist:
+        return await start(message)
     text = await lang_text(lang_uuid="e0806c13-daba-4a79-a95e-97705c3090fb",
                            user=user)
     # text = "Добро пожаловать!"

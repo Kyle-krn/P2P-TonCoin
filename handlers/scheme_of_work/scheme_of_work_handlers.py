@@ -3,11 +3,16 @@ from aiogram import types
 from models import models
 from tortoise.queryset import Q
 from utils import lang
+from tortoise.exceptions import DoesNotExist
+from handlers.start import start
 
 @dp.message_handler(text="Схема работы")
 @dp.message_handler(text="Scheme of work")
 async def scheme_of_work_handler(message: types.Message):
-    user = await models.User.get(telegram_id=message.chat.id)
+    try:
+        user = await models.User.get(telegram_id=message.chat.id)
+    except DoesNotExist:
+        return await start(message)
     await message.answer_document(document=types.InputFile('static/scheme_of_work.pdf'))
     problem_seller_order = await models.Order.get_or_none(state="need_admin_resolution", seller_id=user.uuid)
     format = None
