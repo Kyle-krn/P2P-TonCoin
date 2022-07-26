@@ -23,7 +23,7 @@ async def my_deals_handler(message: Union[types.Message, types.CallbackQuery]):
     try:
         user = await models.User.get(telegram_id=message.chat.id)
     except DoesNotExist:
-        return start(message)
+        return await start(message)
     query_filter = Q(seller=user)
     query_exclude = Q(state="done") | Q(state="cancelled_by_seller") | Q(state="cancelled_by_customer")
     orders = models.Order.filter(query_filter).exclude(query_exclude)

@@ -50,7 +50,7 @@ async def top_up_wallet_handler(call: types.CallbackQuery):
     #        "Сеть: The Open Network – TON\n\n"  \
     #        "{{ наш адрес смарт-контракта }}\n\n"  \
     #       f"ОБЯЗАТЕЛЬНО укажите код <b>{code}</b> в комментарии при пополнении баланса. Без этого кода ваше пополнение баланса может не отразиться в системе"
-    return await call.message.answer(text=text, reply_markup=await wallet_keyboards.top_up_keyboard(user))
+    return await call.message.answer(text=text, reply_markup=await wallet_keyboards.top_up_keyboard(user, code))
 
 
 @dp.callback_query_handler(lambda call: call.data.split(':')[0] == 'withdraw')

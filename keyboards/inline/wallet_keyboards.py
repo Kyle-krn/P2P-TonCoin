@@ -14,8 +14,8 @@ async def main_wallet_keyboard(user: models.User):
     return keyboard
 
 
-async def top_up_keyboard(user: models.User):
+async def top_up_keyboard(user: models.User, code: str):
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(types.InlineKeyboardButton(text=await lang_text(lang_uuid="405671aa-89c6-4910-89a1-c6a7ede2e0cb", user=user), 
-                                            url="ton://transfer/EQDcYqGh0d6i_kogT4QXvTuEq_iu61qPrZDVhbGnDvdrk-f3"))
+                                            url=f"ton://transfer/EQDcYqGh0d6i_kogT4QXvTuEq_iu61qPrZDVhbGnDvdrk-f3?text={code}"))
     return keyboard
