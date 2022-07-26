@@ -35,7 +35,7 @@ async def create_referal_children(request: Request,
     redirect_url = f'/user_referal_children/{form.redirect_uuid}' if form.redirect_uuid else "/referal_children"
     return RedirectResponse(
         redirect_url + params, 
-        status_code=status.HTTP_302_FOUND)  
+        status_code=status.HTTP_303_SEE_OTHER)  
 
 
 
@@ -85,7 +85,7 @@ async def update_referal_children(request: Request,
     redirect_url = f'/user_referal_children/{user_uuid}' if user_uuid else "/referal_children"
     return RedirectResponse(
         redirect_url + params, 
-        status_code=status.HTTP_302_FOUND)  
+        status_code=status.HTTP_303_SEE_OTHER)  
 
 
 

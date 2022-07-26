@@ -1,5 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
+import hashlib
 from uuid import UUID
 from tortoise import Model, fields
 
@@ -38,7 +39,7 @@ STATE_FIELD = ['created', "done", "failed"]
 class UserBalanceChange(Model):
     """ данные пополнениях и списаниях баланса в Toncoin пользователя"""
     uuid: UUID = fields.UUIDField(pk=True)
-    user: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField("models.User", related_name="history_balance")
+    user: fields.ForeignKeyNullableRelation["User"] = fields.ForeignKeyField("models.User", related_name="history_balance", null=True)
     type: str = fields.CharField(max_length=255)
     amount: float = fields.FloatField(null=True)
     hash: str = fields.CharField(max_length=255, null=True)
@@ -141,6 +142,12 @@ class Staff(Model):
 
     class Meta:
         table = "staff"
+
+
+    @classmethod
+    def create(cls, **kwargs): 
+        kwargs["password"] = hashlib.sha256(kwargs["password"].encode('utf-8')).hexdigest()
+        return super().create(**kwargs)
 
 
 STATE_FIELD = ['created', 'ready_for_sale', 'wait_buyer_send_funds', 

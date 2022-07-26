@@ -99,7 +99,7 @@ async def create_payments_account(request: Request,
     redirect_url = f'/user_payments_account/{redirect_uuid}' if redirect_uuid else f'/payments_account'
     return RedirectResponse(
         redirect_url + params, 
-        status_code=status.HTTP_302_FOUND)  
+        status_code=status.HTTP_303_SEE_OTHER)  
 
 
 @payment_account_router.post('/update_payments_account')
@@ -141,7 +141,7 @@ async def user_payments_account(request: Request,
     redirect_url = f'/user_payments_account/{user_uuid_hidden}' if user_uuid_hidden else "/payments_account"
     return RedirectResponse(
         redirect_url + params, 
-        status_code=status.HTTP_302_FOUND)  
+        status_code=status.HTTP_303_SEE_OTHER)  
 
 
 
@@ -167,4 +167,4 @@ async def delete_payments_account(request: Request,
         params = "?" + str(params)
     return RedirectResponse(
         request.url_for('user_payment_account') + params, 
-        status_code=status.HTTP_302_FOUND) 
+        status_code=status.HTTP_303_SEE_OTHER) 

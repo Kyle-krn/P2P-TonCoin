@@ -40,7 +40,7 @@ async def top_up_wallet_handler(call: types.CallbackQuery):
                            user=user,
                            format={
                                "code": code,
-                               "address_smart_contract": "Потом вставить адрес контракта"
+                               "address_smart_contract": "EQDcYqGh0d6i_kogT4QXvTuEq_iu61qPrZDVhbGnDvdrk-f3"
                            })
     # text = "Используйте адрес ниже для пополнения баланса TON.\n\n" \
     #        "Сеть: The Open Network – TON\n\n"  \

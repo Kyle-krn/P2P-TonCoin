@@ -36,12 +36,12 @@ async def create_staff(request: Request,
                   staff: models.Staff = Depends(manager)):
     if staff.superuser is False:
         return RedirectResponse(request.url_for("users_list"))
-    hashed_pass = hashlib.sha256(password.encode('utf-8')).hexdigest()
-    await models.Staff.create(login=username, password=hashed_pass, superuser=superuser)
+    # hashed_pass = hashlib.sha256(password.encode('utf-8')).hexdigest()
+    await models.Staff.create(login=username, password=password, superuser=superuser)
     flash(request, "Success", "success")
     return RedirectResponse(
                             f'/auth/register', 
-                            status_code=status.HTTP_302_FOUND
+                            status_code=status.HTTP_303_SEE_OTHER
                             )  
 
 @register_router.post("/auth/update_staff")
@@ -65,4 +65,4 @@ async def update_staff(request: Request,
                 staff.superuser = superuser
             await staff.save()
     return RedirectResponse('/auth/register',
-                            status_code=status.HTTP_302_FOUND)  
+                            status_code=status.HTTP_303_SEE_OTHER)  

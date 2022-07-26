@@ -49,7 +49,7 @@ async def update_user(request: Request,
         params = "?" + str(params)
     return RedirectResponse(
                             f'/user/{user_uuid}' + params, 
-                            status_code=status.HTTP_302_FOUND
+                            status_code=status.HTTP_303_SEE_OTHER
                             )        
 
     

@@ -24,7 +24,7 @@ async def update_ton(request: Request,
     flash(request, "Ton exchange rate update success", 'success')
     return RedirectResponse(
         request.url_for('get_currency'), 
-        status_code=status.HTTP_302_FOUND)
+        status_code=status.HTTP_303_SEE_OTHER)
 
 
 @post_currency_router.post('/update_currency', response_class=RedirectResponse)
@@ -66,7 +66,7 @@ async def update_currency(request: Request,
     
     return RedirectResponse(
         request.url_for('get_currency'), 
-        status_code=status.HTTP_302_FOUND)
+        status_code=status.HTTP_303_SEE_OTHER)
 
 
 @post_currency_router.post('/add_currency', response_class=RedirectResponse)
@@ -94,7 +94,7 @@ async def update_currency(request: Request,
         flash(request, f"Success: {', '.join([i['code'] for i in success_cur_list])}", "success") # Здесь исправить
     return RedirectResponse(
         request.url_for('get_currency'), 
-        status_code=status.HTTP_302_FOUND)
+        status_code=status.HTTP_303_SEE_OTHER)
 
 
 
@@ -129,7 +129,7 @@ async def delete_currency(request: Request,
     
     return RedirectResponse(
         request.url_for('get_currency'), 
-        status_code=status.HTTP_302_FOUND)
+        status_code=status.HTTP_303_SEE_OTHER)
 
         
 

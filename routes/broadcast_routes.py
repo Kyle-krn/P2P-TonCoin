@@ -22,5 +22,5 @@ async def update_pdf_scheme(request: Request,
             eng_text = rus_text
         await broadcaster(rus_text=rus_text, eng_text=eng_text)
         flash(request,"Success", "success")
-    return RedirectResponse(redirect_url, status_code=status.HTTP_302_FOUND)
+    return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
     

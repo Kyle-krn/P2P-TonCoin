@@ -120,7 +120,7 @@ async def update_payment_types(request: Request,
     
     return RedirectResponse(
         request.url_for('payments_account_type') + params, 
-        status_code=status.HTTP_302_FOUND) 
+        status_code=status.HTTP_303_SEE_OTHER) 
 
 
 
@@ -145,7 +145,7 @@ async def create_payments_account_type(request: Request,
         params = "?" + str(params)
     return RedirectResponse(
         request.url_for('payments_account_type') + params, 
-        status_code=status.HTTP_302_FOUND) 
+        status_code=status.HTTP_303_SEE_OTHER) 
 
 
 
@@ -179,4 +179,4 @@ async def delete_payments_account_type(request: Request,
         params = "?" + str(params)
     return RedirectResponse(
         request.url_for('payments_account_type') + params, 
-        status_code=status.HTTP_302_FOUND) 
+        status_code=status.HTTP_303_SEE_OTHER) 

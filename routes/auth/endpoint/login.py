@@ -24,13 +24,13 @@ async def login(request: Request,
     hashed_pass = hashlib.sha256(password.encode('utf-8')).hexdigest()
     user = await load_user(username)
     if not user:
-        flash(request, "Invalid Creedlines", category="dunger")
+        flash(request, "Invalid Creedlines", category="danger")
         return RedirectResponse(
                             f'/auth/login', 
                             status_code=status.HTTP_302_FOUND
                             )  
     elif hashed_pass != user.password:
-        flash(request, "Invalid Creedlines", category="dunger")
+        flash(request, "Invalid Creedlines", category="danger")
         return RedirectResponse(
                             f'/auth/login', 
                             status_code=status.HTTP_302_FOUND
@@ -38,7 +38,7 @@ async def login(request: Request,
     access_token = manager.create_access_token(
         data={"sub":username}
     )
-    resp = RedirectResponse(url="/users",status_code=status.HTTP_302_FOUND)
+    resp = RedirectResponse(url="/users",status_code=status.HTTP_303_SEE_OTHER)
     manager.set_cookie(resp,access_token)
     return resp
 

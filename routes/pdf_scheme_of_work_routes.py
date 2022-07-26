@@ -17,5 +17,5 @@ async def update_pdf_scheme(request: Request,
         with open("static/scheme_of_work.pdf", "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         flash(request,"PDF update success", "success")
-    return RedirectResponse(redirect_url, status_code=status.HTTP_302_FOUND)
+    return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
     

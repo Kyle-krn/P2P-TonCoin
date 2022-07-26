@@ -48,7 +48,7 @@ async def update_state_order(request: Request,
             await order.save()
     else:
         form.flash_error()
-    return RedirectResponse(request.url_for("show_change_state_order", uuid=order.uuid), status_code=status.HTTP_302_FOUND)
+    return RedirectResponse(request.url_for("show_change_state_order", uuid=order.uuid), status_code=status.HTTP_303_SEE_OTHER)
 
 
 @change_state_roter.get("/order_admin_resolution/{action}/{order_uuid}")

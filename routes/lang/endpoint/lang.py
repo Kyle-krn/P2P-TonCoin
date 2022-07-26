@@ -98,4 +98,4 @@ async def update_bot_text(request: Request,
         redirect_url = "/bot_button"
     return RedirectResponse(
         redirect_url, 
-        status_code=status.HTTP_302_FOUND)
+        status_code=status.HTTP_303_SEE_OTHER)

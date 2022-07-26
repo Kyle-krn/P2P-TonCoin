@@ -111,6 +111,6 @@ async def update_withdraw(request: Request,
     redirect_url = f"/user_history_balance/{user_uuid}" if user_uuid else "/history_balance"
     return RedirectResponse(
         redirect_url + params, 
-        status_code=status.HTTP_302_FOUND)  
+        status_code=status.HTTP_303_SEE_OTHER)  
 
     
